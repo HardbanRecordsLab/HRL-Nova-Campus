@@ -1,0 +1,6 @@
+{
+  "name": "CoursePulse Engine",
+  "description": "Centralizowana platforma zarządzania kursami z zaawansowaną analityką, integracją Stripe i systemem reklamowym dla edukatorów.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,44 @@
+{
+  "entities": {
+    "Course": {
+      "title": "Course",
+      "description": "Information about an online course",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Tytuł kursu" },
+        "description": { "type": "string", "description": "Opis kursu" },
+        "category": { "type": "string", "description": "Kategoria" },
+        "difficulty": { "type": "string", "description": "Poziom trudności" },
+        "instructor_name": { "type": "string", "description": "Nazwa instruktora" },
+        "thumbnail": { "type": "string", "description": "Okładka kursu / thumbnail URL" },
+        "pricing_model": { "type": "string", "description": "Model płatności np. free, one_time, subscription" },
+        "one_time_price": { "type": "number", "description": "Cena jednorazowa" },
+        "subscription_price": { "type": "number", "description": "Cena subskrypcyjna" },
+        "subscription_interval": { "type": "string", "description": "Okres rozliczeniowy" },
+        "tenant_domain": { "type": "string", "description": "Domena tenanta" },
+        "createdAt": { "type": "string", "description": "Sygnatura czasowa utworzenia" }
+      },
+      "required": ["title", "description", "thumbnail", "pricing_model"]
+    },
+    "User": {
+      "title": "User",
+      "description": "User profile inside Firestore database",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["admin", "student"] }
+      },
+      "required": ["email", "role"]
+    }
+  },
+  "firestore": {
+    "/courses/{courseId}": {
+      "schema": "Course",
+      "description": "Collection of courses in the hub"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Collection of user profiles for verification and security"
+    }
+  }
+}

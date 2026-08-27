@@ -1,0 +1,144 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // PILLAR 1: Catch-All Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- HARDENED PRIMITIVES & IDENTITY HELPER FUNCTIONS ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    // PILLAR 4: Verified Bootstrapped Role Hierarchy Checking
+    function isAdmin() {
+      return isSignedIn() && isEmailVerified() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        request.auth.token.email == 'hardbanrecordslab.pl@gmail.com'
+      );
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // PILLAR 3: Path Variable Injection / ID Poisoning Guards
+    function isValidId(id) {
+       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Helper shortcuts for cleaner validation bindings
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- SCHEMA RULES & VALIDATION BLUEPRINTS ---
+    
+    // PILLAR 2: Validation Blueprint for courses
+    function isValidCourse(data) {
+       return data.keys().hasAll(['title', 'description', 'thumbnail', 'pricing_model']) &&
+              data.title is string && data.title.size() >= 3 && data.title.size() <= 200 &&
+              data.description is string && data.description.size() <= 5000 &&
+              data.thumbnail is string && data.thumbnail.size() <= 1024 &&
+              data.pricing_model is string && data.pricing_model.size() <= 64 &&
+              (!data.keys().hasAll(['one_time_price']) || data.one_time_price is number) &&
+              (!data.keys().hasAll(['subscription_price']) || data.subscription_price is number) &&
+              (!data.keys().hasAll(['category']) || data.category is string) &&
+              (!data.keys().hasAll(['difficulty']) || data.difficulty is string) &&
+              (!data.keys().hasAll(['instructor_name']) || data.instructor_name is string) &&
+              (!data.keys().hasAll(['tenant_domain']) || data.tenant_domain is string) &&
+              (!data.keys().hasAll(['createdAt']) || data.createdAt is string);
+    }
+
+    // Validation Blueprint for user profiles
+    function isValidUser(data) {
+       return data.keys().hasAll(['email', 'role']) &&
+              data.email is string && data.email.size() <= 254 &&
+              data.role is string && (data.role == 'student' || data.role == 'instructor' || data.role == 'admin');
+    }
+
+    // --- ROUTE & PATH IMPLEMENTATIONS ---
+
+    // 1. Courses Collection Path
+    match /courses/{courseId} {
+      allow read, get, list: if true; // Public catalog access
+      
+      allow create: if (
+        isAdmin() && 
+        isValidId(courseId) &&
+        isValidCourse(incoming()) &&
+        incoming().diff({}).affectedKeys().hasOnly([
+          'title', 'description', 'thumbnail', 'pricing_model', 
+          'one_time_price', 'subscription_price', 'category', 
+          'difficulty', 'instructor_name', 'tenant_domain', 'createdAt'
+        ])
+      );
+      
+      // PILLAR 5: Action-Based Update and Terminal State Guard
+      allow update: if (
+        isAdmin() &&
+        isValidId(courseId) &&
+        isValidCourse(incoming()) &&
+        incoming().diff({}).affectedKeys().hasOnly([
+          'title', 'description', 'thumbnail', 'pricing_model', 
+          'one_time_price', 'subscription_price', 'category', 
+          'difficulty', 'instructor_name', 'tenant_domain', 'createdAt'
+        ]) && (
+          // Allow mutable fields update preserving createdAt
+          (!existing().keys().hasAll(['createdAt']) || incoming().createdAt == existing().createdAt)
+        )
+      );
+
+      allow delete: if (
+        isAdmin() &&
+        isValidId(courseId)
+      );
+    }
+
+    // 2. Users Collection Path (PILLAR 6: PII Isolation & Secure List Queries)
+    match /users/{userId} {
+      allow get: if (
+        isOwner(userId) || 
+        isAdmin()
+      );
+      
+      allow create: if (
+        isValidId(userId) &&
+        isOwner(userId) &&
+        isEmailVerified() &&
+        isValidUser(incoming()) &&
+        incoming().diff({}).affectedKeys().hasOnly(['email', 'role']) &&
+        // Prevent Self-Assigned Roles
+        incoming().role == 'student'
+      );
+      
+      allow update: if (
+        isValidId(userId) &&
+        isOwner(userId) &&
+        isEmailVerified() &&
+        isValidUser(incoming()) &&
+        incoming().diff({}).affectedKeys().hasOnly(['email', 'role']) &&
+        // Prevent Privilege Escalation
+        incoming().role == existing().role
+      );
+
+      allow delete: if (
+        isAdmin() || 
+        (isOwner(userId) && isValidId(userId))
+      );
+
+      // Only Admin can perform search/list operations over users
+      allow list: if isAdmin();
+    }
+  }
+}

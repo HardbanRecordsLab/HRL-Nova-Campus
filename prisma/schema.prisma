@@ -1,0 +1,312 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  STUDENT
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum IntegrationType {
+  JWT
+  OAUTH2
+  IFRAME
+  REDIRECT_COOKIE
+  CUSTOM_API
+}
+
+enum PaywallType {
+  HARD
+  SOFT
+  FREEMIUM
+  PREVIEW
+}
+
+enum AccessType {
+  LIFETIME
+  FIXED_DAYS
+  DATE_RANGE
+}
+
+enum PriceType {
+  FREE
+  ONE_TIME
+  SUBSCRIPTION
+  BUNDLE
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  CANCELED
+}
+
+enum EnrollmentStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
+enum EnrollmentSource {
+  PURCHASE
+  MANUAL
+  ROLE_GRANT
+}
+
+model User {
+  id              String         @id @default(cuid())
+  email           String         @unique
+  name            String?
+  passwordHash    String?
+  role            UserRole       @default(STUDENT)
+  locale          String         @default("pl")
+  avatarUrl       String?
+  isActive        Boolean        @default(true)
+  emailVerifiedAt DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  studentProfile  StudentProfile?
+  adminProfile    AdminProfile?
+  enrollments     Enrollment[]
+  orders          Order[]
+  messagesSent    Message[]
+  activityLogs    ActivityLog[]
+  certificates    Certificate[]
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  senderId  String
+  content   String
+  createdAt DateTime @default(now())
+
+  sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model StudentProfile {
+  id                   String  @id @default(cuid())
+  userId                String  @unique
+  country               String?
+  bio                   String?
+  linkedinUrl           String?
+  githubUrl             String?
+  websiteUrl            String?
+  streakCurrent         Int     @default(0)
+  streakBest            Int     @default(0)
+  totalLearningMinutes  Int     @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AdminProfile {
+  id         String @id @default(cuid())
+  userId      String @unique
+  phone      String?
+  publicBio  String?
+  publicSlug String? @unique
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Course {
+  id                    String            @id @default(cuid())
+  slug                  String            @unique
+  status                CourseStatus      @default(DRAFT)
+  instructorUserId      String
+  externalUrl           String
+  integrationType       IntegrationType   @default(JWT)
+  webhookUrl            String?
+  integrationSecretHash String?
+  defaultLocale         String            @default("pl")
+  paywallType           PaywallType       @default(HARD)
+  softPreviewPercent    Int?
+  freeLessonCount       Int?
+  accessType            AccessType        @default(LIFETIME)
+  accessDays            Int?
+  accessStartAt         DateTime?
+  accessEndAt           DateTime?
+  studentLimit          Int?
+  estimatedHours        Int?
+  lessonCountEstimate   Int?
+  level                 String?
+  imageUrl              String?
+  ogImageUrl            String?
+  publishedAt           DateTime?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  translations          CourseTranslation[]
+  prices                Price[]
+  enrollments           Enrollment[]
+  orderItems            OrderItem[]
+  tags                  CourseTag[]
+  domains               CourseDomain[]
+  certificates          Certificate[]
+}
+
+model CourseTranslation {
+  id               String @id @default(cuid())
+  courseId         String
+  locale           String
+  title            String
+  shortDescription String?
+  description      String?
+  seoTitle         String?
+  seoDescription   String?
+  seoKeywords      String?
+  ogTitle          String?
+  ogDescription    String?
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, locale])
+}
+
+model Tag {
+  id    String @id @default(cuid())
+  slug  String @unique
+  links CourseTag[]
+}
+
+model CourseTag {
+  courseId String
+  tagId    String
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([courseId, tagId])
+}
+
+model Price {
+  id              String    @id @default(cuid())
+  courseId        String
+  type            PriceType
+  currency        String    @default("PLN")
+  amount          Int       @default(0)
+  billingInterval String?
+  stripePriceId   String?
+  isActive        Boolean   @default(true)
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id                      String      @id @default(cuid())
+  userId                  String
+  status                  OrderStatus @default(PENDING)
+  currency                String      @default("PLN")
+  subtotal                Int         @default(0)
+  discountTotal           Int         @default(0)
+  total                   Int         @default(0)
+  stripeCheckoutSessionId String?    @unique
+  stripePaymentIntentId   String?    @unique
+  stripeCustomerId        String?
+  createdAt               DateTime    @default(now())
+  paidAt                  DateTime?
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items OrderItem[]
+}
+
+model OrderItem {
+  id         String @id @default(cuid())
+  orderId    String
+  courseId   String
+  priceId    String?
+  unitAmount Int
+  quantity   Int    @default(1)
+
+  order  Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Restrict)
+}
+
+model Enrollment {
+  id             String           @id @default(cuid())
+  userId         String
+  courseId       String
+  orderId        String?
+  source         EnrollmentSource
+  status         EnrollmentStatus @default(PENDING)
+  accessStartsAt DateTime         @default(now())
+  accessEndsAt   DateTime?
+  lastLaunchedAt DateTime?
+  revokedAt      DateTime?
+  grantedByUserId String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+}
+
+model CourseDomain {
+  id        String   @id @default(cuid())
+  courseId  String
+  hostname  String
+  createdAt DateTime @default(now())
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, hostname])
+}
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  targetType String
+  targetId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model AppSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model Certificate {
+  id              String   @id @default(cuid())
+  userId          String
+  courseId        String
+  certificateCode String   @unique
+  issuedAt        DateTime @default(now())
+  qrPayloadUrl    String?
+  rodoConsentAt   DateTime?
+  // Application validation must reject isPublic=true without rodoConsentAt.
+  isPublic        Boolean  @default(false)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+model GraduateRegistryEntry {
+  id                String   @id @default(cuid())
+  certificateCode   String   @unique
+  studentDisplayName String
+  courseTitle       String
+  issuedAt          DateTime
+
+  @@index([courseTitle])
+  @@index([studentDisplayName])
+}
