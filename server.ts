@@ -1,38 +1,18 @@
 import express, { Request, Response, NextFunction } from "express";
 import http from "http";
 import { WebSocketServer, WebSocket } from "ws";
-import Database from "better-sqlite3";
 import path from "path";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import Stripe from "stripe";
-import * as admin from "firebase-admin";
 import { createServer as createViteServer } from "vite";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { z } from "zod";
+import { prisma } from "./src/lib/prisma";
 
 dotenv.config();
-
-// Initialize Firebase Admin lazily/safely
-let firestoreDb: admin.firestore.Firestore | null = null;
-function getFirestore(): admin.firestore.Firestore | null {
-  if (!firestoreDb) {
-    try {
-      if (admin.apps.length === 0) {
-        admin.initializeApp({
-          credential: admin.credential.applicationDefault(),
-        });
-      }
-      firestoreDb = admin.firestore();
-    } catch (e) {
-      console.warn("Firebase Admin failed to initialize (continuing without Firebase):", e);
-      return null;
-    }
-  }
-  return firestoreDb;
-}
 
 // Initialize Stripe (Lazy)
 let stripeClient: Stripe | null = null;
@@ -52,37 +32,16 @@ app.set("trust proxy", 1);
 const PORT = 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "hrl_secret_jwt_key_991823";
 
-// Initialize SQLite database safely
-const dbPath = path.resolve(process.cwd(), "database.sqlite");
-let db: Database.Database;
-
-function openDatabase(): Database.Database {
-  try {
-    const database = new Database(dbPath);
-    database.pragma("foreign_keys = ON");
-    // Verify database integrity
-    database.prepare("SELECT 1").get();
-    return database;
-  } catch (err: any) {
-    if (err && (err.code === "SQLITE_CORRUPT" || err.message?.includes("malformed"))) {
-      console.warn("Detected corrupted SQLite database file. Resetting database.sqlite...");
-      try {
-        const fs = require("fs");
-        if (fs.existsSync(dbPath)) {
-          fs.unlinkSync(dbPath);
-        }
-      } catch (fsErr) {
-        console.error("Failed to delete corrupted database file:", fsErr);
-      }
-      const database = new Database(dbPath);
-      database.pragma("foreign_keys = ON");
-      return database;
-    }
-    throw err;
-  }
-}
-
-db = openDatabase();
+// Routes not yet migrated to Prisma fail explicitly instead of falling back to a local database.
+const db = {
+  prepare: () => {
+    throw new Error("This route still requires the Prisma migration");
+  },
+  exec: () => {
+    throw new Error("This route still requires the Prisma migration");
+  },
+  transaction: <T extends (...args: any[]) => any>(callback: T): T => callback,
+} as any;
 
 // Security Headers
 app.use(
@@ -129,6 +88,7 @@ const loginSchema = z.object({
 });
 
 // Check if there are any old musical courses or tables that need migration
+if (false) {
 try {
   const tableCheck = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='courses'").get() as any;
   if (tableCheck) {
@@ -415,6 +375,7 @@ try {
 } catch (err) {
   console.log("Error seeding default settings", err);
 }
+}
 
 // Helper function to read system limit value with fallback
 function getSystemLimit(key: string, defaultValue: number): number {
@@ -430,11 +391,22 @@ function getSystemLimit(key: string, defaultValue: number): number {
   return defaultValue;
 }
 
+async function getPrismaSystemLimit(key: string, defaultValue: number): Promise<number> {
+  try {
+    const setting = await prisma.appSetting.findUnique({ where: { key }, select: { value: true } });
+    const value = typeof setting?.value === "number" ? setting.value : Number(setting?.value);
+    return Number.isFinite(value) && value >= 0 ? value : defaultValue;
+  } catch (error) {
+    console.error("Failed to read Prisma system limit:", key, error);
+    return defaultValue;
+  }
+}
+
 // Helper to secure log activities
 const wsClients = new Set<WebSocket>();
 
 function logActivity(
-  userId: number | null,
+  userId: string | number | null,
   eventType: string,
   req: Request | null,
   statusCode: number,
@@ -448,27 +420,25 @@ function logActivity(
   const userAgent = req ? req.headers["user-agent"] : null;
   const payloadSnapshot = payload ? JSON.stringify(payload) : null;
 
-  try {
-    const insertLog = db.prepare(`
-      INSERT INTO hrl_activity_logs 
-      (timestamp, user_id, event_type, ip_address, request_method, request_path, status_code, error_message, payload_snapshot, user_agent)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    const res = insertLog.run(
-      timestamp,
-      userId,
-      eventType,
-      ip,
-      method,
-      pathUrl,
-      statusCode,
-      errorMessage,
-      payloadSnapshot,
-      userAgent
-    );
-
+  void prisma.activityLog.create({
+    data: {
+      userId: userId === null ? null : String(userId),
+      action: eventType,
+      targetType: "http",
+      targetId: pathUrl,
+      metadata: {
+        timestamp,
+        ip,
+        method,
+        statusCode,
+        errorMessage,
+        payload: payload ?? undefined,
+        userAgent,
+      },
+    },
+  }).then((createdLog) => {
     const logObject = {
-      id: res.lastInsertRowid,
+      id: createdLog.id,
       timestamp,
       user_id: userId,
       event_type: eventType,
@@ -489,9 +459,7 @@ function logActivity(
       }
     });
 
-  } catch (err) {
-    console.error("Failed to insert activity log", err);
-  }
+  }).catch((err) => console.error("Failed to insert activity log", err));
 }
 
 // In-Memory cache logic (LRU list logic simulated for courses and users)
@@ -504,6 +472,7 @@ function clearCache() {
 }
 
 // Clean database of mock data to transition to LIVE mode
+if (false) {
 try {
   // Clear any pre-existing seeded courses
   console.log("Removing mock/fake courses to run clean in LIVE mode...");
@@ -796,6 +765,7 @@ try {
 } catch (seedingErr) {
   console.error("Error seeding Cyfrowy Zen domain course on startup:", seedingErr);
 }
+}
 
 // REST Middlewares
 const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
@@ -831,6 +801,29 @@ const requireCreator = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
+app.get("/api/activity-log", authenticateToken, async (req, res) => {
+  const requestedUserId = String(req.query.userId || (req as any).user.id);
+  if (requestedUserId !== String((req as any).user.id) && (req as any).user.role !== "admin") {
+    return res.status(403).json({ message: "Brak uprawnień do tych logów." });
+  }
+
+  try {
+    const logs = await prisma.activityLog.findMany({
+      where: { userId: requestedUserId },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    });
+    res.json(logs.map((log) => ({
+      id: log.id,
+      event_type: log.action,
+      description: log.action,
+      created_at: log.createdAt,
+    })));
+  } catch {
+    res.status(500).json({ message: "Błąd bazy danych" });
+  }
+});
+
 // --- STRIPE ENDPOINTS ---
 app.post("/api/create-checkout-session", authenticateToken, async (req: Request, res: Response) => {
   const { priceId, userId, courseId } = req.body;
@@ -864,14 +857,16 @@ app.post("/api/webhook/stripe", express.raw({type: 'application/json'}), async (
     const courseId = session.metadata.course_id;
     
     if (userId && courseId) {
-      // Update Firestore if initialized
-      const fsDb = getFirestore();
-      if (fsDb) {
-        await fsDb.collection('users').doc(userId).collection('entitlements').doc(courseId).set({
-          access: 'paid',
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
-        });
-      }
+      await prisma.enrollment.upsert({
+        where: { userId_courseId: { userId: String(userId), courseId: String(courseId) } },
+        update: { status: "ACTIVE", source: "PURCHASE" },
+        create: {
+          userId: String(userId),
+          courseId: String(courseId),
+          source: "PURCHASE",
+          status: "ACTIVE",
+        },
+      });
     }
   }
 
@@ -880,7 +875,7 @@ app.post("/api/webhook/stripe", express.raw({type: 'application/json'}), async (
 
 // --- AUTH ENDPOINTS ---
 
-app.post("/api/auth/register", authLimiter, (req, res) => {
+app.post("/api/auth/register", authLimiter, async (req, res) => {
   const parseResult = registerSchema.safeParse(req.body);
   if (!parseResult.success) {
     const errorMsg = parseResult.error.issues.map((i) => i.message).join(", ");
@@ -890,29 +885,32 @@ app.post("/api/auth/register", authLimiter, (req, res) => {
   const { username, email, password, role } = parseResult.data;
 
   try {
-    const defaultRole = role || "student";
-    const password_hash = bcrypt.hashSync(password, 10);
-    const result = db.prepare(`
-      INSERT INTO users (username, email, password_hash, role)
-      VALUES (?, ?, ?, ?)
-    `).run(username, email, password_hash, defaultRole);
+    const defaultRole = role === "admin" ? "ADMIN" : role === "instructor" ? "INSTRUCTOR" : "STUDENT";
+    const user = await prisma.user.create({
+      data: {
+        username,
+        email,
+        passwordHash: await bcrypt.hash(password, 10),
+        role: defaultRole,
+      },
+    });
 
-    logActivity(Number(result.lastInsertRowid), "user_register", req, 201, null, { username, email, role: defaultRole });
+    logActivity(user.id, "user_register", req, 201, null, { username, email, role: defaultRole });
 
     res.status(201).json({
       message: "Użytkownik zarejestrowany pomyślnie.",
-      userId: result.lastInsertRowid
+      userId: user.id
     });
   } catch (error: any) {
     logActivity(null, "user_register_failed", req, 400, error.message, { username, email });
-    if (error.code === "SQLITE_CONSTRAINT_UNIQUE") {
+    if (error.code === "P2002") {
       return res.status(409).json({ message: "Nazwa użytkownika lub email jest już zajęty." });
     }
     res.status(500).json({ message: "Błąd serwera przy rejestracji." });
   }
 });
 
-app.post("/api/auth/login", authLimiter, (req, res) => {
+app.post("/api/auth/login", authLimiter, async (req, res) => {
   const parseResult = loginSchema.safeParse(req.body);
   if (!parseResult.success) {
     const errorMsg = parseResult.error.issues.map((i) => i.message).join(", ");
@@ -922,20 +920,20 @@ app.post("/api/auth/login", authLimiter, (req, res) => {
   const { email, password } = parseResult.data;
 
   try {
-    const user = db.prepare("SELECT * FROM users WHERE email = ?").get(email) as any;
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       logActivity(null, "login_failed_unregistered", req, 401, "User not found: " + email);
       return res.status(401).json({ message: "Nieprawidłowy email lub hasło." });
     }
 
-    const correctPassword = bcrypt.compareSync(password, user.password_hash);
+    const correctPassword = user.passwordHash ? await bcrypt.compare(password, user.passwordHash) : false;
     if (!correctPassword) {
       logActivity(user.id, "login_failed_bad_password", req, 401, "Bad password");
       return res.status(401).json({ message: "Nieprawidłowy email lub hasło." });
     }
 
     const token = jwt.sign(
-      { id: user.id, username: user.username, role: user.role, email: user.email },
+      { id: user.id, username: user.username ?? user.name ?? "", role: user.role.toLowerCase(), email: user.email },
       JWT_SECRET,
       { expiresIn: "24h" }
     );
@@ -946,7 +944,7 @@ app.post("/api/auth/login", authLimiter, (req, res) => {
       token,
       user: {
         id: user.id,
-        username: user.username,
+        username: user.username ?? user.name ?? "",
         email: user.email,
         role: user.role
       }
@@ -957,14 +955,17 @@ app.post("/api/auth/login", authLimiter, (req, res) => {
   }
 });
 
-app.get("/api/auth/me", authenticateToken, (req, res) => {
+app.get("/api/auth/me", authenticateToken, async (req, res) => {
   const reqUser = (req as any).user;
   try {
-    const user = db.prepare("SELECT id, username, email, role FROM users WHERE id = ?").get(reqUser.id) as any;
+    const user = await prisma.user.findUnique({
+      where: { id: String(reqUser.id) },
+      select: { id: true, username: true, name: true, email: true, role: true },
+    });
     if (!user) {
       return res.status(404).json({ message: "Użytkownik nie istnieje" });
     }
-    res.json(user);
+    res.json({ ...user, username: user.username ?? user.name ?? "", role: user.role.toLowerCase() });
   } catch (err) {
     res.status(500).json({ message: "Błąd bazy danych" });
   }
@@ -972,7 +973,44 @@ app.get("/api/auth/me", authenticateToken, (req, res) => {
 
 // --- COURSES ENDPOINTS ---
 
-app.get("/api/courses", (req, res) => {
+function toLegacyCourse(course: any) {
+  const translation = course.translations?.[0];
+  const activePrices = course.prices?.filter((price: any) => price.isActive) ?? [];
+  const oneTime = activePrices.find((price: any) => price.type === "ONE_TIME");
+  const subscription = activePrices.find((price: any) => price.type === "SUBSCRIPTION");
+  return {
+    id: course.id,
+    slug: course.slug,
+    title: translation?.title ?? course.slug,
+    description: translation?.description ?? translation?.shortDescription ?? "",
+    thumbnail: course.imageUrl ?? "",
+    category: course.tags?.map((tag: any) => tag.tag.slug).join(", ") || "Ogólny",
+    difficulty: course.level ?? "Dowolny",
+    instructor_name: course.instructorName ?? "HRL Team",
+    pricing_model: activePrices[0]?.type?.toLowerCase() ?? "free",
+    one_time_price: oneTime?.amount ?? 0,
+    subscription_price: subscription?.amount ?? 0,
+    subscription_interval: subscription?.billingInterval ?? "month",
+    tenant_domain: course.domains?.[0]?.hostname ?? "all_domains",
+    external_url: course.externalUrl,
+    integration_type: course.integrationType,
+    status: course.status,
+    created_at: course.createdAt,
+    updated_at: course.updatedAt,
+    modules_count: course._count?.modules ?? 0,
+    lessons_count: course.modules?.reduce((total: number, module: any) => total + (module._count?.lessons ?? 0), 0) ?? 0,
+  };
+}
+
+const courseListInclude = {
+  translations: { where: { locale: "pl" }, take: 1 },
+  domains: { select: { hostname: true }, orderBy: { createdAt: "asc" as const } },
+  prices: { where: { isActive: true } },
+  tags: { include: { tag: { select: { slug: true } } } },
+  _count: { select: { modules: true } },
+};
+
+app.get("/api/courses", async (req, res) => {
   const { search, category, difficulty, instructor, domain } = req.query;
   const hasFilters = search || category || difficulty || instructor || domain;
 
@@ -984,53 +1022,36 @@ app.get("/api/courses", (req, res) => {
 
   // Get courses along with modules & lessons count
   try {
-    let query = `
-      SELECT c.*, 
-        (SELECT COUNT(*) FROM modules m WHERE m.course_id = c.id) as modules_count,
-        (SELECT COUNT(*) FROM lessons l JOIN modules m ON l.module_id = m.id WHERE m.course_id = c.id) as lessons_count
-      FROM courses c
-      WHERE 1=1
-    `;
-    const params: any[] = [];
-
-    if (search) {
-      query += " AND (c.title LIKE ? OR c.description LIKE ?)";
-      params.push(`%${search}%`, `%${search}%`);
-    }
-    if (category) {
-      query += " AND c.category = ?";
-      params.push(category);
-    }
-    if (difficulty) {
-      query += " AND c.difficulty = ?";
-      params.push(difficulty);
-    }
-    if (instructor) {
-      query += " AND c.instructor_name = ?";
-      params.push(instructor);
-    }
-    if (domain) {
-      query += " AND (c.tenant_domain = ? OR c.tenant_domain = 'all_domains' OR c.tenant_domain IS NULL OR c.tenant_domain = '')";
-      params.push(domain);
-    }
-
-    const courses = db.prepare(query).all(...params) as any[];
+    const normalizedSearch = typeof search === "string" ? search : undefined;
+    const normalizedDomain = typeof domain === "string" ? normalizeHostname(domain) : null;
+    const courses = await prisma.course.findMany({
+      where: {
+        status: "PUBLISHED",
+        ...(normalizedSearch ? { translations: { some: { locale: "pl", OR: [{ title: { contains: normalizedSearch, mode: "insensitive" } }, { description: { contains: normalizedSearch, mode: "insensitive" } }] } } } : {}),
+        ...(typeof difficulty === "string" ? { level: difficulty } : {}),
+        ...(typeof instructor === "string" ? { instructorUserId: instructor } : {}),
+        ...(normalizedDomain ? { OR: [{ domains: { some: { hostname: normalizedDomain } } }, { domains: { none: {} } }] } : {}),
+      },
+      include: { ...courseListInclude, modules: { select: { _count: { select: { lessons: true } } } } },
+      orderBy: { createdAt: "desc" },
+    });
+    const legacyCourses = courses.map(toLegacyCourse);
 
     // Only cache if there are no active filters
     if (!hasFilters) {
-      courseCache.set(cacheKey, courses);
+      courseCache.set(cacheKey, legacyCourses);
     }
 
-    res.json(courses);
+    res.json(legacyCourses);
   } catch (err: any) {
     res.status(500).json({ message: "Błąd bazy danych przy wyszukiwaniu kursów: " + err.message });
   }
 });
 
-app.get("/api/courses/domains", (req, res) => {
+app.get("/api/courses/domains", async (req, res) => {
   try {
-    const rows = db.prepare("SELECT DISTINCT tenant_domain FROM courses WHERE tenant_domain IS NOT NULL AND tenant_domain != ''").all() as any[];
-    const domains = rows.map((r: any) => r.tenant_domain);
+    const rows = await prisma.courseDomain.findMany({ distinct: ["hostname"], select: { hostname: true }, orderBy: { hostname: "asc" } });
+    const domains = rows.map((row) => row.hostname);
     res.json(domains);
   } catch (err: any) {
     res.status(500).json({ message: "Błąd przy pobieraniu domen: " + err.message });
@@ -1038,10 +1059,10 @@ app.get("/api/courses/domains", (req, res) => {
 });
 
 // Get detailed course hierarchy. If authenticated, fetch progress.
-app.get("/api/courses/:id", (req, res) => {
-  const courseId = Number(req.params.id);
+app.get("/api/courses/:id", async (req, res) => {
+  const courseId = req.params.id;
   const authHeader = req.headers["authorization"];
-  let userId: number | null = null;
+  let userId: string | null = null;
 
   if (authHeader && authHeader.split(" ")[1]) {
     try {
@@ -1051,7 +1072,13 @@ app.get("/api/courses/:id", (req, res) => {
   }
 
   try {
-    const course = db.prepare("SELECT * FROM courses WHERE id = ?").get(courseId) as any;
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      include: {
+        ...courseListInclude,
+        modules: { orderBy: { sortOrder: "asc" }, include: { lessons: { orderBy: { sortOrder: "asc" } } } },
+      },
+    });
     if (!course) {
       return res.status(404).json({ message: "Kurs nie znaleziony" });
     }
@@ -1059,34 +1086,30 @@ app.get("/api/courses/:id", (req, res) => {
     // Is current user registered/enrolled?
     let userEnrolled = false;
     if (userId) {
-      const enrollment = db.prepare("SELECT 1 FROM user_course_enrollments WHERE user_id = ? AND course_id = ?").get(userId, courseId);
-      userEnrolled = !!enrollment;
+      const enrollment = await prisma.enrollment.findUnique({ where: { userId_courseId: { userId, courseId } } });
+      userEnrolled = enrollment?.status === "ACTIVE";
     }
 
     // Get Modules
-    const modules = db.prepare("SELECT * FROM modules WHERE course_id = ?").all(courseId) as any[];
-
-    // For each module, get lessons
-    const structure = modules.map((mod) => {
-      const lessons = db.prepare("SELECT id, title, description, content, access_level, duration_minutes, video_url FROM lessons WHERE module_id = ?").all(mod.id) as any[];
-      
-      const lessonsWithProgress = lessons.map((les) => {
-        let progress = { percent: 0, completed: 0 };
-        if (userId) {
-          const prog = db.prepare("SELECT percent, completed FROM lesson_progress WHERE user_id = ? AND lesson_id = ?").get(userId, les.id) as any;
-          if (prog) {
-            progress = prog;
-          }
-        }
+    const progress = userId ? await prisma.lessonProgress.findMany({ where: { userId, lesson: { module: { courseId } } } }) : [];
+    const progressByLesson = new Map(progress.map((item) => [item.lessonId, item]));
+    const structure = course.modules.map((mod) => {
+      const lessonsWithProgress = mod.lessons.map((les) => {
+        const lessonProgress = progressByLesson.get(les.id);
 
         // Mask/Filter sensitive video links if user is not enrolled and it is a premium lesson (IDOR & Privacy Protection!)
-        const isPremium = les.access_level === "premium";
+        const isPremium = les.accessLevel === "premium";
         const hasAccess = !isPremium || userEnrolled;
 
         return {
-          ...les,
-          video_url: hasAccess ? les.video_url : "", // block raw preview
-          progress,
+          id: les.id,
+          title: les.title,
+          description: les.description,
+          content: les.content,
+          access_level: les.accessLevel,
+          duration_minutes: les.durationMinutes,
+          video_url: hasAccess ? les.videoUrl : "",
+          progress: { percent: lessonProgress?.percent ?? 0, completed: lessonProgress?.completed ? 1 : 0 },
           has_access: hasAccess
         };
       });
@@ -1101,14 +1124,14 @@ app.get("/api/courses/:id", (req, res) => {
     // Check if certificate has been generated for this user
     let certificate_code = null;
     if (userId) {
-      const cert = db.prepare("SELECT certificate_code FROM certificates WHERE user_id = ? AND course_id = ?").get(userId, courseId) as any;
+      const cert = await prisma.certificate.findFirst({ where: { userId, courseId }, select: { certificateCode: true } });
       if (cert) {
-        certificate_code = cert.certificate_code;
+        certificate_code = cert.certificateCode;
       }
     }
 
     res.json({
-      course,
+      course: toLegacyCourse(course),
       enrolled: userEnrolled,
       structure,
       certificate_code
@@ -1120,22 +1143,21 @@ app.get("/api/courses/:id", (req, res) => {
 });
 
 // Enrolls user in a course
-app.post("/api/courses/:id/enroll", authenticateToken, (req, res) => {
-  const courseId = Number(req.params.id);
+app.post("/api/courses/:id/enroll", authenticateToken, async (req, res) => {
+  const courseId = req.params.id;
   const user = (req as any).user;
 
   try {
     // Check if already enrolled
-    const existingEnrollment = db.prepare("SELECT 1 FROM user_course_enrollments WHERE user_id = ? AND course_id = ?").get(user.id, courseId);
+    const existingEnrollment = await prisma.enrollment.findUnique({ where: { userId_courseId: { userId: String(user.id), courseId } } });
     if (existingEnrollment) {
       return res.json({ message: "Jesteś już zapisany na ten kurs!" });
     }
 
     // Check enrollment limit for student role
     if (user.role === "student") {
-      const maxFreeEnrollments = getSystemLimit("max_free_enrollments", 5);
-      const currentEnrollmentsObj = db.prepare("SELECT COUNT(*) as count FROM user_course_enrollments WHERE user_id = ?").get(user.id) as { count: number };
-      const currentCount = currentEnrollmentsObj ? currentEnrollmentsObj.count : 0;
+      const maxFreeEnrollments = 5;
+      const currentCount = await prisma.enrollment.count({ where: { userId: String(user.id), status: "ACTIVE" } });
 
       if (currentCount >= maxFreeEnrollments) {
         logActivity(user.id, "enrollment_limit_exceeded", req, 403, `Osiągnięto limit zapisów (${currentCount}/${maxFreeEnrollments})`, { courseId });
@@ -1148,10 +1170,9 @@ app.post("/api/courses/:id/enroll", authenticateToken, (req, res) => {
       }
     }
 
-    db.prepare(`
-      INSERT OR IGNORE INTO user_course_enrollments (user_id, course_id)
-      VALUES (?, ?)
-    `).run(user.id, courseId);
+    const course = await prisma.course.findUnique({ where: { id: courseId }, select: { id: true } });
+    if (!course) return res.status(404).json({ message: "Kurs nie znaleziony" });
+    await prisma.enrollment.create({ data: { userId: String(user.id), courseId, source: "MANUAL", status: "ACTIVE" } });
 
     logActivity(user.id, "course_enroll", req, 200, null, { courseId });
     clearCache(); // invalidate
@@ -1162,137 +1183,132 @@ app.post("/api/courses/:id/enroll", authenticateToken, (req, res) => {
   }
 });
 
-// --- PROGRESS TRACKER & QUIZ ---
+// --- EXTERNAL COURSE PROGRESS ---
 
-function checkAndGenerateCertificate(userId: number, courseId: number, req: Request): string | null {
-  // Count total lessons
-  const lessonsObj = db.prepare(`
-    SELECT COUNT(*) as count 
-    FROM lessons l 
-    JOIN modules m ON l.module_id = m.id 
-    WHERE m.course_id = ?
-  `).get(courseId) as { count: number };
-  const totalLessons = lessonsObj.count;
+const externalProgressSchema = z.object({
+  progressPercent: z.number().int().min(0).max(100),
+});
 
-  // Count completed lessons
-  const completedObj = db.prepare(`
-    SELECT COUNT(DISTINCT lp.lesson_id) as count 
-    FROM lesson_progress lp
-    JOIN lessons l ON lp.lesson_id = l.id
-    JOIN modules m ON l.module_id = m.id
-    WHERE m.course_id = ? AND lp.user_id = ? AND lp.completed = 1
-  `).get(courseId, userId) as { count: number };
-  const completedLessons = completedObj.count;
+const providerCompletionSchema = z.object({
+  userId: z.string().min(1),
+  certificateCode: z.string().min(3).max(200).optional(),
+  certificateUrl: z.string().url().max(2048).optional(),
+});
 
-  // Fetch all lessons that have quizzes
-  const courseQuizzes = db.prepare(`
-    SELECT l.id 
-    FROM lessons l
-    JOIN modules m ON l.module_id = m.id
-    WHERE m.course_id = ? AND EXISTS (SELECT 1 FROM quiz_questions WHERE lesson_id = l.id)
-  `).all(courseId) as { id: number }[];
+app.patch("/api/enrollments/:courseId/progress", authenticateToken, async (req, res) => {
+  const userId = String((req as any).user.id);
+  const courseId = req.params.courseId;
+  const parsed = externalProgressSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ message: "Postęp musi być liczbą całkowitą od 0 do 100." });
 
-  // Count passed quizzes
-  const passedCountObj = db.prepare(`
-    SELECT COUNT(DISTINCT lesson_id) as count 
-    FROM quiz_attempts 
-    WHERE user_id = ? AND passed = 1 AND lesson_id IN (
-      SELECT l.id FROM lessons l JOIN modules m ON l.module_id = m.id WHERE m.course_id = ?
-    )
-  `).get(userId, courseId) as { count: number };
-  const passedQuizzes = passedCountObj.count;
+  try {
+    const enrollment = await prisma.enrollment.findUnique({ where: { userId_courseId: { userId, courseId } } });
+    if (!enrollment || enrollment.status !== "ACTIVE") return res.status(404).json({ message: "Aktywne zapisanie na kurs nie istnieje." });
+    if (enrollment.completedAt) return res.json({ progressPercent: 100, completed: true });
 
-  const allLessonsCompleted = completedLessons >= totalLessons;
-  const allQuizzesPassed = passedQuizzes >= courseQuizzes.length;
-
-  if (totalLessons > 0 && allLessonsCompleted && allQuizzesPassed) {
-    const checkCert = db.prepare("SELECT certificate_code FROM certificates WHERE user_id = ? AND course_id = ?").get(userId, courseId) as any;
-    if (!checkCert) {
-      const timestamp = Date.now().toString().slice(-6);
-      const rawHash = cryptoHash(`${userId}-${courseId}-${timestamp}`);
-      const randomHex = Math.random().toString(16).substring(2, 6).toUpperCase();
-      const certCode = `HRL-ACAD-${rawHash}-${timestamp}-${randomHex}`;
-
-      db.prepare(`
-        INSERT INTO certificates (user_id, course_id, certificate_code, created_at)
-        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-      `).run(userId, courseId, certCode);
-
-      logActivity(userId, "certificate_generated", req, 201, null, { courseId, certCode });
-      return certCode;
-    } else {
-      return checkCert.certificate_code;
-    }
+    const progressPercent = Math.min(parsed.data.progressPercent, 99);
+    const updated = await prisma.enrollment.update({
+      where: { id: enrollment.id },
+      data: { progressPercent, startedAt: enrollment.startedAt ?? new Date() },
+      select: { progressPercent: true, startedAt: true, completedAt: true },
+    });
+    logActivity(userId, "external_course_progress_updated", req, 200, null, { courseId, progressPercent });
+    res.json({ progressPercent: updated.progressPercent, startedAt: updated.startedAt, completed: Boolean(updated.completedAt) });
+  } catch (error: any) {
+    res.status(500).json({ message: "Nie udało się zapisać postępu: " + error.message });
   }
-  return null;
-}
+});
 
-app.post("/api/lessons/:id/progress", authenticateToken, (req, res) => {
-  const lessonId = Number(req.params.id);
+app.post("/api/integrations/courses/:courseId/completion", async (req, res) => {
+  const courseId = req.params.courseId;
+  const providerSecret = req.header("x-course-completion-secret");
+  const parsed = providerCompletionSchema.safeParse(req.body);
+  if (!providerSecret || !parsed.success) return res.status(400).json({ message: "Nieprawidłowe potwierdzenie ukończenia kursu." });
+
+  try {
+    const course = await prisma.course.findUnique({ where: { id: courseId }, select: { id: true, integrationSecretHash: true } });
+    if (!course) return res.status(404).json({ message: "Kurs nie istnieje." });
+    if (!course.integrationSecretHash || !(await bcrypt.compare(providerSecret, course.integrationSecretHash))) {
+      return res.status(401).json({ message: "Nieprawidłowy sekret integracji." });
+    }
+
+    const enrollment = await prisma.enrollment.findUnique({ where: { userId_courseId: { userId: parsed.data.userId, courseId } } });
+    if (!enrollment || enrollment.status !== "ACTIVE") return res.status(404).json({ message: "Aktywne zapisanie na kurs nie istnieje." });
+
+    const certificateCode = parsed.data.certificateCode ?? `EXT-${courseId}-${parsed.data.userId}-${Date.now()}`;
+    const result = await prisma.$transaction(async (tx) => {
+      const updatedEnrollment = await tx.enrollment.update({
+        where: { id: enrollment.id },
+        data: { progressPercent: 100, startedAt: enrollment.startedAt ?? new Date(), completedAt: enrollment.completedAt ?? new Date(), completionSource: "PROVIDER_WEBHOOK" },
+      });
+      const certificate = await tx.certificate.upsert({
+        where: { userId_courseId: { userId: parsed.data.userId, courseId } },
+        update: { qrPayloadUrl: parsed.data.certificateUrl },
+        create: { userId: parsed.data.userId, courseId, certificateCode, qrPayloadUrl: parsed.data.certificateUrl },
+      });
+      return { updatedEnrollment, certificate };
+    });
+
+    logActivity(parsed.data.userId, "external_course_completed", req, 200, null, { courseId, certificateCode: result.certificate.certificateCode });
+    res.json({ success: true, completedAt: result.updatedEnrollment.completedAt, certificateCode: result.certificate.certificateCode });
+  } catch (error: any) {
+    res.status(500).json({ message: "Nie udało się zatwierdzić ukończenia kursu: " + error.message });
+  }
+});
+
+app.post("/api/lessons/:id/progress", authenticateToken, async (req, res) => {
+  const lessonId = req.params.id;
   const user = (req as any).user;
   const { percent, completed, last_watched_timestamp } = req.body;
 
   try {
-    const isCompleted = completed ? 1 : 0;
+    const isCompleted = Boolean(completed);
     const progressPercent = percent !== undefined ? Number(percent) : 0;
-    const timestamp = last_watched_timestamp || 0;
+    const timestamp = Number(last_watched_timestamp || 0);
 
     // Check enrollment first (IDOR prevention)
-    const lesson = db.prepare(`
-      SELECT l.access_level, m.course_id 
-      FROM lessons l
-      JOIN modules m ON l.module_id = m.id
-      WHERE l.id = ?
-    `).get(lessonId) as any;
+    const lesson = await prisma.lesson.findUnique({ where: { id: lessonId }, select: { accessLevel: true, module: { select: { courseId: true } } } });
 
     if (!lesson) {
       return res.status(404).json({ message: "Lekcja nie istnieje" });
     }
 
-    if (lesson.access_level === "premium") {
-      const enrolled = db.prepare("SELECT 1 FROM user_course_enrollments WHERE user_id = ? AND course_id = ?").get(user.id, lesson.course_id);
-      if (!enrolled) {
+    if (lesson.accessLevel === "premium") {
+      const enrolled = await prisma.enrollment.findUnique({ where: { userId_courseId: { userId: String(user.id), courseId: lesson.module.courseId } }, select: { status: true } });
+      if (enrolled?.status !== "ACTIVE") {
         return res.status(403).json({ message: "Próba zapisu postępu dla zablokowanej zawartości premium!" });
       }
     }
 
-    db.prepare(`
-      INSERT OR REPLACE INTO lesson_progress (user_id, lesson_id, percent, completed, last_watched_timestamp, updated_at)
-      VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-    `).run(user.id, lessonId, progressPercent, isCompleted, timestamp);
+    await prisma.lessonProgress.upsert({
+      where: { userId_lessonId: { userId: String(user.id), lessonId } },
+      create: { userId: String(user.id), lessonId, percent: progressPercent, completed: isCompleted, lastWatchedTimestamp: timestamp },
+      update: { percent: progressPercent, completed: isCompleted, lastWatchedTimestamp: timestamp },
+    });
 
-    logActivity(user.id, "lesson_progress_update", req, 200, null, { lessonId, percent: progressPercent, completed: isCompleted, courseId: lesson.course_id });
+    logActivity(user.id, "lesson_progress_update", req, 200, null, { lessonId, percent: progressPercent, completed: isCompleted, courseId: lesson.module.courseId });
 
-    let certGeneratedCode = null;
-    if (isCompleted === 1) {
-      certGeneratedCode = checkAndGenerateCertificate(user.id, lesson.course_id, req);
-    }
-
-    res.json({ success: true, message: "Postęp zapisany pomyślnie.", certificate_code: certGeneratedCode });
+    res.json({ success: true, message: "Postęp zapisany pomyślnie.", certificate_code: null });
   } catch (err: any) {
     res.status(500).json({ message: "Zapis postępu nie powiódł się: " + err.message });
   }
 });
 
 // Fetch active quizzes for a lesson
-app.get("/api/lessons/:id/quiz", authenticateToken, (req, res) => {
-  const lessonId = Number(req.params.id);
+app.get("/api/lessons/:id/quiz", authenticateToken, async (req, res) => {
+  const lessonId = req.params.id;
   try {
-    const questions = db.prepare(`
-      SELECT id, lesson_id, question_text, option_a, option_b, option_c, option_d, points_value
-      FROM quiz_questions
-      WHERE lesson_id = ?
-    `).all(lessonId) as any[];
+    const questions = await prisma.quizQuestion.findMany({ where: { lessonId }, select: { id: true, lessonId: true, questionText: true, optionA: true, optionB: true, optionC: true, optionD: true, pointsValue: true } });
 
-    res.json(questions);
+    res.json(questions.map((question) => ({ id: question.id, lesson_id: question.lessonId, question_text: question.questionText, option_a: question.optionA, option_b: question.optionB, option_c: question.optionC, option_d: question.optionD, points_value: question.pointsValue })));
   } catch (err) {
     res.status(500).json({ message: "Błąd bazy danych" });
   }
 });
 
 // Submit Quiz with automated Certificate Issuing on passing all quizzes
-app.post("/api/quiz/:lessonId/submit", authenticateToken, (req, res) => {
-  const lessonId = Number(req.params.id || req.params.lessonId);
+app.post("/api/quiz/:lessonId/submit", authenticateToken, async (req, res) => {
+  const lessonId = req.params.lessonId;
   const user = (req as any).user;
   const { answers } = req.body; // Array of { questionId: number, answer: 'A'|'B'|'C'|'D' }
 
@@ -1303,13 +1319,8 @@ app.post("/api/quiz/:lessonId/submit", authenticateToken, (req, res) => {
   try {
     // Check daily quiz attempt limit for students
     if (user.role === "student") {
-      const maxDailyQuizAttempts = getSystemLimit("max_daily_quiz_attempts", 3);
-      const attemptsTodayObj = db.prepare(`
-        SELECT COUNT(*) as count 
-        FROM quiz_attempts 
-        WHERE user_id = ? AND lesson_id = ? AND created_at >= datetime('now', '-24 hours')
-      `).get(user.id, lessonId) as { count: number };
-      const attemptsToday = attemptsTodayObj ? attemptsTodayObj.count : 0;
+      const maxDailyQuizAttempts = await getPrismaSystemLimit("max_daily_quiz_attempts", 3);
+      const attemptsToday = await prisma.quizAttempt.count({ where: { userId: String(user.id), lessonId, createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } } });
 
       if (attemptsToday >= maxDailyQuizAttempts) {
         logActivity(user.id, "quiz_limit_exceeded", req, 429, `Przekroczono dzienny limit prób testu (${attemptsToday}/${maxDailyQuizAttempts})`, { lessonId });
@@ -1322,7 +1333,7 @@ app.post("/api/quiz/:lessonId/submit", authenticateToken, (req, res) => {
       }
     }
 
-    const correctQuestions = db.prepare("SELECT id, correct_options, points_value FROM quiz_questions WHERE lesson_id = ?").all(lessonId) as any[];
+    const correctQuestions = await prisma.quizQuestion.findMany({ where: { lessonId }, select: { id: true, correctOptions: true, pointsValue: true } });
     if (correctQuestions.length === 0) {
       return res.status(400).json({ message: "Brak pytań testowych dla tej lekcji" });
     }
@@ -1331,51 +1342,34 @@ app.post("/api/quiz/:lessonId/submit", authenticateToken, (req, res) => {
     let totalPoints = 0;
 
     correctQuestions.forEach((q) => {
-      totalPoints += q.points_value || 1;
-      const studentAnsObj = answers.find((ans) => Number(ans.questionId) === q.id);
-      if (studentAnsObj && studentAnsObj.answer === q.correct_options) {
-        earnedPoints += q.points_value || 1;
+      totalPoints += q.pointsValue || 1;
+      const studentAnsObj = answers.find((ans: any) => String(ans.questionId) === q.id);
+      if (studentAnsObj && studentAnsObj.answer === q.correctOptions) {
+        earnedPoints += q.pointsValue || 1;
       }
     });
 
     const scorePercent = Number(((earnedPoints / totalPoints) * 100).toFixed(1));
-    const passed = scorePercent >= 70 ? 1 : 0; // Passing score: 70%
+    const passed = scorePercent >= 70;
 
-    // Record attempt
-    db.prepare(`
-      INSERT INTO quiz_attempts (user_id, lesson_id, score_percent, passed, created_at)
-      VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-    `).run(user.id, lessonId, scorePercent, passed);
+    const lesson = await prisma.lesson.findUnique({ where: { id: lessonId }, select: { module: { select: { courseId: true } } } });
+    if (!lesson) return res.status(404).json({ message: "Lekcja nie istnieje" });
+    await prisma.$transaction(async (tx) => {
+      await tx.quizAttempt.create({ data: { userId: String(user.id), lessonId, scorePercent, passed } });
+      if (passed) {
+        await tx.lessonProgress.upsert({ where: { userId_lessonId: { userId: String(user.id), lessonId } }, create: { userId: String(user.id), lessonId, percent: 100, completed: true }, update: { percent: 100, completed: true } });
+      }
+    });
 
     logActivity(user.id, "quiz_submitted", req, 200, null, { lessonId, scorePercent, passed });
 
     // Mark lesson as completed automatically if passed
-    if (passed) {
-      db.prepare(`
-        INSERT OR REPLACE INTO lesson_progress (user_id, lesson_id, percent, completed, updated_at)
-        VALUES (?, ?, 100, 1, CURRENT_TIMESTAMP)
-      `).run(user.id, lessonId);
-    }
-
-    // Check if user has passed all quizzes for this course to generate custom Certificate!
-    const cInfo = db.prepare(`
-      SELECT m.course_id 
-      FROM lessons l
-      JOIN modules m ON l.module_id = m.id
-      WHERE l.id = ?
-    `).get(lessonId) as any;
-
-    let certGeneratedCode = null;
-    if (passed && cInfo) {
-      certGeneratedCode = checkAndGenerateCertificate(user.id, cInfo.course_id, req);
-    }
-
     res.json({
       score_percent: scorePercent,
-      passed: passed === 1,
+      passed,
       correct_count: earnedPoints,
       total_count: totalPoints,
-      certificate_code: certGeneratedCode
+      certificate_code: null
     });
 
   } catch (err: any) {
@@ -1395,17 +1389,11 @@ function cryptoHash(input: string): string {
 }
 
 // Public Certificate validation
-app.get("/api/verify-certificate/:code", (req, res) => {
+app.get("/api/verify-certificate/:code", async (req, res) => {
   const code = req.params.code;
 
   try {
-    const cert = db.prepare(`
-      SELECT cert.*, u.username, c.title as course_title, cert.created_at as issued_at
-      FROM certificates cert
-      JOIN users u ON cert.user_id = u.id
-      JOIN courses c ON cert.course_id = c.id
-      WHERE cert.certificate_code = ?
-    `).get(code) as any;
+    const cert = await prisma.certificate.findUnique({ where: { certificateCode: code }, include: { user: { select: { username: true, name: true } }, course: { include: { translations: { where: { locale: "pl" }, take: 1, select: { title: true } } } } } });
 
     if (!cert) {
       return res.status(444).json({ valid: false, message: "Certyfikat o podanym numerze seryjnym nie widnieje w rejestrach HRL Academy" });
@@ -1413,10 +1401,10 @@ app.get("/api/verify-certificate/:code", (req, res) => {
 
     res.json({
       valid: true,
-      code: cert.certificate_code,
-      student: cert.username,
-      course: cert.course_title,
-      issued_at: cert.issued_at
+      code: cert.certificateCode,
+      student: cert.user.username ?? cert.user.name ?? "",
+      course: cert.course.translations[0]?.title ?? cert.course.slug,
+      issued_at: cert.issuedAt
     });
   } catch (err) {
     res.status(500).json({ message: "Błąd bazy danych" });
@@ -1428,80 +1416,66 @@ app.get("/api/student/dashboard", authenticateToken, async (req, res) => {
   const user = (req as any).user;
   
   try {
-    // 1. Get enrolled courses of the user
-    const enrolledCourses = db.prepare(`
-      SELECT c.*, 
-        (SELECT COUNT(*) FROM modules m WHERE m.course_id = c.id) as modules_count,
-        (SELECT COUNT(*) FROM lessons l JOIN modules m ON l.module_id = m.id WHERE m.course_id = c.id) as lessons_count,
-        (SELECT COUNT(*) FROM lesson_progress lp JOIN lessons l ON lp.lesson_id = l.id JOIN modules m ON l.module_id = m.id WHERE m.course_id = c.id AND lp.user_id = ? AND lp.completed = 1) as completed_lessons_count
-      FROM user_course_enrollments uce
-      JOIN courses c ON uce.course_id = c.id
-      WHERE uce.user_id = ?
-    `).all(user.id, user.id) as any[];
+    const userId = String(user.id);
+    const [enrollments, certificatesData, attempts, completedLessons, certificatesCount] = await Promise.all([
+      prisma.enrollment.findMany({
+        where: { userId, status: "ACTIVE" },
+        include: { course: { include: { translations: { where: { locale: "pl" }, take: 1 }, modules: { include: { lessons: { select: { id: true, progress: { where: { userId, completed: true }, select: { id: true } } } } } } } } },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.certificate.findMany({ where: { userId }, include: { course: { include: { translations: { where: { locale: "pl" }, take: 1 } } } }, orderBy: { issuedAt: "desc" } }),
+      prisma.quizAttempt.findMany({ where: { userId }, include: { lesson: { include: { module: { include: { course: { include: { translations: { where: { locale: "pl" }, take: 1 } } } } } } } }, orderBy: { createdAt: "desc" } }),
+      prisma.lessonProgress.count({ where: { userId, completed: true } }),
+      prisma.certificate.count({ where: { userId } }),
+    ]);
 
-    // 2. Get Certificates
-    const certificates = db.prepare(`
-      SELECT cert.*, c.title as course_title, c.thumbnail as course_thumbnail
-      FROM certificates cert
-      JOIN courses c ON cert.course_id = c.id
-      WHERE cert.user_id = ?
-    `).all(user.id) as any[];
+    const enrolledCourses = enrollments.map(({ course }) => {
+      const translation = course.translations[0];
+      const lessons = course.modules.flatMap((module) => module.lessons);
+      return {
+        id: course.id,
+        title: translation?.title ?? course.slug,
+        description: translation?.description ?? translation?.shortDescription ?? "",
+        thumbnail: course.imageUrl ?? "",
+        category: "Ogólny",
+        difficulty: course.level ?? "Dowolny",
+        instructor_name: "HRL Team",
+        lessons_count: lessons.length,
+        modules_count: course.modules.length,
+        completed_lessons_count: lessons.filter((lesson) => lesson.progress.length > 0).length,
+      };
+    });
 
-    // 3. Get Quiz Attempts
-    const quizAttempts = db.prepare(`
-      SELECT qa.*, l.title as lesson_title, c.title as course_title
-      FROM quiz_attempts qa
-      JOIN lessons l ON qa.lesson_id = l.id
-      JOIN modules m ON l.module_id = m.id
-      JOIN courses c ON m.course_id = c.id
-      WHERE qa.user_id = ?
-      ORDER BY qa.attempt_time DESC
-    `).all(user.id) as any[];
+    const certificates = certificatesData.map((certificate) => ({
+      id: certificate.id,
+      user_id: certificate.userId,
+      course_id: certificate.courseId,
+      certificate_code: certificate.certificateCode,
+      created_at: certificate.issuedAt,
+      course_title: certificate.course.translations[0]?.title ?? certificate.course.slug,
+      course_thumbnail: certificate.course.imageUrl ?? "",
+    }));
 
-    // 4. Get External Courses Progress (Firestore)
-    let externalCourses: any[] = [];
-    const fsDb = getFirestore();
-    if (fsDb) {
-      const externalCoursesSnapshot = await fsDb.collection('external_course_enrollments')
-        .where('user_id', '==', user.id)
-        .get();
-        
-      externalCourses = externalCoursesSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-    }
+    const quizAttempts = attempts.map((attempt) => ({
+      id: attempt.id,
+      lesson_id: attempt.lessonId,
+      score_ratio: (attempt.scorePercent ?? 0) / 100,
+      passed: attempt.passed ? 1 : 0,
+      attempt_time: attempt.createdAt,
+      lesson_title: attempt.lesson.title,
+      course_title: attempt.lesson.module.course.translations[0]?.title ?? attempt.lesson.module.course.slug,
+    }));
 
-    // 5. Calculate Stats
-    const totalEnrolled = enrolledCourses.length;
-    
-    const completedObj = db.prepare(`
-      SELECT COUNT(*) as count FROM lesson_progress WHERE user_id = ? AND completed = 1
-    `).get(user.id) as any;
-    const completedLessons = completedObj ? completedObj.count : 0;
+    const avgScore = quizAttempts.filter((attempt) => attempt.passed === 1).length > 0
+      ? Math.round(quizAttempts.filter((attempt) => attempt.passed === 1).reduce((sum, attempt) => sum + attempt.score_ratio * 100, 0) / quizAttempts.filter((attempt) => attempt.passed === 1).length)
+      : 0;
 
-    const quizCountObj = db.prepare(`
-      SELECT COUNT(*) as count FROM quiz_attempts WHERE user_id = ?
-    `).get(user.id) as any;
-    const quizCount = quizCountObj ? quizCountObj.count : 0;
-
-    const avgScoreObj = db.prepare(`
-      SELECT AVG(score_ratio) as avg_score FROM quiz_attempts WHERE user_id = ? AND passed = 1
-    `).get(user.id) as any;
-    const avgScore = avgScoreObj && avgScoreObj.avg_score ? Math.round(avgScoreObj.avg_score * 100) : 0;
-
-    const certCountObj = db.prepare(`
-      SELECT COUNT(*) as count FROM certificates WHERE user_id = ?
-    `).get(user.id) as any;
-    const certCount = certCountObj ? certCountObj.count : 0;
-
-    // 5. Build dynamic learning activity timeline
     const timeline: any[] = [];
     enrolledCourses.forEach(c => {
       timeline.push({
         type: "enrollment",
         title: `Zapisano się na kurs: ${c.title}`,
-        time: c.created_at || new Date().toISOString()
+        time: enrollments.find((enrollment) => enrollment.course.id === c.id)?.createdAt ?? new Date().toISOString()
       });
     });
     certificates.forEach(crt => {
@@ -1525,13 +1499,13 @@ app.get("/api/student/dashboard", authenticateToken, async (req, res) => {
       enrolledCourses,
       certificates,
       quizAttempts,
-      externalCourses,
+      externalCourses: [],
       stats: {
-        totalEnrolled,
+        totalEnrolled: enrolledCourses.length,
         completedLessons,
-        quizCount,
+        quizCount: quizAttempts.length,
         avgScore,
-        certCount
+        certCount: certificatesCount
       },
       timeline: timeline.slice(0, 8)
     });
@@ -1542,15 +1516,15 @@ app.get("/api/student/dashboard", authenticateToken, async (req, res) => {
 });
 
 // --- SYSTEM LIMITS ENDPOINTS ---
-app.get("/api/student/limits", authenticateToken, (req, res) => {
+app.get("/api/student/limits", authenticateToken, async (req, res) => {
   const user = (req as any).user;
   try {
-    const maxFreeEnrollments = getSystemLimit("max_free_enrollments", 5);
-    const maxDailyQuizAttempts = getSystemLimit("max_daily_quiz_attempts", 3);
-    const maxCoursesPerInstructor = getSystemLimit("max_courses_per_instructor", 10);
-
-    const activeEnrollmentsObj = db.prepare("SELECT COUNT(*) as count FROM user_course_enrollments WHERE user_id = ?").get(user.id) as { count: number };
-    const currentEnrollments = activeEnrollmentsObj ? activeEnrollmentsObj.count : 0;
+    const [maxFreeEnrollments, maxDailyQuizAttempts, maxCoursesPerInstructor, currentEnrollments] = await Promise.all([
+      getPrismaSystemLimit("max_free_enrollments", 5),
+      getPrismaSystemLimit("max_daily_quiz_attempts", 3),
+      getPrismaSystemLimit("max_courses_per_instructor", 10),
+      prisma.enrollment.count({ where: { userId: String(user.id), status: "ACTIVE" } }),
+    ]);
 
     res.json({
       user_id: user.id,
@@ -1653,7 +1627,7 @@ app.get("/api/admin/export-database", authenticateToken, requireAdmin, (req, res
   }
 });
 
-app.post("/api/admin/courses", authenticateToken, requireAdmin, (req, res) => {
+app.post("/api/admin/courses", authenticateToken, requireAdmin, async (req, res) => {
   const { 
     title, 
     description, 
@@ -1673,43 +1647,25 @@ app.post("/api/admin/courses", authenticateToken, requireAdmin, (req, res) => {
   }
 
   try {
-    const info = db.prepare(`
-      INSERT INTO courses (
-        title, description, thumbnail, category, difficulty, instructor_name, 
-        pricing_model, one_time_price, subscription_price, subscription_interval, tenant_domain
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      title, 
-      description, 
-      thumbnail, 
-      category || "Ogólny", 
-      difficulty || "Dowolny", 
-      instructor_name || "HRL Team",
-      pricing_model || "free",
-      Number(one_time_price) || 0.0,
-      Number(subscription_price) || 0.0,
-      subscription_interval || "month",
-      tenant_domain || "all_domains"
-    );
-
-    const newCourse = db.prepare("SELECT * FROM courses WHERE id = ?").get(info.lastInsertRowid) as any;
-
-    db.prepare(`
-      INSERT INTO hrl_activity_logs (user_id, event_type, request_method, request_path, status_code, ip_address)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).run(
-      (req as any).user.id,
-      "course_created",
-      "POST",
-      "/api/admin/courses",
-      201,
-      req.ip || "127.0.0.1"
-    );
+    const instructorUserId = String((req as any).user.id);
+    const slug = `${String(title).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-${Date.now()}`;
+    const newCourse = await prisma.course.create({
+      data: {
+        slug,
+        instructorUserId,
+        externalUrl: req.body.external_url || "https://example.invalid",
+        imageUrl: thumbnail,
+        level: difficulty || null,
+        status: req.body.status === "PUBLISHED" ? "PUBLISHED" : "DRAFT",
+        translations: { create: { locale: "pl", title, description } },
+        ...(tenant_domain && tenant_domain !== "all_domains" ? { domains: { create: { hostname: normalizeHostname(tenant_domain) ?? tenant_domain } } } : {}),
+      },
+      include: courseListInclude,
+    });
 
     courseCache.clear();
 
-    res.status(201).json({ message: "Kurs został pomyślnie utworzony!", course: newCourse });
+    res.status(201).json({ message: "Kurs został pomyślnie utworzony!", course: toLegacyCourse(newCourse) });
   } catch (err: any) {
     res.status(500).json({ message: "Błąd bazy danych przy tworzeniu kursu: " + err.message });
   }
@@ -1803,8 +1759,8 @@ app.post("/api/admin/import/courses", authenticateToken, requireAdmin, (req, res
   }
 });
 
-app.put("/api/admin/courses/:id", authenticateToken, requireAdmin, (req, res) => {
-  const courseId = Number(req.params.id);
+app.put("/api/admin/courses/:id", authenticateToken, requireAdmin, async (req, res) => {
+  const courseId = req.params.id;
   const { 
     title, 
     description, 
@@ -1824,32 +1780,21 @@ app.put("/api/admin/courses/:id", authenticateToken, requireAdmin, (req, res) =>
   }
 
   try {
-    db.prepare(`
-      UPDATE courses 
-      SET title = ?, description = ?, thumbnail = ?, category = ?, difficulty = ?, instructor_name = ?,
-          pricing_model = ?, one_time_price = ?, subscription_price = ?, subscription_interval = ?, tenant_domain = ?
-      WHERE id = ?
-    `).run(
-      title,
-      description,
-      thumbnail,
-      category || "Ogólny",
-      difficulty || "Dowolny",
-      instructor_name || "HRL Team",
-      pricing_model || "free",
-      Number(one_time_price) || 0.0,
-      Number(subscription_price) || 0.0,
-      subscription_interval || "month",
-      tenant_domain || "all_domains",
-      courseId
-    );
-
-    const updatedCourse = db.prepare("SELECT * FROM courses WHERE id = ?").get(courseId) as any;
+    const updatedCourse = await prisma.course.update({
+      where: { id: courseId },
+      data: {
+        imageUrl: thumbnail,
+        level: difficulty || null,
+        ...(req.body.external_url ? { externalUrl: req.body.external_url } : {}),
+        translations: { upsert: { where: { courseId_locale: { courseId, locale: "pl" } }, update: { title, description }, create: { locale: "pl", title, description } } },
+      },
+      include: courseListInclude,
+    });
     courseCache.clear();
 
     logActivity((req as any).user.id, "course_updated", req, 200, null, { courseId });
 
-    res.json({ message: "Kurs został pomyślnie zaktualizowany!", course: updatedCourse });
+    res.json({ message: "Kurs został pomyślnie zaktualizowany!", course: toLegacyCourse(updatedCourse) });
   } catch (err: any) {
     res.status(500).json({ message: "Błąd bazy danych przy aktualizacji kursu: " + err.message });
   }
@@ -1970,24 +1915,11 @@ app.get("/api/admin/courses/:id/modules", authenticateToken, requireAdmin, (req,
   }
 });
 
-app.delete("/api/admin/courses/:id", authenticateToken, requireAdmin, (req, res) => {
-  const courseId = Number(req.params.id);
+app.delete("/api/admin/courses/:id", authenticateToken, requireAdmin, async (req, res) => {
+  const courseId = req.params.id;
   
   try {
-    const modules = db.prepare("SELECT id FROM modules WHERE course_id = ?").all(courseId) as any[];
-    for (const m of modules) {
-      const lessons = db.prepare("SELECT id FROM lessons WHERE module_id = ?").all(m.id) as any[];
-      for (const l of lessons) {
-        db.prepare("DELETE FROM quiz_questions WHERE lesson_id = ?").run(l.id);
-        db.prepare("DELETE FROM quiz_attempts WHERE lesson_id = ?").run(l.id);
-        db.prepare("DELETE FROM lesson_progress WHERE lesson_id = ?").run(l.id);
-      }
-      db.prepare("DELETE FROM lessons WHERE module_id = ?").run(m.id);
-    }
-    db.prepare("DELETE FROM modules WHERE course_id = ?").run(courseId);
-    db.prepare("DELETE FROM user_course_enrollments WHERE course_id = ?").run(courseId);
-    db.prepare("DELETE FROM certificates WHERE course_id = ?").run(courseId);
-    db.prepare("DELETE FROM courses WHERE id = ?").run(courseId);
+    await prisma.course.delete({ where: { id: courseId } });
 
     courseCache.clear();
 
@@ -2144,35 +2076,40 @@ function normalizeHostname(value: unknown): string | null {
   }
 }
 
-app.get("/api/admin/courses/:id/domains", authenticateToken, requireAdmin, (req, res) => {
+app.get("/api/admin/courses/:id/domains", authenticateToken, requireAdmin, async (req, res) => {
   try {
-    res.json(db.prepare("SELECT * FROM course_domains WHERE course_id = ? ORDER BY id DESC").all(Number(req.params.id)));
+    res.json(await prisma.courseDomain.findMany({ where: { courseId: req.params.id }, orderBy: { createdAt: "desc" } }));
   } catch (err: any) {
     res.status(500).json({ message: err.message });
   }
 });
 
-app.post("/api/admin/courses/:id/domains", authenticateToken, requireAdmin, (req, res) => {
-  const courseId = Number(req.params.id);
+app.post("/api/admin/courses/:id/domains", authenticateToken, requireAdmin, async (req, res) => {
+  const courseId = req.params.id;
   const hostname = normalizeHostname(req.body?.hostname || req.body?.domain);
   if (!hostname) return res.status(400).json({ message: "Nieprawidłowa domena." });
 
   try {
-    const result = db.prepare("INSERT OR IGNORE INTO course_domains (course_id, hostname) VALUES (?, ?)").run(courseId, hostname);
-    if (result.changes === 0) return res.status(409).json({ message: "Ta domena jest już dodana." });
+    const course = await prisma.course.findUnique({ where: { id: courseId }, select: { id: true } });
+    if (!course) return res.status(404).json({ message: "Kurs nie istnieje." });
+    const result = await prisma.courseDomain.create({ data: { courseId, hostname } }).catch((error: any) => {
+      if (error.code === "P2002") return null;
+      throw error;
+    });
+    if (!result) return res.status(409).json({ message: "Ta domena jest już dodana." });
     logActivity(Number((req as any).user.id), "course_domain.added", req, 201, null, { courseId, hostname });
-    res.status(201).json(db.prepare("SELECT * FROM course_domains WHERE id = ?").get(result.lastInsertRowid));
+    res.status(201).json(result);
   } catch (err: any) {
     res.status(500).json({ message: err.message });
   }
 });
 
-app.delete("/api/admin/courses/:id/domains/:domainId", authenticateToken, requireAdmin, (req, res) => {
-  const courseId = Number(req.params.id);
-  const domainId = Number(req.params.domainId);
+app.delete("/api/admin/courses/:id/domains/:domainId", authenticateToken, requireAdmin, async (req, res) => {
+  const courseId = req.params.id;
+  const domainId = req.params.domainId;
   try {
-    const result = db.prepare("DELETE FROM course_domains WHERE id = ? AND course_id = ?").run(domainId, courseId);
-    if (result.changes === 0) return res.status(404).json({ message: "Domena nie istnieje." });
+    const result = await prisma.courseDomain.deleteMany({ where: { id: domainId, courseId } });
+    if (result.count === 0) return res.status(404).json({ message: "Domena nie istnieje." });
     logActivity(Number((req as any).user.id), "course_domain.removed", req, 200, null, { courseId, domainId });
     res.json({ success: true });
   } catch (err: any) {
@@ -2246,29 +2183,28 @@ app.delete("/api/admin/certificates/:id", authenticateToken, requireAdmin, (req,
   }
 });
 
-app.post("/api/access/launch", authenticateToken, (req, res) => {
+app.post("/api/access/launch", authenticateToken, async (req, res) => {
   const { courseId } = req.body;
   const user = (req as any).user;
 
-  // Assuming user_course_enrollments table exists from previous steps
-  const enrollment = db.prepare("SELECT * FROM user_course_enrollments WHERE user_id = ? AND course_id = ?").get(user.id, courseId) as any;
+  const enrollment = await prisma.enrollment.findUnique({ where: { userId_courseId: { userId: String(user.id), courseId: String(courseId) } } });
 
-  if (!enrollment) {
+  if (!enrollment || enrollment.status !== "ACTIVE") {
     return res.status(403).json({ message: "Brak dostępu do kursu" });
   }
 
   // Find course details
-  const course = db.prepare("SELECT external_url, integration_type FROM courses WHERE id = ?").get(courseId) as any;
+  const course = await prisma.course.findUnique({ where: { id: String(courseId) }, select: { externalUrl: true, integrationType: true, domains: { select: { hostname: true } } } });
   if (!course) {
     return res.status(404).json({ message: "Kurs nie istnieje" });
   }
 
-  const url = new URL(course.external_url);
+  const url = new URL(course.externalUrl);
   const domain = url.host;
 
-  if (course.integration_type === "IFRAME" || course.integration_type === "REDIRECT_COOKIE") {
+  if (course.integrationType === "IFRAME" || course.integrationType === "REDIRECT_COOKIE") {
     const requestHost = normalizeHostname(req.headers.origin) || normalizeHostname(req.headers.referer);
-    const allowed = db.prepare("SELECT hostname FROM course_domains WHERE course_id = ?").all(courseId) as Array<{ hostname: string }>;
+    const allowed = course.domains;
     if (allowed.length > 0 && (!requestHost || !allowed.some((entry) => entry.hostname === requestHost))) {
       return res.status(403).json({ message: "Domena żądania nie jest dozwolona dla tego kursu." });
     }
@@ -2290,10 +2226,14 @@ app.post("/api/access/launch", authenticateToken, (req, res) => {
   res.json({ launchUrl: url.toString() });
 });
 
-app.post("/api/access/verify", (req, res) => {
+app.post("/api/access/verify", async (req, res) => {
   const { token } = req.body;
   try {
-    const payload = jwt.verify(token, JWT_SECRET, { issuer: "hrl-academy-platform" });
+    const payload = jwt.verify(token, JWT_SECRET, { issuer: "hrl-academy-platform" }) as jwt.JwtPayload;
+    const enrollment = await prisma.enrollment.findUnique({ where: { id: String(payload.enrollmentId) }, select: { userId: true, courseId: true, status: true } });
+    if (!enrollment || enrollment.status !== "ACTIVE" || enrollment.userId !== String(payload.sub) || enrollment.courseId !== String(payload.courseId)) {
+      return res.status(401).json({ valid: false, message: "Enrollment is not active" });
+    }
     res.json({ valid: true, payload });
   } catch (err) {
     res.status(401).json({ valid: false, message: "Invalid token" });
@@ -2774,7 +2714,7 @@ app.post("/api/admin/import/:type", authenticateToken, requireAdmin, (req, res) 
 
 // Healthy check
 app.get("/api/health", (req, res) => {
-  res.json({ status: "healthy", database: "SQLite verified", clients: wsClients.size });
+  res.json({ status: "healthy", database: "PostgreSQL via Prisma", clients: wsClients.size });
 });
 
 // Configure full-stack dev express static or Vite middleware routing

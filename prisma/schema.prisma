@@ -9,6 +9,7 @@ datasource db {
 enum UserRole {
   ADMIN
   STUDENT
+  INSTRUCTOR
 }
 
 enum CourseStatus {
@@ -69,6 +70,7 @@ enum EnrollmentSource {
 model User {
   id              String    @id @default(cuid())
   email           String    @unique
+  username        String?   @unique
   name            String?
   passwordHash    String?
   role            UserRole  @default(STUDENT)
@@ -246,19 +248,23 @@ model OrderItem {
 }
 
 model Enrollment {
-  id              String           @id @default(cuid())
-  userId          String
-  courseId        String
-  orderId         String?
-  source          EnrollmentSource
-  status          EnrollmentStatus @default(PENDING)
-  accessStartsAt  DateTime         @default(now())
-  accessEndsAt    DateTime?
-  lastLaunchedAt  DateTime?
-  revokedAt       DateTime?
-  grantedByUserId String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  id               String           @id @default(cuid())
+  userId           String
+  courseId         String
+  orderId          String?
+  source           EnrollmentSource
+  status           EnrollmentStatus @default(PENDING)
+  accessStartsAt   DateTime         @default(now())
+  accessEndsAt     DateTime?
+  lastLaunchedAt   DateTime?
+  progressPercent  Int              @default(0)
+  startedAt        DateTime?
+  completedAt      DateTime?
+  completionSource String?
+  revokedAt        DateTime?
+  grantedByUserId  String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
@@ -308,6 +314,8 @@ model Certificate {
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
 }
 
 model GraduateRegistryEntry {
@@ -479,4 +487,10 @@ model AnalyticsEvent {
   course Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
 
   @@index([eventName, createdAt])
+}
+
+model TenantSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
 }
