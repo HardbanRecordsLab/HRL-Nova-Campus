@@ -18,7 +18,7 @@ const CourseSchema = z.object({
 });
 
 const LessonSchema = z.object({
-  module_id: z.number(),
+  module_id: z.string().min(1),
   title: z.string().min(1),
   description: z.string().optional(),
   content: z.string().optional(),
@@ -33,6 +33,17 @@ const UserSchema = z.object({
   role: z.enum(["student", "instructor", "admin"]).optional()
 });
 
+const QuizSchema = z.object({
+  lesson_id: z.string().min(1),
+  question_text: z.string().min(1),
+  option_a: z.string().optional(),
+  option_b: z.string().optional(),
+  option_c: z.string().optional(),
+  option_d: z.string().optional(),
+  correct_options: z.string().optional(),
+  points_value: z.number().optional()
+});
+
 interface ImportReport {
   success: boolean;
   imported: number;
@@ -42,18 +53,19 @@ interface ImportReport {
 }
 
 export const AdminJSONImporter: React.FC<{ token: string | null; addToast: (msg: string, type: "success" | "warning" | "error" | "info") => void }> = ({ token, addToast }) => {
-  const [importType, setImportType] = useState<"lessons" | "users" | "courses">("courses");
+  const [importType, setImportType] = useState<"lessons" | "users" | "courses" | "quiz">("courses");
   const [rawJson, setRawJson] = useState("");
   const [parsedPreview, setParsedPreview] = useState<any[] | null>(null);
   const [importReport, setImportReport] = useState<ImportReport | null>(null);
   const [isImporting, setIsImporting] = useState(false);
-  
+
   const validateData = (data: any[]) => {
     let schema;
     if (importType === "courses") schema = z.array(CourseSchema);
     else if (importType === "lessons") schema = z.array(LessonSchema);
     else if (importType === "users") schema = z.array(UserSchema);
-    
+    else if (importType === "quiz") schema = z.array(QuizSchema);
+
     if (schema) {
       return schema.safeParse(data);
     }
@@ -182,6 +194,7 @@ export const AdminJSONImporter: React.FC<{ token: string | null; addToast: (msg:
               <option value="courses">Kursy (courses)</option>
               <option value="lessons">Lekcje (lessons)</option>
               <option value="users">Użytkownicy (users)</option>
+              <option value="quiz">Pytania quizowe (quiz)</option>
             </select>
           </div>
 
@@ -218,7 +231,7 @@ export const AdminJSONImporter: React.FC<{ token: string | null; addToast: (msg:
   }
 ]`}
               </pre>
-            ) : (
+            ) : importType === "users" ? (
               <pre className="text-emerald-400 font-mono leading-relaxed p-1 block overflow-x-auto text-[10px]">
 {`[
   {
@@ -226,6 +239,21 @@ export const AdminJSONImporter: React.FC<{ token: string | null; addToast: (msg:
     "email": "student2@gmail.com",
     "password": "studentPassword",
     "role": "student"
+  }
+]`}
+              </pre>
+            ) : (
+              <pre className="text-emerald-400 font-mono leading-relaxed p-1 block overflow-x-auto text-[10px]">
+{`[
+  {
+    "lesson_id": "clxyz123...",
+    "question_text": "Pytanie egzaminacyjne?",
+    "option_a": "Odpowiedź A",
+    "option_b": "Odpowiedź B",
+    "option_c": "Odpowiedź C",
+    "option_d": "Odpowiedź D",
+    "correct_options": "A",
+    "points_value": 1
   }
 ]`}
               </pre>
