@@ -29,7 +29,7 @@ function getStripe(): Stripe {
 
 const app = express();
 app.set("trust proxy", 1);
-const PORT = 3000;
+const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "hrl_secret_jwt_key_991823";
 
 // Routes not yet migrated to Prisma fail explicitly instead of falling back to a local database.

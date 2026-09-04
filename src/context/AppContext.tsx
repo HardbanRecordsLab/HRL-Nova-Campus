@@ -66,12 +66,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // WebSocket Connection
   useEffect(() => {
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const host = window.location.host;
+    // VITE_WS_URL points at the VPS backend when frontend/backend are split (e.g. Vercel + VPS).
+    // Falls back to same-origin for the monolith (backend serving its own built frontend).
+    const wsUrl =
+      import.meta.env.VITE_WS_URL ||
+      `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
     let socket: WebSocket;
 
     const connectWS = () => {
-      socket = new WebSocket(`${protocol}//${host}`);
+      socket = new WebSocket(wsUrl);
 
       socket.onopen = () => {
         setIsSocketConnected(true);

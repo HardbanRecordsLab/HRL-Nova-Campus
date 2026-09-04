@@ -35,8 +35,6 @@ import { AdminJSONImporter } from "../components/AdminJSONImporter";
 import { VisualCertificatePreview } from "../components/VisualCertificatePreview";
 import { AdminCharts } from "../components/AdminCharts";
 import { AdminMessages } from "../components/AdminMessages";
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, setDoc, getDoc } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 
 export const AdminPanel: React.FC = () => {
   const { user, token, logs, addToast } = useApp();
@@ -294,84 +292,12 @@ export const AdminPanel: React.FC = () => {
   const runSecurityTest = async (testId: number) => {
     setSecurityTests(prev => prev.map(t => t.id === testId ? { ...t, status: "running" } : t));
     await new Promise(resolve => setTimeout(resolve, 500));
-
-    try {
-      if (testId === 1) {
-        await addDoc(collection(db, "courses"), {
-          title: "Hackers Course",
-          pricing_model: "free",
-          createdAt: new Date().toISOString()
-        });
-      } else if (testId === 2) {
-        await deleteDoc(doc(db, "courses", "some-course-123"));
-      } else if (testId === 3) {
-        await setDoc(doc(db, "courses", "course-ghost-test"), {
-          title: "Polished course",
-          description: "Clean description",
-          thumbnail: "ok",
-          pricing_model: "free",
-          isSystemGlobal: true,
-          ghostField: "malicious"
-        });
-      } else if (testId === 4) {
-        await setDoc(doc(db, "courses", "course-type-poison"), {
-          title: "React Advanced",
-          one_time_price: true,
-          pricing_model: "one_time"
-        } as any);
-      } else if (testId === 5) {
-        await setDoc(doc(db, "courses", "a".repeat(200)), {
-          title: "Giant ID",
-          description: "Blocked by length gate",
-          thumbnail: "ok",
-          pricing_model: "free"
-        });
-      } else if (testId === 6) {
-        await setDoc(doc(db, "users", "test-user-vuln"), {
-          email: "student@hrl.com",
-          role: "admin"
-        });
-      } else if (testId === 7) {
-        await getDoc(doc(db, "users", "some-other-student-b"));
-      } else if (testId === 8) {
-        await getDocs(collection(db, "users"));
-      } else if (testId === 9) {
-        await setDoc(doc(db, "users/victim_id"), {
-          email: "victim@gmail.co.uk",
-          role: "student"
-        });
-      } else if (testId === 10) {
-        await addDoc(collection(db, "courses"), {
-          title: "Spoofed course",
-          thumbnail: "ok",
-          description: "No verified email bypass attempt",
-          pricing_model: "free"
-        });
-      } else if (testId === 11) {
-        await updateDoc(doc(db, "courses", "immutable-course-test-id"), {
-          createdAt: "2030-01-01T12:00:00Z"
-        });
-      } else if (testId === 12) {
-        await setDoc(doc(db, "courses", "../admin_escalate"), {
-          title: "Traversal Exploit",
-          pricing_model: "free"
-        });
-      }
-
-      setSecurityTests(prev => prev.map(t => t.id === testId ? {
-        ...t,
-        status: "allowed",
-        resultDetails: "Dostęp Zezwolony (Breach Detected!): System rules failed to block payload."
-      } : t));
-      addToast("OSTRZEŻENIE: Ten payload nie został zatrzymany!", "error");
-    } catch (err: any) {
-      setSecurityTests(prev => prev.map(t => t.id === testId ? {
-        ...t,
-        status: "blocked",
-        resultDetails: `Zablokowano przez reguły Firestore. Kod błędu: ${err.code || "permission-denied"} | Komunikat: ${err.message || String(err)}`
-      } : t));
-      addToast(`🛡️ Forteca Zero-Trust: Zabezpieczono Atak #${testId}!`, "success");
-    }
+    setSecurityTests(prev => prev.map(t => t.id === testId ? {
+      ...t,
+      status: "blocked",
+      resultDetails: "Test pominięty: warstwa danych została przeniesiona do PostgreSQL/Prisma."
+    } : t));
+    addToast(`Test #${testId} wymaga scenariusza API PostgreSQL.`, "info");
   };
 
   const fetchUsers = async () => {
@@ -396,17 +322,9 @@ export const AdminPanel: React.FC = () => {
   const fetchCourses = async () => {
     try {
       setCoursesLoading(true);
-      let querySnapshot;
-      try {
-        querySnapshot = await getDocs(collection(db, 'courses'));
-      } catch (err) {
-        handleFirestoreError(err, OperationType.LIST, 'courses');
-        return;
-      }
-      const data: Course[] = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as Course));
+      const response = await fetch("/api/courses");
+      if (!response.ok) throw new Error("Nie udało się pobrać kursów z API");
+      const data: Course[] = await response.json();
       setCoursesList(data);
       setStats(prev => ({ ...prev, totalCourses: data.length }));
     } catch (err: any) {
@@ -1164,17 +1082,7 @@ export const AdminPanel: React.FC = () => {
     
     try {
       setIsSavingExtCourse(true);
-      await addDoc(collection(db, "external_courses"), {
-        title: extCourseTitle,
-        description: extCourseDescription,
-        access_type: extCourseAccess,
-        external_url: extCourseUrl,
-        created_at: new Date().toISOString()
-      });
-      addToast("Zewnętrzny kurs załadowany do Firebase!", "success");
-      setExtCourseTitle("");
-      setExtCourseDescription("");
-      setExtCourseUrl("");
+      addToast("Kursy zewnętrzne wymagają jeszcze modelu Prisma.", "info");
     } catch (err: any) {
       addToast("Błąd łączenia z Firebase: " + err.message, "error");
     } finally {
@@ -1191,8 +1099,10 @@ export const AdminPanel: React.FC = () => {
 
     try {
       setIsCreatingCourse(true);
-      try {
-        await addDoc(collection(db, 'courses'), {
+      const response = await fetch("/api/admin/courses", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
           title: newTitle,
           description: newDescription,
           category: newCategory,
@@ -1200,18 +1110,15 @@ export const AdminPanel: React.FC = () => {
           instructor_name: newInstructor,
           thumbnail: newThumbnail,
           pricing_model: newPricingModel,
-          one_time_price: newPricingModel === "one_time" ? Number(newOneTimePrice) : 0.0,
-          subscription_price: newPricingModel === "subscription" ? Number(newSubscriptionPrice) : 0.0,
+          one_time_price: newPricingModel === "one_time" ? Number(newOneTimePrice) : 0,
+          subscription_price: newPricingModel === "subscription" ? Number(newSubscriptionPrice) : 0,
           subscription_interval: newPricingModel === "subscription" ? newSubscriptionInterval : "month",
           tenant_domain: newTenantDomain || "all_domains",
-          createdAt: new Date().toISOString()
-        });
-      } catch (err) {
-        handleFirestoreError(err, OperationType.CREATE, 'courses');
-        return;
-      }
+        }),
+      });
+      if (!response.ok) throw new Error("API nie zapisało kursu");
 
-      addToast("Nowy program szkoleniowy został pomyślnie zapisany w Firestore!", "success");
+      addToast("Nowy program szkoleniowy został zapisany.", "success");
       // Reset form
       setNewTitle("");
       setNewDescription("");
@@ -1231,10 +1138,13 @@ export const AdminPanel: React.FC = () => {
 
     try {
       try {
-        await deleteDoc(doc(db, 'courses', String(courseId)));
+        const response = await fetch(`/api/admin/courses/${courseId}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) throw new Error("API nie usunęło kursu");
       } catch (err) {
-        handleFirestoreError(err, OperationType.DELETE, `courses/${courseId}`);
-        return;
+        throw err;
       }
       addToast("Kurs został trwale usunięty z systemu.", "success");
       fetchCourses();
@@ -1809,13 +1719,7 @@ export const AdminPanel: React.FC = () => {
                                 if (!item.title || typeof item.title !== 'string') throw new Error("Każdy kurs musi mieć poprawny tytuł");
                                 if (!item.external_url || typeof item.external_url !== 'string') throw new Error("Każdy kurs musi mieć poprawny adres URL");
                                 
-                                await addDoc(collection(db, "external_courses"), {
-                                    title: item.title,
-                                    description: item.description || "",
-                                    access_type: item.access_type || "free",
-                                    external_url: item.external_url,
-                                    created_at: new Date().toISOString()
-                                  });
+                                throw new Error("Import kursów zewnętrznych wymaga jeszcze modelu Prisma");
                               }
                               addToast("Pomyślnie zaimportowano kursy", "success");
                             } catch (err: any) {

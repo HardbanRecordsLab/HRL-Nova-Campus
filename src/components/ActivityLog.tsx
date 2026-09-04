@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, where, onSnapshot, orderBy, limit } from 'firebase/firestore';
-import { db } from '../lib/firebase'; // Assuming a firebase config file exists
 import { Clock } from 'lucide-react';
 
 interface ActivityLogItem {
@@ -10,27 +8,24 @@ interface ActivityLogItem {
   created_at: any;
 }
 
-export const ActivityLog: React.FC<{ userId: string }> = ({ userId }) => {
+export const ActivityLog: React.FC<{ userId: string; token?: string }> = ({ userId, token }) => {
   const [logs, setLogs] = useState<ActivityLogItem[]>([]);
 
   useEffect(() => {
-    const logsQuery = query(
-      collection(db, 'activity_logs'),
-      where('user_id', '==', userId),
-      orderBy('created_at', 'desc'),
-      limit(10)
-    );
-
-    const unsubscribe = onSnapshot(logsQuery, (snapshot) => {
-      const activityData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as ActivityLogItem[];
-      setLogs(activityData);
-    });
-
-    return () => unsubscribe();
-  }, [userId]);
+    if (!token) return;
+    let cancelled = false;
+    void fetch(`/api/activity-log?userId=${encodeURIComponent(userId)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((response) => response.ok ? response.json() : [])
+      .then((activityData: ActivityLogItem[]) => {
+        if (!cancelled) setLogs(activityData);
+      })
+      .catch(() => {
+        if (!cancelled) setLogs([]);
+      });
+    return () => { cancelled = true; };
+  }, [userId, token]);
 
   return (
     <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 space-y-5">
