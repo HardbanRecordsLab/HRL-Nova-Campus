@@ -69,7 +69,6 @@ const registerSchema = z.object({
   username: z.string().min(3, "Nazwa użytkownika musi mieć minimum 3 znaki"),
   email: z.string().email("Nieprawidłowy adres e-mail"),
   password: z.string().min(6, "Hasło musi posiadać co najmniej 6 znaków"),
-  role: z.enum(["student", "instructor", "admin"]).optional(),
 });
 
 const loginSchema = z.object({
@@ -274,20 +273,21 @@ app.post("/api/auth/register", authLimiter, async (req, res) => {
     return res.status(400).json({ message: errorMsg });
   }
 
-  const { username, email, password, role } = parseResult.data;
+  const { username, email, password } = parseResult.data;
 
   try {
-    const defaultRole = role === "admin" ? "ADMIN" : role === "instructor" ? "INSTRUCTOR" : "STUDENT";
+    // Public registration only ever creates STUDENT accounts. Instructor/admin roles can only be
+    // granted by an existing admin (POST /api/admin/users/:id/role), never self-assigned at signup.
     const user = await prisma.user.create({
       data: {
         username,
         email,
         passwordHash: await bcrypt.hash(password, 10),
-        role: defaultRole,
+        role: "STUDENT",
       },
     });
 
-    logActivity(user.id, "user_register", req, 201, null, { username, email, role: defaultRole });
+    logActivity(user.id, "user_register", req, 201, null, { username, email, role: "STUDENT" });
 
     res.status(201).json({
       message: "Użytkownik zarejestrowany pomyślnie.",
@@ -2319,7 +2319,29 @@ app.get("/api/health", (req, res) => {
 });
 
 // Configure full-stack dev express static or Vite middleware routing
+// One-time bootstrap: creates the first admin account from ADMIN_INITIAL_PASSWORD if no admin
+// exists yet. No-op once any admin account is present, so it's safe to leave running on every boot.
+async function bootstrapInitialAdmin() {
+  const password = process.env.ADMIN_INITIAL_PASSWORD;
+  if (!password) return;
+
+  try {
+    const existingAdmin = await prisma.user.findFirst({ where: { role: "ADMIN" } });
+    if (existingAdmin) return;
+
+    const email = process.env.ADMIN_INITIAL_EMAIL || "hardbanrecordslab.pl@gmail.com";
+    await prisma.user.create({
+      data: { email, username: "admin", passwordHash: await bcrypt.hash(password, 10), role: "ADMIN" },
+    });
+    console.log(`Bootstrapped initial admin account: ${email}`);
+  } catch (err) {
+    console.error("Failed to bootstrap initial admin:", err);
+  }
+}
+
 async function startServer() {
+  await bootstrapInitialAdmin();
+
   const server = http.createServer(app);
 
   // Set up WebSocket server
