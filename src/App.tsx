@@ -7,11 +7,12 @@ import { ToastContainer } from "./components/ToastContainer";
 import { Loader2 } from "lucide-react";
 
 // Eagerly loaded core routes
-import { Home } from "./pages/Home";
+import { Landing } from "./pages/Landing";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
 
 // Lazy loaded feature routes for optimal initial bundle performance
+const Home = lazy(() => import("./pages/Home").then((m) => ({ default: m.Home })));
 const CourseDetail = lazy(() => import("./pages/CourseDetail").then((m) => ({ default: m.CourseDetail })));
 const AdminPanel = lazy(() => import("./pages/AdminPanel").then((m) => ({ default: m.AdminPanel })));
 const CertificateVerify = lazy(() => import("./pages/CertificateVerify").then((m) => ({ default: m.CertificateVerify })));
@@ -57,7 +58,8 @@ function AppLayout() {
       <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 mb-12">
         <Suspense fallback={<PageLoader />}>
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Landing />} />
+            <Route path="/home" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/course/:id" element={<CourseDetail />} />
