@@ -6,9 +6,11 @@ import { Award, ShieldCheck, Search, HelpCircle, Calendar, Disc, Share2, Clipboa
 interface VerifiedCert {
   valid: boolean;
   code: string;
-  student: string;
+  student: string | null;
   course: string;
   issued_at: string;
+  qr_payload_url: string | null;
+  is_public: boolean;
 }
 
 export const CertificateVerify: React.FC = () => {
@@ -139,8 +141,13 @@ export const CertificateVerify: React.FC = () => {
             <div className="space-y-4 text-center py-4 relative">
               <p className="text-zinc-400 text-sm italic font-serif">Niniejszym potwierdza się, że student</p>
               <h3 className="text-3xl md:text-4xl font-display font-semibold text-white tracking-widest uppercase">
-                {certificate.student}
+                {certificate.student ?? "Zweryfikowany Absolwent"}
               </h3>
+              {!certificate.student && (
+                <p className="text-[10px] text-zinc-500 font-mono">
+                  Absolwent nie wyraził zgody na publikację danych osobowych w rejestrze.
+                </p>
+              )}
               <p className="text-zinc-400 text-sm italic font-serif leading-relaxed">
                 pomyślnie zaliczył wszystkie moduły, lekcje techniczne oraz wymagane testy wiedzy i uzyskał dyplom ukończenia kursu programowego klasy Enterprise
               </p>
@@ -163,6 +170,15 @@ export const CertificateVerify: React.FC = () => {
                   {new Date(certificate.issued_at).toLocaleDateString("pl-PL", { year: "numeric", month: "long", day: "numeric" })}
                 </span>
               </div>
+
+              {certificate.qr_payload_url && (
+                <img
+                  id="cert-qr-code"
+                  src={certificate.qr_payload_url}
+                  alt="Kod QR weryfikacji certyfikatu"
+                  className="w-20 h-20 rounded-lg border border-amber-500/30 bg-white p-1 flex-shrink-0"
+                />
+              )}
 
               <div className="flex gap-2 flex-shrink-0">
                 <button

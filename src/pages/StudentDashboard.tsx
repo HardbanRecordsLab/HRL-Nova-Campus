@@ -48,6 +48,8 @@ interface Certificate {
   created_at: string;
   course_title: string;
   course_thumbnail: string;
+  qr_payload_url: string | null;
+  is_public: boolean;
 }
 
 interface QuizAttempt {
@@ -1078,11 +1080,18 @@ export const StudentDashboard: React.FC = () => {
                   <span className="text-[10px] font-mono font-bold text-amber-500 uppercase tracking-widest mb-1">
                     B2B Verification
                   </span>
+                  {selectedCertificate.qr_payload_url && (
+                    <img
+                      src={selectedCertificate.qr_payload_url}
+                      alt="Kod QR weryfikacji certyfikatu"
+                      className="w-16 h-16 bg-white rounded p-0.5 mb-1"
+                    />
+                  )}
                   <span className="text-[9px] font-mono text-zinc-400 block break-all leading-relaxed uppercase">
                     ID: <strong className="text-white block print:text-black font-bold tracking-widest">{selectedCertificate.certificate_code}</strong>
                   </span>
                   <span className="text-[8px] font-mono text-zinc-500 uppercase tracking-widest select-all">
-                    /certificate-verify
+                    /verify/{selectedCertificate.certificate_code}
                   </span>
                 </div>
 

@@ -4,6 +4,7 @@ import { useApp } from "../context/AppContext";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { StudentEnterpriseTools } from "../components/StudentEnterpriseTools";
+import { RodoConsentModal } from "../components/RodoConsentModal";
 import {
   BookOpen,
   Lock,
@@ -133,6 +134,7 @@ export const CourseDetail: React.FC = () => {
     correct_count: number;
     total_count: number;
   } | null>(null);
+  const [pendingConsentCertificate, setPendingConsentCertificate] = useState<string | null>(null);
 
   const fetchCourseDetails = async () => {
     try {
@@ -397,6 +399,9 @@ export const CourseDetail: React.FC = () => {
 
         if (resultData.passed) {
           addToast(`Gratulacje! Zdałeś test z wynikiem ${resultData.score_percent}%`, "success");
+          if (resultData.certificate?.needsConsent) {
+            setPendingConsentCertificate(resultData.certificate.code);
+          }
           fetchCourseDetails();
         } else {
           addToast(`Niestety nie zaliczyłeś testu. Wynik: ${resultData.score_percent}% (wymagane 70%)`, "error");
@@ -1588,6 +1593,13 @@ export const CourseDetail: React.FC = () => {
           )
         )}
       </main>
+
+      {pendingConsentCertificate && (
+        <RodoConsentModal
+          certificateCode={pendingConsentCertificate}
+          onClose={() => setPendingConsentCertificate(null)}
+        />
+      )}
     </div>
   );
 };

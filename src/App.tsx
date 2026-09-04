@@ -15,6 +15,7 @@ import { Register } from "./pages/Register";
 const CourseDetail = lazy(() => import("./pages/CourseDetail").then((m) => ({ default: m.CourseDetail })));
 const AdminPanel = lazy(() => import("./pages/AdminPanel").then((m) => ({ default: m.AdminPanel })));
 const CertificateVerify = lazy(() => import("./pages/CertificateVerify").then((m) => ({ default: m.CertificateVerify })));
+const Graduates = lazy(() => import("./pages/Graduates").then((m) => ({ default: m.Graduates })));
 const StudentDashboard = lazy(() => import("./pages/StudentDashboard").then((m) => ({ default: m.StudentDashboard })));
 
 function PageLoader() {
@@ -63,6 +64,7 @@ function AppLayout() {
             <Route path="/courses/:id" element={<CourseDetail />} />
             <Route path="/certificate-verify" element={<CertificateVerify />} />
             <Route path="/verify/:code" element={<CertificateVerify />} />
+            <Route path="/graduates" element={<Graduates />} />
 
             {/* Student Dashboard panel */}
             <Route element={<ProtectedRoute allowedRoles={["student", "admin"]} />}>

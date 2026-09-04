@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import Stripe from "stripe";
+import QRCode from "qrcode";
 import { createServer as createViteServer } from "vite";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
@@ -1363,13 +1364,23 @@ app.post("/api/quiz/:lessonId/submit", authenticateToken, async (req, res) => {
 
     logActivity(user.id, "quiz_submitted", req, 200, null, { lessonId, scorePercent, passed });
 
-    // Mark lesson as completed automatically if passed
+    // Mark lesson as completed automatically if passed; issue a certificate once every
+    // quiz-bearing lesson in the course has been passed (checkAndGenerateCertificate is idempotent).
+    let certificate: { code: string; needsConsent: boolean } | null = null;
+    if (passed) {
+      const cert = await checkAndGenerateCertificate(String(user.id), lesson.module.courseId);
+      if (cert) {
+        certificate = { code: cert.certificateCode, needsConsent: !cert.rodoConsentAt };
+      }
+    }
+
     res.json({
       score_percent: scorePercent,
       passed,
       correct_count: earnedPoints,
       total_count: totalPoints,
-      certificate_code: null
+      certificate_code: certificate?.code ?? null,
+      certificate
     });
 
   } catch (err: any) {
@@ -1388,6 +1399,52 @@ function cryptoHash(input: string): string {
   return Math.abs(hash).toString(36).substring(0, 6).toUpperCase();
 }
 
+function generateCertificateCode(userId: string, courseId: string): string {
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const hash = cryptoHash(`${userId}-${courseId}-${timestamp}`);
+  const randomSuffix = Math.random().toString(16).substring(2, 6).toUpperCase();
+  return `HRL-ACAD-${hash}-${timestamp}-${randomSuffix}`;
+}
+
+function buildVerifyUrl(certificateCode: string): string {
+  const appUrl = (process.env.APP_URL || "http://localhost:3000").replace(/\/$/, "");
+  return `${appUrl}/verify/${certificateCode}`;
+}
+
+// Issues a certificate once a student has passed every quiz-bearing lesson in a course.
+// Idempotent: safe to call after every quiz submission, returns the existing certificate if already issued.
+async function checkAndGenerateCertificate(userId: string, courseId: string) {
+  const quizLessons = await prisma.lesson.findMany({
+    where: { module: { courseId }, quizQuestions: { some: {} } },
+    select: { id: true },
+  });
+  if (quizLessons.length === 0) return null;
+
+  const passedCount = await prisma.lessonProgress.count({
+    where: { userId, completed: true, lessonId: { in: quizLessons.map((l) => l.id) } },
+  });
+  if (passedCount < quizLessons.length) return null;
+
+  const existing = await prisma.certificate.findUnique({ where: { userId_courseId: { userId, courseId } } });
+  if (existing) return existing;
+
+  const certificateCode = generateCertificateCode(userId, courseId);
+  const qrPayloadUrl = await QRCode.toDataURL(buildVerifyUrl(certificateCode), { margin: 1, width: 320 });
+
+  try {
+    const certificate = await prisma.certificate.create({ data: { userId, courseId, certificateCode, qrPayloadUrl } });
+    await prisma.enrollment.updateMany({ where: { userId, courseId, completedAt: null }, data: { completedAt: new Date(), completionSource: "quiz" } });
+    logActivity(userId, "certificate.issued", null, 200, null, { courseId, certificateCode });
+    return certificate;
+  } catch (err: any) {
+    // Unique constraint race (two quiz submissions completing the course concurrently) — return the winner's row.
+    if (err?.code === "P2002") {
+      return prisma.certificate.findUnique({ where: { userId_courseId: { userId, courseId } } });
+    }
+    throw err;
+  }
+}
+
 // Public Certificate validation
 app.get("/api/verify-certificate/:code", async (req, res) => {
   const code = req.params.code;
@@ -1402,12 +1459,90 @@ app.get("/api/verify-certificate/:code", async (req, res) => {
     res.json({
       valid: true,
       code: cert.certificateCode,
-      student: cert.user.username ?? cert.user.name ?? "",
+      // RODO: student identity is only disclosed once they've consented to the public registry.
+      student: cert.isPublic ? (cert.user.username ?? cert.user.name ?? "") : null,
       course: cert.course.translations[0]?.title ?? cert.course.slug,
-      issued_at: cert.issuedAt
+      issued_at: cert.issuedAt,
+      qr_payload_url: cert.qrPayloadUrl,
+      is_public: cert.isPublic
     });
   } catch (err) {
     res.status(500).json({ message: "Błąd bazy danych" });
+  }
+});
+
+// RODO consent for the public graduates registry — checkbox defaults unchecked on the frontend,
+// isPublic can only ever become true together with rodoConsentAt (never independently).
+const certificateConsentSchema = z.object({ consent: z.boolean() });
+
+app.post("/api/certificates/:code/consent", authenticateToken, async (req, res) => {
+  const user = (req as any).user;
+  const code = req.params.code;
+  const parsed = certificateConsentSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ message: "Nieprawidłowe dane zgody" });
+  }
+
+  try {
+    const cert = await prisma.certificate.findUnique({
+      where: { certificateCode: code },
+      include: { user: { select: { username: true, name: true } }, course: { include: { translations: { where: { locale: "pl" }, take: 1, select: { title: true } } } } }
+    });
+    if (!cert || cert.userId !== String(user.id)) {
+      return res.status(444).json({ message: "Certyfikat nie istnieje lub nie należy do Ciebie." });
+    }
+
+    if (parsed.data.consent) {
+      const updated = await prisma.certificate.update({
+        where: { certificateCode: code },
+        data: { isPublic: true, rodoConsentAt: new Date() }
+      });
+      await prisma.graduateRegistryEntry.upsert({
+        where: { certificateCode: code },
+        create: {
+          certificateCode: code,
+          studentDisplayName: cert.user.username ?? cert.user.name ?? "Absolwent",
+          courseTitle: cert.course.translations[0]?.title ?? cert.course.slug,
+          issuedAt: cert.issuedAt
+        },
+        update: {}
+      });
+      logActivity(user.id, "certificate.rodo_consent_granted", req, 200, null, { certificateCode: code });
+      return res.json({ success: true, is_public: updated.isPublic });
+    }
+
+    await prisma.certificate.update({ where: { certificateCode: code }, data: { isPublic: false } });
+    await prisma.graduateRegistryEntry.deleteMany({ where: { certificateCode: code } });
+    logActivity(user.id, "certificate.rodo_consent_declined", req, 200, null, { certificateCode: code });
+    res.json({ success: true, is_public: false });
+  } catch (err: any) {
+    res.status(500).json({ message: "Błąd zapisu zgody: " + err.message });
+  }
+});
+
+// Public, searchable registry — only ever contains entries for certificates with isPublic=true.
+app.get("/api/graduates", async (req, res) => {
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
+  const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+
+  const where = q
+    ? {
+        OR: [
+          { studentDisplayName: { contains: q, mode: "insensitive" as const } },
+          { courseTitle: { contains: q, mode: "insensitive" as const } }
+        ]
+      }
+    : {};
+
+  try {
+    const [items, total] = await Promise.all([
+      prisma.graduateRegistryEntry.findMany({ where, orderBy: { issuedAt: "desc" }, skip: (page - 1) * limit, take: limit }),
+      prisma.graduateRegistryEntry.count({ where })
+    ]);
+    res.json({ items, total, page, limit });
+  } catch (err: any) {
+    res.status(500).json({ message: "Błąd pobierania rejestru absolwentów: " + err.message });
   }
 });
 
@@ -1454,6 +1589,8 @@ app.get("/api/student/dashboard", authenticateToken, async (req, res) => {
       created_at: certificate.issuedAt,
       course_title: certificate.course.translations[0]?.title ?? certificate.course.slug,
       course_thumbnail: certificate.course.imageUrl ?? "",
+      qr_payload_url: certificate.qrPayloadUrl,
+      is_public: certificate.isPublic,
     }));
 
     const quizAttempts = attempts.map((attempt) => ({
@@ -2118,22 +2255,32 @@ app.delete("/api/admin/courses/:id/domains/:domainId", authenticateToken, requir
 });
 
 // Admin manual certificate management & generation tools
-app.get("/api/admin/certificates", authenticateToken, requireAdmin, (req, res) => {
+app.get("/api/admin/certificates", authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const certs = db.prepare(`
-      SELECT cert.*, u.username as student_name, u.email as student_email, c.title as course_title 
-      FROM certificates cert
-      JOIN users u ON cert.user_id = u.id
-      JOIN courses c ON cert.course_id = c.id
-      ORDER BY cert.id DESC
-    `).all() as any[];
-    res.json(certs);
+    const certs = await prisma.certificate.findMany({
+      orderBy: { issuedAt: "desc" },
+      include: {
+        user: { select: { username: true, email: true } },
+        course: { select: { slug: true, translations: { where: { locale: "pl" }, take: 1, select: { title: true } } } }
+      }
+    });
+    res.json(certs.map((c) => ({
+      id: c.id,
+      user_id: c.userId,
+      course_id: c.courseId,
+      certificate_code: c.certificateCode,
+      created_at: c.issuedAt,
+      is_public: c.isPublic,
+      student_name: c.user.username ?? "",
+      student_email: c.user.email,
+      course_title: c.course.translations[0]?.title ?? c.course.slug
+    })));
   } catch (err: any) {
     res.status(500).json({ message: "Błąd pobierania certyfikatów: " + err.message });
   }
 });
 
-app.post("/api/admin/certificates", authenticateToken, requireAdmin, (req, res) => {
+app.post("/api/admin/certificates", authenticateToken, requireAdmin, async (req, res) => {
   const { user_id, course_id, custom_code } = req.body;
 
   if (!user_id || !course_id) {
@@ -2141,42 +2288,35 @@ app.post("/api/admin/certificates", authenticateToken, requireAdmin, (req, res) 
   }
 
   try {
-    // Check if certificate already exists
-    const checkCert = db.prepare("SELECT certificate_code FROM certificates WHERE user_id = ? AND course_id = ?").get(user_id, course_id) as any;
-    if (checkCert) {
-      return res.status(400).json({ message: "Użytkownik posiada już certyfikat ukończenia tego kursu: " + checkCert.certificate_code });
+    const existing = await prisma.certificate.findUnique({ where: { userId_courseId: { userId: String(user_id), courseId: String(course_id) } } });
+    if (existing) {
+      return res.status(400).json({ message: "Użytkownik posiada już certyfikat ukończenia tego kursu: " + existing.certificateCode });
     }
 
-    // Generate unique code if not provided
-    let certCode = custom_code?.trim();
-    if (!certCode) {
-      const timestamp = Date.now().toString().slice(-6);
-      const rawHash = cryptoHash(`${user_id}-${course_id}-${timestamp}`);
-      const randomHex = Math.random().toString(16).substring(2, 6).toUpperCase();
-      certCode = `HRL-GEN-${rawHash}-${timestamp}-${randomHex}`;
-    }
+    const certificateCode = custom_code?.trim() || generateCertificateCode(String(user_id), String(course_id));
+    const qrPayloadUrl = await QRCode.toDataURL(buildVerifyUrl(certificateCode), { margin: 1, width: 320 });
 
-    db.prepare(`
-      INSERT INTO certificates (user_id, course_id, certificate_code, created_at)
-      VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-    `).run(user_id, course_id, certCode);
+    const created = await prisma.certificate.create({ data: { userId: String(user_id), courseId: String(course_id), certificateCode, qrPayloadUrl } });
 
-    logActivity((req as any).user.id, "admin_manual_certificate_issued", req, 201, null, { targetUserId: user_id, courseId: course_id, certCode });
-    res.status(201).json({ success: true, message: "Certyfikat został wyemitowany pomyślnie!", code: certCode });
+    logActivity((req as any).user.id, "admin_manual_certificate_issued", req, 201, null, { targetUserId: user_id, courseId: course_id, certCode: certificateCode });
+    res.status(201).json({ success: true, message: "Certyfikat został wyemitowany pomyślnie!", code: created.certificateCode });
   } catch (err: any) {
     res.status(500).json({ message: "Błąd emisji certyfikatu: " + err.message });
   }
 });
 
-app.delete("/api/admin/certificates/:id", authenticateToken, requireAdmin, (req, res) => {
-  const id = Number(req.params.id);
+app.delete("/api/admin/certificates/:id", authenticateToken, requireAdmin, async (req, res) => {
+  const id = req.params.id;
   try {
-    const cert = db.prepare("SELECT * FROM certificates WHERE id = ?").get(id) as any;
+    const cert = await prisma.certificate.findUnique({ where: { id } });
     if (!cert) {
       return res.status(444).json({ message: "Certyfikat o tym ID nie istnieje." });
     }
-    db.prepare("DELETE FROM certificates WHERE id = ?").run(id);
-    logActivity((req as any).user.id, "admin_certificate_revoked", req, 200, null, { certificateId: id, code: cert.certificate_code });
+    await prisma.$transaction([
+      prisma.graduateRegistryEntry.deleteMany({ where: { certificateCode: cert.certificateCode } }),
+      prisma.certificate.delete({ where: { id } })
+    ]);
+    logActivity((req as any).user.id, "admin_certificate_revoked", req, 200, null, { certificateId: id, code: cert.certificateCode });
     res.json({ success: true, message: "Certyfikat został trwale wycofany z rejestru." });
   } catch (err: any) {
     res.status(500).json({ message: err.message });
