@@ -24,7 +24,7 @@ export const VisualCertificatePreview = forwardRef<HTMLDivElement, VisualCertifi
           
           <div className="mt-12 space-y-2 flex flex-col items-center w-full">
             <Award className="w-12 h-12 text-[#d4af37] mb-2" strokeWidth={1} />
-            <h1 className="text-xl font-sans tracking-[0.4em] uppercase text-zinc-800 font-medium">HRL Academy</h1>
+            <h1 className="text-xl font-sans tracking-[0.2em] uppercase text-zinc-800 font-medium">HRL Nova Campus</h1>
             
             <div className="pt-16 pb-12 w-full">
               <h2 className="text-[32px] font-sans text-zinc-900 tracking-widest font-light mb-1">CERTYFIKAT</h2>
@@ -93,7 +93,7 @@ export const VisualCertificatePreview = forwardRef<HTMLDivElement, VisualCertifi
           <div className="mt-12 space-y-2 flex flex-col items-center w-full z-10">
             <div className="flex items-center gap-2 mb-4">
               <ShieldCheck className="w-8 h-8 text-[#00e5ff]" strokeWidth={1.5} />
-              <h1 className="text-xl font-sans tracking-[0.3em] uppercase text-white font-medium">HRL Academy</h1>
+              <h1 className="text-xl font-sans tracking-[0.15em] uppercase text-white font-medium">HRL Nova Campus</h1>
             </div>
             
             <div className="pt-10 pb-8 w-full">
@@ -241,7 +241,7 @@ export const VisualCertificatePreview = forwardRef<HTMLDivElement, VisualCertifi
 
         <div className="mt-14 space-y-2 flex flex-col items-center w-full z-10">
           <h1 className="text-3xl font-serif tracking-[0.2em] uppercase text-[#c5a059] font-medium mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">HRL</h1>
-          <p className="text-xs font-sans tracking-[0.4em] uppercase text-zinc-400">Academy</p>
+          <p className="text-xs font-sans tracking-[0.35em] uppercase text-zinc-400">Nova Campus</p>
           
           <div className="pt-16 pb-12 w-full">
             <h2 className="text-[40px] font-serif text-[#c5a059] tracking-widest font-bold mb-2">CERTYFIKAT</h2>

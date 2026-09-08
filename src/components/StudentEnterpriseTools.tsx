@@ -252,7 +252,7 @@ export const StudentEnterpriseTools: React.FC<StudentEnterpriseToolsProps> = ({
   return (
     <div className="space-y-6 pt-6 border-t border-zinc-800">
       <div className="flex items-center gap-2 mb-2">
-        <Cpu className="w-5 h-5 text-violet-400" />
+        <Cpu className="w-5 h-5 text-cyan-400" />
         <h3 className="font-display font-semibold text-lg text-white">
           Ulepszenia Platformy & Pulpit Techniczny LTI
         </h3>
@@ -292,7 +292,7 @@ export const StudentEnterpriseTools: React.FC<StudentEnterpriseToolsProps> = ({
                   disabled={loadingLaunch}
                   className="w-full py-2.5 bg-zinc-950 hover:bg-zinc-800 hover:text-white text-zinc-300 font-mono text-xs font-bold rounded-xl border border-zinc-800 hover:border-zinc-700 cursor-pointer flex items-center justify-center gap-2 transition-all"
                 >
-                  <RefreshCw className={`w-3.5 h-3.5 text-violet-400 ${loadingLaunch ? "animate-spin" : ""}`} />
+                  <RefreshCw className={`w-3.5 h-3.5 text-cyan-400 ${loadingLaunch ? "animate-spin" : ""}`} />
                   {loadingLaunch ? "Uwierzytelnianie..." : "Wygeneruj Uwierzytelnienie JWT"}
                 </button>
               </div>
@@ -311,7 +311,7 @@ export const StudentEnterpriseTools: React.FC<StudentEnterpriseToolsProps> = ({
                       href={launchUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-violet-400 hover:text-violet-300 font-bold"
+                      className="inline-flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300 font-bold"
                     >
                       Uruchom port partnerski (Nowa karta)
                       <ArrowUpRight className="w-3.5 h-3.5" />
@@ -339,7 +339,7 @@ export const StudentEnterpriseTools: React.FC<StudentEnterpriseToolsProps> = ({
         <div className="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
             <span className="text-xs font-mono font-bold uppercase text-white flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-violet-400" />
+              <MessageSquare className="w-4 h-4 text-cyan-400" />
               Komunikator Wspierający (Support Hub)
             </span>
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" title="Konsultant HRL online" />
@@ -369,7 +369,7 @@ export const StudentEnterpriseTools: React.FC<StudentEnterpriseToolsProps> = ({
                         key={m.id}
                         className={`max-w-[85%] p-2.5 rounded-xl text-xs space-y-1 ${
                           isMyMsg
-                            ? "bg-violet-950/30 border border-violet-800/40 text-violet-200 ml-auto text-right"
+                            ? "bg-cyan-950/30 border border-cyan-800/40 text-cyan-200 ml-auto text-right"
                             : "bg-zinc-950 border border-zinc-850 text-zinc-300"
                         }`}
                       >
@@ -390,12 +390,12 @@ export const StudentEnterpriseTools: React.FC<StudentEnterpriseToolsProps> = ({
                   placeholder="Zadaj pytanie mentorowi..."
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  className="flex-grow bg-zinc-950 border border-zinc-800/80 rounded-xl px-3 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-violet-500 transition-all font-mono"
+                  className="flex-grow bg-zinc-950 border border-zinc-800/80 rounded-xl px-3 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500 transition-all font-mono"
                 />
                 <button
                   type="submit"
                   disabled={sendingMsg || !newMessage.trim()}
-                  className="p-3.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl transition-all cursor-pointer flex items-center justify-center disabled:opacity-50"
+                  className="p-3.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl transition-all cursor-pointer flex items-center justify-center disabled:opacity-50"
                 >
                   <Send className="w-4 h-4" />
                 </button>
@@ -410,7 +410,7 @@ export const StudentEnterpriseTools: React.FC<StudentEnterpriseToolsProps> = ({
         {/* Sync Progress Slider Console */}
         <div className="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-4 md:col-span-1">
           <span className="text-xs font-mono font-bold uppercase text-white flex items-center gap-2">
-            <RefreshCw className="w-4 h-4 text-pink-400" />
+            <RefreshCw className="w-4 h-4 text-teal-400" />
             Synchronizacja Postępu
           </span>
           <p className="text-xs text-zinc-400 leading-normal">
@@ -421,7 +421,7 @@ export const StudentEnterpriseTools: React.FC<StudentEnterpriseToolsProps> = ({
             <div className="space-y-2">
               <div className="flex justify-between items-center text-xs font-mono text-zinc-400">
                 <span>Zaliczony postęp:</span>
-                <span className="text-pink-400 font-bold">{syncPercent}%</span>
+                <span className="text-teal-400 font-bold">{syncPercent}%</span>
               </div>
               <input
                 type="range"
@@ -429,14 +429,14 @@ export const StudentEnterpriseTools: React.FC<StudentEnterpriseToolsProps> = ({
                 max="100"
                 value={syncPercent}
                 onChange={(e) => setSyncPercent(Number(e.target.value))}
-                className="w-full accent-pink-500 cursor-pointer h-1.5 bg-zinc-950 rounded-lg appearance-none"
+                className="w-full accent-teal-500 cursor-pointer h-1.5 bg-zinc-950 rounded-lg appearance-none"
               />
             </div>
 
             <button
               onClick={handleProgressSync}
               disabled={syncing || !isEnrolled}
-              className="w-full py-2.5 bg-gradient-to-r from-violet-600 to-pink-500 hover:opacity-90 disabled:opacity-40 text-white font-mono text-xs font-bold uppercase tracking-wide rounded-xl shadow-lg cursor-pointer transition-all flex items-center justify-center gap-2"
+              className="w-full py-2.5 bg-gradient-to-r from-cyan-600 to-teal-500 hover:opacity-90 disabled:opacity-40 text-white font-mono text-xs font-bold uppercase tracking-wide rounded-xl shadow-lg cursor-pointer transition-all flex items-center justify-center gap-2"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-white ${syncing ? "animate-spin" : ""}`} />
               Wyślij do chmury
@@ -454,11 +454,11 @@ export const StudentEnterpriseTools: React.FC<StudentEnterpriseToolsProps> = ({
         {/* Telemetry Console (Real-Time Events log viewer) */}
         <div className="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-3 md:col-span-2">
           <span className="text-xs font-mono font-bold uppercase text-white flex items-center gap-2">
-            <Terminal className="w-4 h-4 text-violet-400" />
+            <Terminal className="w-4 h-4 text-cyan-400" />
             Telemetria i Dziennik Aktywności (Analytics Tracker console)
           </span>
           <p className="text-xs text-zinc-400 leading-normal">
-            Dziennik telemetrii śledzi zdarzenia i loguje je bezpośrednio do tabeli i aktywności chmurowej przy pomocy wywołań <code className="bg-zinc-950 px-1 rounded text-violet-400 text-[11px] font-mono">/api/events/track</code>. Wykonaj dowolną akcję powyżej, a pojawi się tutaj:
+            Dziennik telemetrii śledzi zdarzenia i loguje je bezpośrednio do tabeli i aktywności chmurowej przy pomocy wywołań <code className="bg-zinc-950 px-1 rounded text-cyan-400 text-[11px] font-mono">/api/events/track</code>. Wykonaj dowolną akcję powyżej, a pojawi się tutaj:
           </p>
 
           <div className="bg-zinc-950 border border-zinc-850 p-3 rounded-xl h-[120px] overflow-y-auto font-mono text-[10px] text-zinc-400 leading-relaxed space-y-1.5">
@@ -468,7 +468,7 @@ export const StudentEnterpriseTools: React.FC<StudentEnterpriseToolsProps> = ({
               trackedEvents.map((evt) => (
                 <div key={evt.id} className="border-b border-zinc-900 pb-1 flex justify-between items-start gap-4">
                   <div>
-                    <span className="text-violet-400 font-bold">[{evt.timestamp}]</span>{" "}
+                    <span className="text-cyan-400 font-bold">[{evt.timestamp}]</span>{" "}
                     <span className="text-emerald-400">{evt.eventName}</span>
                     <span className="text-zinc-500 block text-[9px]">Payload: {JSON.stringify(evt.props)}</span>
                   </div>

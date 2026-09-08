@@ -78,7 +78,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       socket.onopen = () => {
         setIsSocketConnected(true);
-        console.log("WebSocket connected to HRL Academy Server");
+        console.log("WebSocket connected to HRL Nova Campus Server");
       };
 
       socket.onmessage = (event) => {

@@ -26,7 +26,7 @@ interface CourseWithMeta {
 
 const PAGE_TITLE = "Nova Campus — Certyfikowane kursy online z weryfikowalnym dyplomem";
 const PAGE_DESCRIPTION =
-  "Rozwijaj kompetencje z certyfikowanymi kursami online HRL Academy. Nauka we własnym tempie, automatyczne testy wiedzy i weryfikowalny dyplom z kodem QR po ukończeniu.";
+  "Rozwijaj kompetencje z certyfikowanymi kursami online HRL Nova Campus. Nauka we własnym tempie, automatyczne testy wiedzy i weryfikowalny dyplom z kodem QR po ukończeniu.";
 
 // Sets the document title and the meta/OG tags a search engine or link-preview reads.
 // No SPA-wide head-management library is installed, and this is the only page that needs it.
@@ -213,7 +213,7 @@ export const Landing: React.FC = () => {
 
   const faqs = [
     {
-      q: "Jak zacząć naukę w HRL Academy?",
+      q: "Jak zacząć naukę w HRL Nova Campus?",
       a: "Wystarczy założyć bezpłatne konto lub zarejestrować się w portalu. Po zalogowaniu możesz jednym kliknięciem zapisać się na dowolny darmowy lub płatny kurs i rozpocząć lekcje wideo oraz interaktywne testy."
     },
     {
@@ -234,28 +234,28 @@ export const Landing: React.FC = () => {
     <div id="home-landing-wrapper" className="space-y-16 pb-20">
 
       {/* 1. HERO BANNER LANDING SECTION */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 border border-amber-500/20 p-8 md:p-14 text-center md:text-left shadow-2xl mt-4">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 border border-cyan-500/20 p-8 md:p-14 text-center md:text-left shadow-2xl mt-4">
         {/* Glow ambient background elements */}
-        <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-amber-500/10 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 left-10 w-[350px] h-[350px] bg-violet-600/15 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-0 left-10 w-[350px] h-[350px] bg-cyan-600/15 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="relative z-10 max-w-5xl mx-auto md:mx-0 flex flex-col md:flex-row items-center gap-10 justify-between">
           <div className="space-y-5 flex-grow max-w-2xl">
 
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-amber-500/15 via-violet-500/15 to-pink-500/15 border border-amber-500/30 rounded-full text-xs font-mono text-amber-300 shadow-inner">
-              <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-cyan-500/15 via-cyan-500/15 to-teal-500/15 border border-cyan-500/30 rounded-full text-xs font-mono text-cyan-300 shadow-inner">
+              <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
               <span className="font-semibold tracking-wide">Innowacyjna Platforma Edukacyjna & Certyfikacja</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold tracking-tight text-white leading-[1.1]">
-              Rozwijaj Swoje Kompetencje z{" "}
-              <span className="bg-gradient-to-r from-amber-300 via-violet-400 to-pink-400 bg-clip-text text-transparent">
-                HRL Academy Pro
+              Rozwijaj swoje kompetencje z{" "}
+              <span className="bg-gradient-to-r from-cyan-300 via-cyan-400 to-teal-400 bg-clip-text text-transparent whitespace-nowrap">
+                HRL Nova Campus
               </span>
             </h1>
 
-            <p className="text-zinc-300 text-base md:text-lg leading-relaxed font-sans">
-              Odkryj certyfikowane programy e-learningowe z zakresu programowania, nowoczesnego UI/UX, analizy danych oraz cyfrowej suwerenności. Ucz się w swoim tempie i zdobywaj uznawane dyplomy.
+            <p className="text-zinc-300 text-base md:text-lg leading-relaxed font-sans max-w-xl">
+              Certyfikowane programy e-learningowe z programowania, nowoczesnego UI/UX i analizy danych. Ucz się we własnym tempie, potwierdzaj wiedzę testami i zdobywaj weryfikowalne dyplomy z kodem QR.
             </p>
 
             {/* Quick Action CTAs */}
@@ -263,9 +263,9 @@ export const Landing: React.FC = () => {
               <a
                 href="#courses-explorer-section"
                 id="hero-cta-button"
-                className="px-7 py-4 bg-gradient-to-r from-amber-500 via-violet-600 to-pink-600 hover:from-amber-400 hover:to-pink-500 text-white font-bold rounded-2xl text-sm transition-all shadow-xl hover:shadow-amber-500/20 flex items-center gap-2.5 group cursor-pointer"
+                className="px-7 py-4 bg-gradient-to-r from-cyan-500 via-cyan-600 to-teal-600 hover:from-cyan-400 hover:to-teal-500 text-white font-bold rounded-2xl text-sm transition-all shadow-xl hover:shadow-cyan-500/20 flex items-center gap-2.5 group cursor-pointer"
               >
-                <BookOpen className="w-5 h-5 text-amber-200" />
+                <BookOpen className="w-5 h-5 text-cyan-200" />
                 Przeglądaj Katalog Kursów
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </a>
@@ -276,16 +276,16 @@ export const Landing: React.FC = () => {
                   id="hero-register-btn"
                   className="px-6 py-4 bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700/80 rounded-2xl text-sm font-semibold transition-all shadow-md flex items-center gap-2"
                 >
-                  <Users className="w-4 h-4 text-violet-400" />
+                  <Users className="w-4 h-4 text-cyan-400" />
                   Załóż darmowe konto
                 </Link>
               ) : (
                 <Link
                   to="/student"
                   id="hero-dashboard-btn"
-                  className="px-6 py-4 bg-zinc-900/90 hover:bg-zinc-800 text-amber-300 hover:text-amber-200 border border-amber-500/30 rounded-2xl text-sm font-semibold transition-all flex items-center gap-2"
+                  className="px-6 py-4 bg-zinc-900/90 hover:bg-zinc-800 text-cyan-300 hover:text-cyan-200 border border-cyan-500/30 rounded-2xl text-sm font-semibold transition-all flex items-center gap-2"
                 >
-                  <GraduationCap className="w-5 h-5 text-amber-400" />
+                  <GraduationCap className="w-5 h-5 text-cyan-400" />
                   Przejdź do Mojego Panelu
                 </Link>
               )}
@@ -298,28 +298,28 @@ export const Landing: React.FC = () => {
                 <span>100% Certyfikat Seryjny</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-amber-400" />
+                <CheckCircle className="w-4 h-4 text-cyan-400" />
                 <span>Bezterminowy Dostęp</span>
               </div>
               <div className="flex items-center gap-2">
-                <Star className="w-4 h-4 text-violet-400 fill-violet-400/30" />
+                <Star className="w-4 h-4 text-cyan-400 fill-cyan-400/30" />
                 <span>Oceny 4.9/5 Od Słuchaczy</span>
               </div>
             </div>
 
           </div>
 
-          {/* 3D Gold Logo Showcase */}
-          <div className="relative flex-shrink-0 group">
-            <div className="p-1.5 bg-gradient-to-tr from-amber-500 via-violet-600 to-pink-500 rounded-3xl shadow-[0_0_45px_rgba(245,158,11,0.3)] hover:scale-105 transition-all duration-300">
+          {/* Brand logo showcase */}
+          <div className="relative flex-shrink-0 group mx-auto md:mx-0 mt-4 md:mt-0">
+            <div className="brand-logo-tile brand-sparkle rounded-3xl p-4 sm:p-6 group-hover:scale-[1.03] transition-transform duration-300">
               <img
                 src="/logo_3d.jpg"
-                alt="HRL Academy Pro 3D Logo"
-                className="w-44 h-44 sm:w-52 sm:h-52 md:w-60 md:h-60 rounded-2xl object-cover border-2 border-zinc-900 shadow-2xl"
+                alt="HRL Nova Campus — Learn · Create · Evolve"
+                className="w-[240px] sm:w-[300px] md:w-[340px] object-contain"
               />
             </div>
-            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-zinc-950/90 border border-amber-500/40 rounded-xl text-[11px] font-mono text-amber-300 font-bold whitespace-nowrap shadow-lg">
-              ★ OFFICIAL ACADEMY CORE ★
+            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-[#0a1120]/95 border border-cyan-500/40 rounded-xl text-[11px] font-mono text-cyan-300 font-bold tracking-wider whitespace-nowrap shadow-lg">
+              ★ CERTYFIKOWANA EDUKACJA ★
             </div>
           </div>
         </div>
@@ -327,8 +327,8 @@ export const Landing: React.FC = () => {
 
       {/* 2. VALUE PROPOSITION PILLARS */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="p-6 bg-zinc-900/60 backdrop-blur border border-zinc-800/80 hover:border-amber-500/40 transition-all rounded-3xl space-y-3 group shadow-lg">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+        <div className="p-6 bg-zinc-900/60 backdrop-blur border border-zinc-800/80 hover:border-cyan-500/40 transition-all rounded-3xl space-y-3 group shadow-lg">
+          <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
             <Award className="w-6 h-6" />
           </div>
           <h3 className="text-base font-display font-bold text-white">Certyfikaty z Weryfikacją</h3>
@@ -337,8 +337,8 @@ export const Landing: React.FC = () => {
           </p>
         </div>
 
-        <div className="p-6 bg-zinc-900/60 backdrop-blur border border-zinc-800/80 hover:border-violet-500/40 transition-all rounded-3xl space-y-3 group shadow-lg">
-          <div className="w-12 h-12 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 group-hover:scale-110 transition-transform">
+        <div className="p-6 bg-zinc-900/60 backdrop-blur border border-zinc-800/80 hover:border-cyan-500/40 transition-all rounded-3xl space-y-3 group shadow-lg">
+          <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
             <Zap className="w-6 h-6" />
           </div>
           <h3 className="text-base font-display font-bold text-white">Praktyczne Projektowanie</h3>
@@ -347,8 +347,8 @@ export const Landing: React.FC = () => {
           </p>
         </div>
 
-        <div className="p-6 bg-zinc-900/60 backdrop-blur border border-zinc-800/80 hover:border-pink-500/40 transition-all rounded-3xl space-y-3 group shadow-lg">
-          <div className="w-12 h-12 rounded-2xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400 group-hover:scale-110 transition-transform">
+        <div className="p-6 bg-zinc-900/60 backdrop-blur border border-zinc-800/80 hover:border-teal-500/40 transition-all rounded-3xl space-y-3 group shadow-lg">
+          <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 group-hover:scale-110 transition-transform">
             <Clock className="w-6 h-6" />
           </div>
           <h3 className="text-base font-display font-bold text-white">Nauka we Własnym Tempie</h3>
@@ -374,7 +374,7 @@ export const Landing: React.FC = () => {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b border-zinc-800/80 pb-4">
           <div>
-            <div className="inline-flex items-center gap-2 text-xs font-mono text-amber-400 uppercase tracking-widest mb-1">
+            <div className="inline-flex items-center gap-2 text-xs font-mono text-cyan-400 uppercase tracking-widest mb-1">
               <BookOpen className="w-4 h-4" />
               <span>Programy Szkoleniowe</span>
             </div>
@@ -392,7 +392,7 @@ export const Landing: React.FC = () => {
         <div className="bg-zinc-900/80 border border-zinc-800 rounded-3xl p-6 space-y-4 shadow-xl">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <SlidersHorizontal className="w-5 h-5 text-amber-400" />
+              <SlidersHorizontal className="w-5 h-5 text-cyan-400" />
               <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-white">Filtruj wg Twoich potrzeb</h3>
             </div>
 
@@ -424,7 +424,7 @@ export const Landing: React.FC = () => {
                   onClick={() => setSelectedCategory(catValue)}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-medium font-mono whitespace-nowrap transition-all cursor-pointer ${
                     isActive
-                      ? "bg-amber-500 text-zinc-950 font-bold shadow-md shadow-amber-500/20"
+                      ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
                       : "bg-zinc-950/80 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800"
                   }`}
                 >
@@ -445,7 +445,7 @@ export const Landing: React.FC = () => {
                 placeholder="Szukaj frazy..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-all font-mono"
+                className="w-full pl-10 pr-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500 transition-all font-mono"
               />
             </div>
 
@@ -454,7 +454,7 @@ export const Landing: React.FC = () => {
               <select
                 value={selectedDifficulty}
                 onChange={(e) => setSelectedDifficulty(e.target.value)}
-                className="w-full px-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-zinc-300 focus:outline-none focus:border-amber-500 transition-all cursor-pointer font-mono"
+                className="w-full px-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-zinc-300 focus:outline-none focus:border-cyan-500 transition-all cursor-pointer font-mono"
               >
                 <option value="">Wszystkie Poziomy</option>
                 <option value="Początkujący">Początkujący</option>
@@ -468,7 +468,7 @@ export const Landing: React.FC = () => {
               <select
                 value={selectedInstructor}
                 onChange={(e) => setSelectedInstructor(e.target.value)}
-                className="w-full px-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-zinc-300 focus:outline-none focus:border-amber-500 transition-all cursor-pointer font-mono"
+                className="w-full px-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-zinc-300 focus:outline-none focus:border-cyan-500 transition-all cursor-pointer font-mono"
               >
                 <option value="">Wszyscy Instruktorzy</option>
                 <option value="Michał Kowalski">Michał Kowalski</option>
@@ -516,7 +516,7 @@ export const Landing: React.FC = () => {
                 setSelectedDifficulty("");
                 setSelectedInstructor("");
               }}
-              className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs font-mono rounded-xl cursor-pointer shadow-lg"
+              className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold text-xs font-mono rounded-xl cursor-pointer shadow-lg"
             >
               Resetuj Filtry
             </button>
@@ -533,7 +533,7 @@ export const Landing: React.FC = () => {
                 <div
                   key={course.id}
                   id={`course-card-${course.id}`}
-                  className="group bg-zinc-900/70 border border-zinc-800 hover:border-amber-500/40 rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl flex flex-col justify-between"
+                  className="group bg-zinc-900/70 border border-zinc-800 hover:border-cyan-500/40 rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl flex flex-col justify-between"
                 >
                   <div>
                     {/* Thumbnail Image Header */}
@@ -551,16 +551,16 @@ export const Landing: React.FC = () => {
 
                       {/* Lessons Badge */}
                       <div className="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1 bg-zinc-950/90 border border-zinc-800 rounded-full text-[10px] font-mono font-semibold uppercase text-zinc-300 backdrop-blur">
-                        <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+                        <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
                         <span>{course.lessons_count} Lekcji</span>
                       </div>
 
                       {/* Float Price Tag */}
                       <div className="absolute top-4 right-4 inline-flex items-center gap-1 px-3 py-1 bg-zinc-950/90 border border-zinc-800 rounded-xl text-[11px] font-mono font-extrabold backdrop-blur">
                         {course.pricing_model === "one_time" ? (
-                          <span className="text-pink-400">{course.one_time_price || 49} PLN</span>
+                          <span className="text-teal-400">{course.one_time_price || 49} PLN</span>
                         ) : course.pricing_model === "subscription" ? (
-                          <span className="text-violet-400">
+                          <span className="text-cyan-400">
                             {course.subscription_price || 9} PLN/{course.subscription_interval === "year" ? "rok" : "m-c"}
                           </span>
                         ) : (
@@ -575,18 +575,18 @@ export const Landing: React.FC = () => {
                         <span className="px-2.5 py-0.5 bg-zinc-950 border border-zinc-800 rounded-lg text-[9px] font-mono text-zinc-300 uppercase font-semibold">
                           {course.category || "Ogólny"}
                         </span>
-                        <span className="px-2.5 py-0.5 bg-zinc-950 border border-zinc-800 rounded-lg text-[9px] font-mono text-amber-400 font-bold uppercase">
+                        <span className="px-2.5 py-0.5 bg-zinc-950 border border-zinc-800 rounded-lg text-[9px] font-mono text-cyan-400 font-bold uppercase">
                           {course.difficulty || "Dowolny"}
                         </span>
                         {isExternal && (
-                          <span className="px-2.5 py-0.5 bg-amber-950/60 border border-amber-500/40 rounded-lg text-[9px] font-mono text-amber-300 font-bold uppercase animate-pulse">
+                          <span className="px-2.5 py-0.5 bg-cyan-950/60 border border-cyan-500/40 rounded-lg text-[9px] font-mono text-cyan-300 font-bold uppercase animate-pulse">
                             Partner
                           </span>
                         )}
                       </div>
 
                       <Link to={`/course/${course.id}`} className="block">
-                        <h3 className="text-xl font-display font-bold text-white leading-snug group-hover:text-amber-300 transition-colors">
+                        <h3 className="text-xl font-display font-bold text-white leading-snug group-hover:text-cyan-300 transition-colors">
                           {course.title}
                         </h3>
                       </Link>
@@ -604,11 +604,11 @@ export const Landing: React.FC = () => {
                         <div className="space-y-1.5 pt-2 border-t border-zinc-800/60">
                           <div className="flex justify-between items-center text-xs font-mono text-zinc-400">
                             <span>Twój postęp:</span>
-                            <span className="text-amber-400 font-bold">{courseCompletion}%</span>
+                            <span className="text-cyan-400 font-bold">{courseCompletion}%</span>
                           </div>
                           <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden border border-zinc-800">
                             <div
-                              className="h-full bg-gradient-to-r from-amber-500 to-violet-500 rounded-full transition-all duration-500"
+                              className="h-full bg-gradient-to-r from-cyan-500 to-cyan-500 rounded-full transition-all duration-500"
                               style={{ width: `${courseCompletion}%` }}
                             />
                           </div>
@@ -624,18 +624,18 @@ export const Landing: React.FC = () => {
                         <Link
                           id={`btn-open-course-admin-${course.id}`}
                           to={`/course/${course.id}`}
-                          className="w-full py-3 bg-zinc-950 hover:bg-zinc-800 text-amber-400 border border-amber-500/40 rounded-xl text-xs font-bold font-mono tracking-wide uppercase transition-all flex items-center justify-center gap-2 group cursor-pointer"
+                          className="w-full py-3 bg-zinc-950 hover:bg-zinc-800 text-cyan-400 border border-cyan-500/40 rounded-xl text-xs font-bold font-mono tracking-wide uppercase transition-all flex items-center justify-center gap-2 group cursor-pointer"
                         >
-                          <BookOpen className="w-4 h-4 text-amber-400" />
+                          <BookOpen className="w-4 h-4 text-cyan-400" />
                           <span>Podgląd Administracyjny</span>
                         </Link>
                       ) : isEnrolled ? (
                         <Link
                           id={`btn-open-course-${course.id}`}
                           to={`/course/${course.id}`}
-                          className="w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold rounded-xl text-xs font-mono tracking-wide uppercase transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+                          className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-xl text-xs font-mono tracking-wide uppercase transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg"
                         >
-                          <Play className="w-4 h-4 text-amber-300 fill-amber-300" />
+                          <Play className="w-4 h-4 text-cyan-300 fill-cyan-300" />
                           <span>{hasStarted ? "Kontynuuj Naukę" : "Rozpocznij Kurs"}</span>
                         </Link>
                       ) : (
@@ -643,7 +643,7 @@ export const Landing: React.FC = () => {
                           <button
                             id={`btn-enroll-course-${course.id}`}
                             onClick={() => handleEnroll(course.id)}
-                            className="flex-grow py-3 bg-gradient-to-r from-amber-500 via-amber-600 to-violet-600 hover:from-amber-400 hover:to-violet-500 text-zinc-950 font-extrabold rounded-xl text-xs text-center uppercase tracking-wide cursor-pointer transition-all shadow-md block"
+                            className="flex-grow py-3 bg-gradient-to-r from-cyan-500 via-cyan-600 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-zinc-950 font-extrabold rounded-xl text-xs text-center uppercase tracking-wide cursor-pointer transition-all shadow-md block"
                           >
                             Zapisz Się Teraz
                           </button>
@@ -668,23 +668,23 @@ export const Landing: React.FC = () => {
       </section>
 
       {/* 4. CERTIFICATE VERIFICATION SPOTLIGHT */}
-      <section className="bg-gradient-to-r from-zinc-900 via-zinc-950 to-zinc-900 border border-amber-500/30 rounded-3xl p-8 md:p-12 relative overflow-hidden shadow-2xl">
+      <section className="bg-gradient-to-r from-zinc-900 via-zinc-950 to-zinc-900 border border-cyan-500/30 rounded-3xl p-8 md:p-12 relative overflow-hidden shadow-2xl">
         <div className="relative z-10 max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-8 justify-between">
           <div className="space-y-4 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full text-xs font-mono text-amber-300">
-              <ShieldCheck className="w-4 h-4 text-amber-400" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-cyan-500/10 border border-cyan-500/30 rounded-full text-xs font-mono text-cyan-300">
+              <ShieldCheck className="w-4 h-4 text-cyan-400" />
               <span>Weryfikacja Kryptograficzna</span>
             </div>
             <h2 className="text-3xl font-display font-bold text-white tracking-tight">
               Sprawdź Autentyczność Dyplomu
             </h2>
             <p className="text-zinc-300 text-sm leading-relaxed max-w-xl">
-              Pracodawcy i rekruterzy mogą natychmiast zweryfikować certyfikat wydany przez HRL Academy wpisując unikalny kod seryjny w ogólnodostępnym weryfikatorze.
+              Pracodawcy i rekruterzy mogą natychmiast zweryfikować certyfikat wydany przez HRL Nova Campus wpisując unikalny kod seryjny w ogólnodostępnym weryfikatorze.
             </p>
             <div className="pt-2">
               <Link
                 to="/certificate-verify"
-                className="inline-flex items-center gap-2 px-6 py-3.5 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold rounded-2xl text-xs font-mono uppercase tracking-wide transition-all shadow-lg"
+                className="inline-flex items-center gap-2 px-6 py-3.5 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold rounded-2xl text-xs font-mono uppercase tracking-wide transition-all shadow-lg"
               >
                 <Search className="w-4 h-4" />
                 Otwórz Weryfikator Certyfikatów
@@ -698,7 +698,7 @@ export const Landing: React.FC = () => {
               <span className="text-emerald-400 font-bold">STATUS: AKTYWNY</span>
             </div>
             <div className="text-xs text-white space-y-1">
-              <p className="text-amber-300 font-bold">SERIAL: HRL-2026-X892</p>
+              <p className="text-cyan-300 font-bold">SERIAL: HRL-2026-X892</p>
               <p className="text-zinc-400 text-[11px]">Słuchacz: Jan Kowalski</p>
               <p className="text-zinc-400 text-[11px]">Program: Full-Stack React & Node</p>
             </div>
@@ -712,18 +712,18 @@ export const Landing: React.FC = () => {
 
       {/* 5. GRADUATES REGISTRY SOCIAL PROOF */}
       <section className="bg-zinc-900/60 border border-zinc-800/80 rounded-3xl p-8 md:p-12 text-center space-y-5 shadow-lg">
-        <div className="inline-flex p-3 bg-violet-500/10 rounded-xl text-violet-400">
+        <div className="inline-flex p-3 bg-cyan-500/10 rounded-xl text-cyan-400">
           <GraduationCap className="w-6 h-6" />
         </div>
         <h2 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">
           Dołącz do Naszych Absolwentów
         </h2>
         <p className="text-zinc-400 text-sm leading-relaxed max-w-xl mx-auto">
-          Przeglądaj publiczny, przeszukiwalny rejestr osób, które ukończyły kursy HRL Academy i dobrowolnie zgodziły się na publikację swojego wpisu.
+          Przeglądaj publiczny, przeszukiwalny rejestr osób, które ukończyły kursy HRL Nova Campus i dobrowolnie zgodziły się na publikację swojego wpisu.
         </p>
         <Link
           to="/graduates"
-          className="inline-flex items-center gap-2 px-6 py-3.5 bg-zinc-950 hover:bg-zinc-800 text-violet-300 border border-violet-500/30 rounded-2xl text-xs font-mono uppercase tracking-wide transition-all shadow-lg"
+          className="inline-flex items-center gap-2 px-6 py-3.5 bg-zinc-950 hover:bg-zinc-800 text-cyan-300 border border-cyan-500/30 rounded-2xl text-xs font-mono uppercase tracking-wide transition-all shadow-lg"
         >
           <Users className="w-4 h-4" />
           Zobacz Bazę Absolwentów
@@ -733,19 +733,19 @@ export const Landing: React.FC = () => {
       {/* 6. STUDENT TESTIMONIALS */}
       <section className="space-y-6">
         <div className="text-center space-y-2">
-          <span className="text-xs font-mono text-amber-400 uppercase tracking-widest">Opinie Słuchaczy</span>
+          <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">Opinie Słuchaczy</span>
           <h2 className="text-2xl sm:text-3xl font-display font-bold text-white">Dlaczego Warto Uczyć Się z Nami?</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-3xl p-6 space-y-4 shadow-lg">
-            <div className="flex items-center gap-1 text-amber-400">
+            <div className="flex items-center gap-1 text-cyan-400">
               {[1, 2, 3, 4, 5].map((i) => (
-                <Star key={i} className="w-4 h-4 fill-amber-400" />
+                <Star key={i} className="w-4 h-4 fill-cyan-400" />
               ))}
             </div>
             <p className="text-xs text-zinc-300 leading-relaxed italic">
-              "Certyfikat HRL Academy pomógł mi w rozmowie rekrutacyjnej na stanowisko Junior Web Developera. Bardzo jasny podział na lekcje i konkretne zadania testowe."
+              "Certyfikat HRL Nova Campus pomógł mi w rozmowie rekrutacyjnej na stanowisko Junior Web Developera. Bardzo jasny podział na lekcje i konkretne zadania testowe."
             </p>
             <div className="pt-2 border-t border-zinc-800 text-xs font-mono">
               <strong className="text-white block">Marek Wiśniewski</strong>
@@ -754,9 +754,9 @@ export const Landing: React.FC = () => {
           </div>
 
           <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-3xl p-6 space-y-4 shadow-lg">
-            <div className="flex items-center gap-1 text-amber-400">
+            <div className="flex items-center gap-1 text-cyan-400">
               {[1, 2, 3, 4, 5].map((i) => (
-                <Star key={i} className="w-4 h-4 fill-amber-400" />
+                <Star key={i} className="w-4 h-4 fill-cyan-400" />
               ))}
             </div>
             <p className="text-xs text-zinc-300 leading-relaxed italic">
@@ -769,9 +769,9 @@ export const Landing: React.FC = () => {
           </div>
 
           <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-3xl p-6 space-y-4 shadow-lg">
-            <div className="flex items-center gap-1 text-amber-400">
+            <div className="flex items-center gap-1 text-cyan-400">
               {[1, 2, 3, 4, 5].map((i) => (
-                <Star key={i} className="w-4 h-4 fill-amber-400" />
+                <Star key={i} className="w-4 h-4 fill-cyan-400" />
               ))}
             </div>
             <p className="text-xs text-zinc-300 leading-relaxed italic">
@@ -788,7 +788,7 @@ export const Landing: React.FC = () => {
       {/* 7. FAQ ACCORDION SECTION */}
       <section className="bg-zinc-900/80 border border-zinc-800 rounded-3xl p-8 space-y-6 shadow-xl">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
             <HelpCircle className="w-5 h-5" />
           </div>
           <div>
@@ -807,10 +807,10 @@ export const Landing: React.FC = () => {
               >
                 <button
                   onClick={() => setOpenFaq(isOpen ? null : idx)}
-                  className="w-full p-4 text-left flex items-center justify-between gap-4 font-semibold text-sm text-white hover:text-amber-300 transition-colors cursor-pointer"
+                  className="w-full p-4 text-left flex items-center justify-between gap-4 font-semibold text-sm text-white hover:text-cyan-300 transition-colors cursor-pointer"
                 >
                   <span>{faq.q}</span>
-                  {isOpen ? <ChevronUp className="w-4 h-4 text-amber-400" /> : <ChevronDown className="w-4 h-4 text-zinc-500" />}
+                  {isOpen ? <ChevronUp className="w-4 h-4 text-cyan-400" /> : <ChevronDown className="w-4 h-4 text-zinc-500" />}
                 </button>
 
                 {isOpen && (
@@ -826,13 +826,13 @@ export const Landing: React.FC = () => {
 
       {/* 8. CLOSING CTA BANNER */}
       {!user && (
-        <section className="bg-gradient-to-r from-amber-500 via-violet-600 to-pink-600 rounded-3xl p-8 md:p-12 text-center text-zinc-950 shadow-2xl relative overflow-hidden">
+        <section className="bg-gradient-to-r from-cyan-500 via-cyan-600 to-teal-600 rounded-3xl p-8 md:p-12 text-center text-zinc-950 shadow-2xl relative overflow-hidden">
           <div className="max-w-2xl mx-auto space-y-4 relative z-10">
             <h2 className="text-3xl sm:text-4xl font-display font-extrabold tracking-tight text-white">
               Gotowy Na Przełom W Swojej Karierze?
             </h2>
             <p className="text-zinc-100 text-sm font-medium leading-relaxed">
-              Dołącz do społeczności HRL Academy. Załóż darmowe konto w 30 sekund i zacznij swoją pierwszą certyfikowaną lekcję.
+              Dołącz do społeczności HRL Nova Campus. Załóż darmowe konto w 30 sekund i zacznij swoją pierwszą certyfikowaną lekcję.
             </p>
             <div className="pt-2 flex justify-center gap-4">
               <Link

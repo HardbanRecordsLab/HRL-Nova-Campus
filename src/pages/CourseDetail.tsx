@@ -415,7 +415,7 @@ export const CourseDetail: React.FC = () => {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="w-12 h-12 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
         <span className="text-zinc-400 mt-4 text-sm font-mono">Ładowanie struktury portalu nauki...</span>
       </div>
     );
@@ -424,7 +424,7 @@ export const CourseDetail: React.FC = () => {
   if (!user) {
     return (
       <div className="max-w-xl mx-auto my-16 py-16 px-8 text-center bg-zinc-900 border border-zinc-800 rounded-3xl space-y-6 shadow-2xl">
-        <BookOpen className="w-16 h-16 text-violet-500 mx-auto" />
+        <BookOpen className="w-16 h-16 text-cyan-500 mx-auto" />
         <h2 className="text-2xl font-display font-semibold text-white">Wymagane logowanie</h2>
         <p className="text-zinc-400">
           Podgląd oraz odtwarzanie materiałów tego kursu jest możliwe wyłącznie dla zalogowanych autoryzowanych kont. Załóż darmowe konto, aby kontynuować.
@@ -433,7 +433,7 @@ export const CourseDetail: React.FC = () => {
           <Link to="/login" className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-mono tracking-wide uppercase rounded-xl transition-all cursor-pointer">
             Zaloguj się
           </Link>
-          <Link to="/register" className="px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-500 hover:from-violet-500 hover:to-pink-400 text-white text-xs font-mono tracking-wide uppercase rounded-xl transition-all shadow-lg cursor-pointer">
+          <Link to="/register" className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-teal-500 hover:from-cyan-500 hover:to-teal-400 text-white text-xs font-mono tracking-wide uppercase rounded-xl transition-all shadow-lg cursor-pointer">
             Załóż Darmowe Konto
           </Link>
         </div>
@@ -451,7 +451,7 @@ export const CourseDetail: React.FC = () => {
           {/* Header Dashboard Bar with Controls */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-xl relative overflow-hidden">
             {/* Ambient indicator lights */}
-            <div className="absolute top-0 left-0 w-1/2 h-[2px] bg-gradient-to-r from-violet-600/30 via-pink-500/30 to-transparent" />
+            <div className="absolute top-0 left-0 w-1/2 h-[2px] bg-gradient-to-r from-cyan-600/30 via-teal-500/30 to-transparent" />
             
             <div className="space-y-1">
               <div className="flex items-center gap-2">
@@ -464,7 +464,7 @@ export const CourseDetail: React.FC = () => {
                 {tc.title}
               </h2>
               <p className="text-xs text-zinc-400">
-                Prywatna sesja edukacyjna z maskowaniem źródłowego adresu URL w standardzie HRL Academy.
+                Prywatna sesja edukacyjna z maskowaniem źródłowego adresu URL w standardzie HRL Nova Campus.
               </p>
             </div>
 
@@ -480,7 +480,7 @@ export const CourseDetail: React.FC = () => {
                 className="px-4 py-2.5 bg-zinc-950 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 rounded-xl text-xs font-mono font-medium tracking-wide uppercase transition-all flex items-center gap-1.5 cursor-pointer"
                 title="Odśwież sesję"
               >
-                <RefreshCw className="w-3.5 h-3.5 text-violet-400" />
+                <RefreshCw className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Odśwież</span>
               </button>
               <button
@@ -495,7 +495,7 @@ export const CourseDetail: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <Link2 className="w-3.5 h-3.5 text-pink-400" />
+                    <Link2 className="w-3.5 h-3.5 text-teal-400" />
                     <span>Kopiuj Link</span>
                   </>
                 )}
@@ -508,7 +508,7 @@ export const CourseDetail: React.FC = () => {
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-zinc-250">
-                  <Settings className="w-4 h-4 text-violet-400" />
+                  <Settings className="w-4 h-4 text-cyan-400" />
                   <span className="text-xs font-mono uppercase tracking-widest text-zinc-350 font-bold">
                     Konfigurator Oryginalnych Wymiarów Kursu
                   </span>
@@ -521,9 +521,9 @@ export const CourseDetail: React.FC = () => {
               {/* Precise Dimension Indicator Badge */}
               <div className="inline-flex items-center gap-2 bg-zinc-950 border border-zinc-800 px-3 py-1.5 rounded-lg text-xs font-mono shrink-0">
                 <span className="text-zinc-550 text-zinc-450">AKTYWNY ROZMIAR:</span>
-                <span className="text-violet-450 text-violet-400 font-bold">100%</span>
+                <span className="text-cyan-450 text-cyan-400 font-bold">100%</span>
                 <span className="text-zinc-500">x</span>
-                <span className="text-pink-400 font-bold">{playerHeight}px</span>
+                <span className="text-teal-400 font-bold">{playerHeight}px</span>
               </div>
             </div>
 
@@ -537,7 +537,7 @@ export const CourseDetail: React.FC = () => {
                     onClick={() => setPlayerHeight(620)}
                     className={`px-3 py-2 text-[10.5px] font-mono rounded-lg border text-center transition-all ${
                       playerHeight === 620
-                        ? "bg-violet-600/10 border-violet-550 text-violet-405 font-bold text-violet-400 border-violet-500"
+                        ? "bg-cyan-600/10 border-cyan-550 text-cyan-405 font-bold text-cyan-400 border-cyan-500"
                         : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200"
                     }`}
                   >
@@ -547,7 +547,7 @@ export const CourseDetail: React.FC = () => {
                     onClick={() => setPlayerHeight(768)}
                     className={`px-3 py-2 text-[10.5px] font-mono rounded-lg border text-center transition-all ${
                       playerHeight === 768
-                        ? "bg-violet-600/10 border-violet-550 text-violet-405 font-bold text-violet-400 border-violet-500"
+                        ? "bg-cyan-600/10 border-cyan-550 text-cyan-405 font-bold text-cyan-400 border-cyan-500"
                         : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200"
                     }`}
                   >
@@ -557,7 +557,7 @@ export const CourseDetail: React.FC = () => {
                     onClick={() => setPlayerHeight(950)}
                     className={`px-3 py-2 text-[10.5px] font-mono rounded-lg border text-center transition-all ${
                       playerHeight === 950
-                        ? "bg-violet-600/10 border-violet-550 text-violet-405 font-bold text-violet-400 border-violet-500"
+                        ? "bg-cyan-600/10 border-cyan-550 text-cyan-405 font-bold text-cyan-400 border-cyan-500"
                         : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200"
                     }`}
                   >
@@ -567,7 +567,7 @@ export const CourseDetail: React.FC = () => {
                     onClick={() => setPlayerHeight(1200)}
                     className={`px-3 py-2 text-[10.5px] font-mono rounded-lg border text-center transition-all ${
                       playerHeight === 1200
-                        ? "bg-violet-600/10 border-violet-550 text-violet-405 font-bold text-violet-400 border-violet-500"
+                        ? "bg-cyan-600/10 border-cyan-550 text-cyan-405 font-bold text-cyan-400 border-cyan-500"
                         : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200"
                     }`}
                   >
@@ -590,7 +590,7 @@ export const CourseDetail: React.FC = () => {
                     step="20"
                     value={playerHeight}
                     onChange={(e) => setPlayerHeight(Number(e.target.value))}
-                    className="w-full accent-violet-500 cursor-pointer"
+                    className="w-full accent-cyan-500 cursor-pointer"
                   />
                   <div className="flex justify-between text-[9px] font-mono text-zinc-600">
                     <span>Min (450px)</span>
@@ -607,18 +607,18 @@ export const CourseDetail: React.FC = () => {
                     onClick={() => setIsTheaterMode(!isTheaterMode)}
                     className={`w-full px-4 py-2.5 rounded-lg border font-mono text-xs uppercase tracking-wide transition-all flex items-center justify-center gap-2 ${
                       isTheaterMode
-                        ? "bg-gradient-to-r from-violet-600/20 to-pink-500/20 border-violet-500 text-white font-bold"
+                        ? "bg-gradient-to-r from-cyan-600/20 to-teal-500/20 border-cyan-500 text-white font-bold"
                         : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200"
                     }`}
                   >
                     {isTheaterMode ? (
                       <>
-                        <Minimize2 className="w-4 h-4 text-pink-400" />
+                        <Minimize2 className="w-4 h-4 text-teal-400" />
                         <span>Szerokość: Pełny Ekran (Włączona)</span>
                       </>
                     ) : (
                       <>
-                        <Maximize2 className="w-4 h-4 text-violet-400" />
+                        <Maximize2 className="w-4 h-4 text-cyan-400" />
                         <span>Szerokość: Standardowa (Tryb Kinowy)</span>
                       </>
                     )}
@@ -653,7 +653,7 @@ export const CourseDetail: React.FC = () => {
             {/* Secure navigation status footer */}
             <div className="bg-zinc-950 border border-zinc-900 rounded-xl py-2.5 px-4 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-[10px] font-mono text-zinc-500">
               <span className="flex items-center gap-1.5 uppercase select-none">
-                <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
                 Szyfrowanie sesji: TLS 1.3 Enterprise Masked Environment
               </span>
               <span>
@@ -671,7 +671,7 @@ export const CourseDetail: React.FC = () => {
       <div className="max-w-md mx-auto text-center py-16 space-y-4">
         <HelpCircle className="w-12 h-12 text-zinc-500 mx-auto" />
         <h2 className="text-xl text-white font-medium">Brak danych kursu</h2>
-        <Link to="/" className="text-violet-400 font-medium">Powrót do katalogu</Link>
+        <Link to="/" className="text-cyan-400 font-medium">Powrót do katalogu</Link>
       </div>
     );
   }
@@ -702,7 +702,7 @@ export const CourseDetail: React.FC = () => {
             </div>
             <div>
               <span className="text-[10px] text-zinc-500 font-mono block uppercase">Poziom</span>
-              <span className="text-violet-400 font-medium font-semibold">{course.difficulty || "Dowolny"}</span>
+              <span className="text-cyan-400 font-medium font-semibold">{course.difficulty || "Dowolny"}</span>
             </div>
             <div className="col-span-2">
               <span className="text-[10px] text-zinc-500 font-mono block uppercase">Instruktor</span>
@@ -718,7 +718,7 @@ export const CourseDetail: React.FC = () => {
               </div>
               <div className="w-full h-1.5 bg-zinc-950 rounded-full overflow-hidden border border-zinc-800/50">
                 <div
-                  className="h-full bg-gradient-to-r from-violet-500 to-pink-500 rounded-full transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-cyan-500 to-teal-500 rounded-full transition-all duration-500"
                   style={{ width: `${completionPercent}%` }}
                 />
               </div>
@@ -731,8 +731,8 @@ export const CourseDetail: React.FC = () => {
               <span>Dostęp Odblokowany (Aktywne)</span>
             </div>
           ) : user && (user.role === "admin") ? (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 w-full justify-center bg-amber-500/10 border border-amber-800/40 rounded-xl text-xs font-mono text-amber-400">
-              <CheckCircle className="w-3.5 h-3.5 text-amber-400" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 w-full justify-center bg-cyan-500/10 border border-cyan-800/40 rounded-xl text-xs font-mono text-cyan-400">
+              <CheckCircle className="w-3.5 h-3.5 text-cyan-400" />
               <span className="uppercase tracking-wider font-semibold">Pełny Dostęp (Administracja/Staff)</span>
             </div>
           ) : course.pricing_model && course.pricing_model !== "free" ? (
@@ -758,7 +758,7 @@ export const CourseDetail: React.FC = () => {
                     placeholder="4242 4242 4242 4242"
                     value={cardNumber}
                     onChange={(e) => setCardNumber(e.target.value)}
-                    className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-2.5 px-3.5 text-xs text-zinc-200 focus:outline-none font-mono"
+                    className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-3.5 text-xs text-zinc-200 focus:outline-none font-mono"
                     maxLength={19}
                     required
                   />
@@ -772,7 +772,7 @@ export const CourseDetail: React.FC = () => {
                       placeholder="12/28"
                       value={cardExpiry}
                       onChange={(e) => setCardExpiry(e.target.value)}
-                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-2.5 px-3.5 text-xs text-zinc-200 focus:outline-none font-mono"
+                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-3.5 text-xs text-zinc-200 focus:outline-none font-mono"
                       maxLength={5}
                       required
                     />
@@ -785,7 +785,7 @@ export const CourseDetail: React.FC = () => {
                       placeholder="123"
                       value={cardCvc}
                       onChange={(e) => setCardCvc(e.target.value)}
-                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-2.5 px-3.5 text-xs text-zinc-200 focus:outline-none font-mono"
+                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-3.5 text-xs text-zinc-200 focus:outline-none font-mono"
                       maxLength={3}
                       required
                     />
@@ -796,7 +796,7 @@ export const CourseDetail: React.FC = () => {
               <button
                 type="submit"
                 disabled={isProcessingPayment}
-                className="w-full py-3 bg-gradient-to-r from-violet-600 to-pink-500 hover:opacity-90 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer"
+                className="w-full py-3 bg-gradient-to-r from-cyan-600 to-teal-500 hover:opacity-90 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer"
               >
                 {isProcessingPayment ? "Przetwarzanie..." : "Sfinalizuj płatność"}
               </button>
@@ -809,7 +809,7 @@ export const CourseDetail: React.FC = () => {
             <button
               id={`enroll-sidebar-${course.id}`}
               onClick={handleEnroll}
-              className="w-full py-3 bg-gradient-to-r from-violet-600 to-pink-500 hover:from-violet-500 hover:to-pink-400 text-white font-semibold rounded-xl text-xs tracking-wide uppercase cursor-pointer transition-all"
+              className="w-full py-3 bg-gradient-to-r from-cyan-600 to-teal-500 hover:from-cyan-500 hover:to-teal-400 text-white font-semibold rounded-xl text-xs tracking-wide uppercase cursor-pointer transition-all"
             >
               Zapisz się bezpłatnie
             </button>
@@ -820,7 +820,7 @@ export const CourseDetail: React.FC = () => {
         <div className="bg-zinc-90 w-full bg-zinc-900/40 border border-zinc-800 rounded-2xl overflow-hidden divide-y divide-zinc-800/60">
           <div className="px-5 py-4 bg-zinc-900/80 border-b border-zinc-800">
             <h3 className="text-xs font-mono text-zinc-400 uppercase tracking-widest flex items-center gap-2">
-              <Menu className="w-4 h-4 text-violet-400" />
+              <Menu className="w-4 h-4 text-cyan-400" />
               Spis treści kursu
             </h3>
           </div>
@@ -877,24 +877,24 @@ export const CourseDetail: React.FC = () => {
 
         {/* Certificate issue sidebar indicator if generated */}
         {certificate_code && (
-          <div className="p-5 bg-gradient-to-tr from-amber-950/30 to-zinc-900 border border-amber-500/30 rounded-2xl relative overflow-hidden space-y-3 shadow-2xl">
-            <div className="absolute top-3 right-3 text-amber-500 opacity-20">
+          <div className="p-5 bg-gradient-to-tr from-cyan-950/30 to-zinc-900 border border-cyan-500/30 rounded-2xl relative overflow-hidden space-y-3 shadow-2xl">
+            <div className="absolute top-3 right-3 text-cyan-500 opacity-20">
               <Award className="w-16 h-16" />
             </div>
-            <div className="flex items-center gap-2 text-amber-400">
+            <div className="flex items-center gap-2 text-cyan-400">
               <Award className="w-5 h-5" />
               <h3 className="font-display font-semibold text-sm">Twój Dyplom Ukończenia</h3>
             </div>
             <p className="text-xs text-zinc-400 leading-relaxed">
               Gratulacje! Wszystkie wymagania tego kursu zostały zaliczone. Twój certyfikat seryjny jest wygenerowany:
             </p>
-            <div className="p-3 bg-zinc-950 rounded-xl border border-zinc-800 text-center text-xs font-mono font-bold text-amber-300">
+            <div className="p-3 bg-zinc-950 rounded-xl border border-zinc-800 text-center text-xs font-mono font-bold text-cyan-300">
               {certificate_code}
             </div>
             <Link
               id="goto-verification"
               to={`/certificate-verify?code=${certificate_code}`}
-              className="block w-full py-2 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-center rounded-xl text-xs font-mono text-amber-400 uppercase transition-all"
+              className="block w-full py-2 bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 text-center rounded-xl text-xs font-mono text-cyan-400 uppercase transition-all"
             >
               Przejdź do weryfikacji
             </Link>
@@ -936,7 +936,7 @@ export const CourseDetail: React.FC = () => {
             onClick={() => setActiveViewTab("overview")}
             className={`px-4 py-3 text-xs font-mono uppercase tracking-wider border-b-2 font-bold cursor-pointer transition-all flex items-center gap-2 ${
               activeViewTab === "overview"
-                ? "border-violet-500 text-white"
+                ? "border-cyan-500 text-white"
                 : "border-transparent text-zinc-500 hover:text-zinc-300"
             }`}
           >
@@ -955,7 +955,7 @@ export const CourseDetail: React.FC = () => {
             }}
             className={`px-4 py-3 text-xs font-mono uppercase tracking-wider border-b-2 font-bold cursor-pointer transition-all flex items-center gap-2 ${
               activeViewTab === "lessons"
-                ? "border-violet-500 text-white"
+                ? "border-cyan-500 text-white"
                 : "border-transparent text-zinc-500 hover:text-zinc-400"
             } ${!enrolled && !(user && (user.role === "admin")) ? "opacity-60" : ""}`}
           >
@@ -973,8 +973,8 @@ export const CourseDetail: React.FC = () => {
             <div className="p-8 rounded-2xl bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-800 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                 <div className="space-y-4">
-                  <span className="text-[10px] font-mono text-violet-400 uppercase tracking-widest font-bold block">
-                    Hardban Academy Presents / HardbanRecordsLab-Academy
+                  <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest font-bold block">
+                    HRL Nova Campus Presents / Hardban Records Lab
                   </span>
                   <h1 className="text-3xl sm:text-4xl font-display font-medium text-white tracking-tight">
                     {course.title}
@@ -993,7 +993,7 @@ export const CourseDetail: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <Link2 className="w-3.5 h-3.5 text-pink-400" />
+                      <Link2 className="w-3.5 h-3.5 text-teal-400" />
                       <span>Kopiuj Link</span>
                     </>
                   )}
@@ -1008,7 +1008,7 @@ export const CourseDetail: React.FC = () => {
             {course.title.includes("Cyfrowy Zen") && (
               <div className="space-y-4">
                 <h3 className="text-xs font-mono text-zinc-400 uppercase tracking-widest flex items-center gap-2 font-bold">
-                  <Video className="w-4 h-4 text-violet-400" />
+                  <Video className="w-4 h-4 text-cyan-400" />
                   Inauguracja Procesu (Wideo Wprowadzające)
                 </h3>
                 
@@ -1037,7 +1037,7 @@ export const CourseDetail: React.FC = () => {
               </div>
               <div className="p-4 bg-zinc-900/60 border border-zinc-800/80 rounded-xl space-y-1">
                 <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider block">Uzyskiwany tytuł</span>
-                <span className="text-xs font-semibold text-violet-400 block truncate">
+                <span className="text-xs font-semibold text-cyan-400 block truncate">
                   {course.title.includes("Cyfrowy Zen") ? "Certyfikat Suwerenności" : "Certyfikat HRL"}
                 </span>
               </div>
@@ -1052,7 +1052,7 @@ export const CourseDetail: React.FC = () => {
             {/* 4. Struktura Wiedzy / Moduły (Fully Dynamic & Styled Premium for All Courses) */}
             <div className="space-y-4">
               <h3 className="text-xs font-mono text-zinc-400 uppercase tracking-widest flex items-center gap-2 font-bold">
-                <BookOpen className="w-4 h-4 text-violet-400" />
+                <BookOpen className="w-4 h-4 text-cyan-400" />
                 Architektura Programu (Struktura Wiedzy)
               </h3>
 
@@ -1061,7 +1061,7 @@ export const CourseDetail: React.FC = () => {
                   <div key={mod.id} className="p-5 sm:p-6 bg-zinc-900 border border-zinc-800/80 rounded-2xl space-y-4 shadow-xl">
                     <div className="flex flex-col sm:flex-row justify-between sm:items-center border-b border-zinc-800/50 pb-3 gap-2">
                       <div>
-                        <span className="text-[10px] font-mono text-pink-500 font-bold uppercase tracking-wider">
+                        <span className="text-[10px] font-mono text-teal-500 font-bold uppercase tracking-wider">
                           MODUŁ {index + 1}
                         </span>
                         <h4 className="text-base sm:text-lg font-display font-medium text-white tracking-tight mt-0.5">
@@ -1097,10 +1097,10 @@ export const CourseDetail: React.FC = () => {
                             )}
                           </div>
                           <div className="flex items-center gap-1 text-[10px] font-mono text-zinc-500 mt-2 pt-2 border-t border-zinc-900/60">
-                            <Clock className="w-3.5 h-3.5 text-violet-400" />
+                            <Clock className="w-3.5 h-3.5 text-cyan-400" />
                             <span>{les.duration_minutes} min</span>
                             {les.access_level === "free_preview" && (
-                              <span className="ml-auto text-[9px] text-violet-400 uppercase tracking-widest font-bold">Obywatel wolny</span>
+                              <span className="ml-auto text-[9px] text-cyan-400 uppercase tracking-widest font-bold">Obywatel wolny</span>
                             )}
                           </div>
                         </div>
@@ -1121,25 +1121,25 @@ export const CourseDetail: React.FC = () => {
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   <div className="p-4 bg-zinc-950 rounded-lg border border-zinc-900 space-y-1">
-                    <span className="text-[10px] font-mono font-bold text-violet-400 block">1. TEMAT DNIA</span>
+                    <span className="text-[10px] font-mono font-bold text-cyan-400 block">1. TEMAT DNIA</span>
                     <p className="text-[11px] text-zinc-400 leading-normal">
                       Teoretyczne wprowadzenie do problemu (np. mechanizm zmiennego nagradzania w social media, utrata myślenia sekwencyjnego).
                     </p>
                   </div>
                   <div className="p-4 bg-zinc-950 rounded-lg border border-zinc-900 space-y-1">
-                    <span className="text-[10px] font-mono font-bold text-violet-400 block">2. GŁĘBOKA REFLEKSJA</span>
+                    <span className="text-[10px] font-mono font-bold text-cyan-400 block">2. GŁĘBOKA REFLEKSJA</span>
                     <p className="text-[11px] text-zinc-400 leading-normal">
                       Pytania skłaniające użytkownika do krytycznej samooceny (np. analiza fizycznego oporu przy czytaniu długich tekstów).
                     </p>
                   </div>
                   <div className="p-4 bg-zinc-950 rounded-lg border border-zinc-900 space-y-1">
-                    <span className="text-[10px] font-mono font-bold text-pink-400 block">3. PRAKTYKA W REALU</span>
+                    <span className="text-[10px] font-mono font-bold text-teal-400 block">3. PRAKTYKA W REALU</span>
                     <p className="text-[11px] text-zinc-400 leading-normal">
                       Konkretne, codzienne zadanie do wykonania (np. 15 minut ciszy bez urządzeń, 10-minutowe opóźnianie gratyfikacji dopaminowej).
                     </p>
                   </div>
                   <div className="p-4 bg-zinc-950 rounded-lg border border-zinc-900 space-y-1">
-                    <span className="text-[10px] font-mono font-bold text-pink-400 block">4. MOMENT AHA!</span>
+                    <span className="text-[10px] font-mono font-bold text-teal-400 block">4. MOMENT AHA!</span>
                     <p className="text-[11px] text-zinc-400 leading-normal">
                       Myśl przewodnia, podsumowująca esencję danej lekcji i budująca trwałe, suwerenne przekonanie.
                     </p>
@@ -1149,7 +1149,7 @@ export const CourseDetail: React.FC = () => {
             )}
 
             {/* 6. Dedykowany Panel Decyzji Dostępu (Checkout CTA) */}
-            <div className="p-6 bg-gradient-to-tr from-violet-950/20 to-zinc-900 border border-violet-500/20 rounded-2xl text-center space-y-5">
+            <div className="p-6 bg-gradient-to-tr from-cyan-950/20 to-zinc-900 border border-cyan-500/20 rounded-2xl text-center space-y-5">
               <div className="space-y-1.5">
                 <h3 className="text-lg font-bold text-white">Status i Dostęp do Programu</h3>
                 <p className="text-xs text-zinc-400 max-w-md mx-auto">
@@ -1169,7 +1169,7 @@ export const CourseDetail: React.FC = () => {
                         setActiveViewTab("lessons");
                         window.scrollTo(0, 0);
                       }}
-                      className="px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-500 hover:from-violet-500 hover:to-pink-400 text-white font-semibold rounded-xl text-xs uppercase tracking-wider cursor-pointer transition-all"
+                      className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-teal-500 hover:from-cyan-500 hover:to-teal-400 text-white font-semibold rounded-xl text-xs uppercase tracking-wider cursor-pointer transition-all"
                     >
                       Przejdź do Odtwarzacza Lekcji ▶
                     </button>
@@ -1177,8 +1177,8 @@ export const CourseDetail: React.FC = () => {
                 </div>
               ) : user && (user.role === "admin") ? (
                 <div className="space-y-3">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-800/40 rounded-full text-xs font-mono text-amber-300">
-                    <CheckCircle className="w-3.5 h-3.5 text-amber-400" />
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-cyan-500/10 border border-cyan-800/40 rounded-full text-xs font-mono text-cyan-300">
+                    <CheckCircle className="w-3.5 h-3.5 text-cyan-400" />
                     <span>Pełny Podgląd (Wydawca/Staff)</span>
                   </div>
                   <div>
@@ -1217,7 +1217,7 @@ export const CourseDetail: React.FC = () => {
                         placeholder="4242 4242 4242 4242"
                         value={cardNumber}
                         onChange={(e) => setCardNumber(e.target.value)}
-                        className="w-full bg-zinc-900 border border-zinc-800 focus:border-violet-500 rounded-xl py-2.5 px-3.5 text-xs text-zinc-200 focus:outline-none font-mono"
+                        className="w-full bg-zinc-900 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-3.5 text-xs text-zinc-200 focus:outline-none font-mono"
                         maxLength={19}
                         required
                       />
@@ -1231,7 +1231,7 @@ export const CourseDetail: React.FC = () => {
                           placeholder="12/28"
                           value={cardExpiry}
                           onChange={(e) => setCardExpiry(e.target.value)}
-                          className="w-full bg-zinc-900 border border-zinc-800 focus:border-violet-500 rounded-xl py-2.5 px-3.5 text-xs text-zinc-200 focus:outline-none font-mono"
+                          className="w-full bg-zinc-900 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-3.5 text-xs text-zinc-200 focus:outline-none font-mono"
                           maxLength={5}
                           required
                         />
@@ -1244,7 +1244,7 @@ export const CourseDetail: React.FC = () => {
                           placeholder="123"
                           value={cardCvc}
                           onChange={(e) => setCardCvc(e.target.value)}
-                          className="w-full bg-zinc-900 border border-zinc-800 focus:border-violet-500 rounded-xl py-2.5 px-3.5 text-xs text-zinc-200 focus:outline-none font-mono"
+                          className="w-full bg-zinc-900 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-3.5 text-xs text-zinc-200 focus:outline-none font-mono"
                           maxLength={3}
                           required
                         />
@@ -1255,7 +1255,7 @@ export const CourseDetail: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isProcessingPayment}
-                    className="w-full py-3 bg-gradient-to-r from-violet-600 to-pink-500 hover:opacity-90 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer"
+                    className="w-full py-3 bg-gradient-to-r from-cyan-600 to-teal-500 hover:opacity-90 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer"
                   >
                     {isProcessingPayment ? "Przetwarzanie transakcji..." : `Sfinalizuj płatność i odblokuj kurs`}
                   </button>
@@ -1268,7 +1268,7 @@ export const CourseDetail: React.FC = () => {
                 <div>
                   <button
                     onClick={handleEnroll}
-                    className="px-8 py-3.5 bg-gradient-to-r from-violet-600 to-pink-500 hover:from-violet-500 hover:to-pink-400 text-white font-bold rounded-xl text-xs uppercase tracking-widest cursor-pointer transition-all shadow-md"
+                    className="px-8 py-3.5 bg-gradient-to-r from-cyan-600 to-teal-500 hover:from-cyan-500 hover:to-teal-400 text-white font-bold rounded-xl text-xs uppercase tracking-widest cursor-pointer transition-all shadow-md"
                   >
                     Rozpocznij Bezpłatną Transformację
                   </button>
@@ -1314,7 +1314,7 @@ export const CourseDetail: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        <Link2 className="w-3.5 h-3.5 text-pink-400" />
+                        <Link2 className="w-3.5 h-3.5 text-teal-400" />
                         <span>Kopiuj Link</span>
                       </>
                     )}
@@ -1360,7 +1360,7 @@ export const CourseDetail: React.FC = () => {
                     <button
                       id="premium-cta-enroll"
                       onClick={handleEnroll}
-                      className="px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-500 hover:from-violet-500 hover:to-pink-400 text-white font-semibold rounded-xl text-xs uppercase tracking-wider shadow-lg hover:shadow-violet-600/10 transition-all cursor-pointer inline-block"
+                      className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-teal-500 hover:from-cyan-500 hover:to-teal-400 text-white font-semibold rounded-xl text-xs uppercase tracking-wider shadow-lg hover:shadow-cyan-600/10 transition-all cursor-pointer inline-block"
                     >
                       Odblokuj dostęp szkoleniowy
                     </button>
@@ -1383,10 +1383,10 @@ export const CourseDetail: React.FC = () => {
                       {/* Visual equalizer or state overlay */}
                       {isPlaying && (
                         <div className="flex gap-1.5 items-end justify-center mt-6 h-10">
-                          <div className="w-1 bg-violet-500 h-6 animate-bounce" style={{ animationDelay: '0.1s' }} />
-                          <div className="w-1 bg-pink-500 h-10 animate-bounce" style={{ animationDelay: '0.3s' }} />
-                          <div className="w-1 bg-violet-400 h-4 animate-bounce" style={{ animationDelay: '0.5s' }} />
-                          <div className="w-1 bg-pink-400 h-8 animate-bounce" style={{ animationDelay: '0.2s' }} />
+                          <div className="w-1 bg-cyan-500 h-6 animate-bounce" style={{ animationDelay: '0.1s' }} />
+                          <div className="w-1 bg-teal-500 h-10 animate-bounce" style={{ animationDelay: '0.3s' }} />
+                          <div className="w-1 bg-cyan-400 h-4 animate-bounce" style={{ animationDelay: '0.5s' }} />
+                          <div className="w-1 bg-teal-400 h-8 animate-bounce" style={{ animationDelay: '0.2s' }} />
                         </div>
                       )}
                     </div>
@@ -1396,7 +1396,7 @@ export const CourseDetail: React.FC = () => {
                       <button
                         id="video-player-play-inner"
                         onClick={() => setIsPlaying(true)}
-                        className="absolute inset-x-0 inset-y-0 m-auto w-16 h-16 bg-violet-600/90 hover:bg-violet-500 text-white rounded-full flex items-center justify-center shadow-2xl transition-transform hover:scale-110 cursor-pointer border border-violet-400/20"
+                        className="absolute inset-x-0 inset-y-0 m-auto w-16 h-16 bg-cyan-600/90 hover:bg-cyan-500 text-white rounded-full flex items-center justify-center shadow-2xl transition-transform hover:scale-110 cursor-pointer border border-cyan-400/20"
                       >
                         <Play className="w-6 h-6 fill-white ml-1" />
                       </button>
@@ -1407,7 +1407,7 @@ export const CourseDetail: React.FC = () => {
                       {/* Tracker bar */}
                       <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden cursor-pointer relative">
                         <div
-                          className="absolute h-full bg-violet-500 rounded-full"
+                          className="absolute h-full bg-cyan-500 rounded-full"
                           style={{ width: `${videoProgress}%` }}
                         />
                       </div>
@@ -1417,7 +1417,7 @@ export const CourseDetail: React.FC = () => {
                           <button
                             id="video-player-toggle-play"
                             onClick={() => setIsPlaying(!isPlaying)}
-                            className="hover:text-white transition-colors uppercase font-bold text-violet-400 bg-violet-950/20 px-2 py-0.5 rounded border border-violet-900/40"
+                            className="hover:text-white transition-colors uppercase font-bold text-cyan-400 bg-cyan-950/20 px-2 py-0.5 rounded border border-cyan-900/40"
                           >
                             {isPlaying ? "Pauza" : "Odtwarzaj"}
                           </button>
@@ -1441,15 +1441,15 @@ export const CourseDetail: React.FC = () => {
                           h2: ({node, ...props}) => <h2 className="text-xl font-bold text-white mt-5 mb-3" {...props} />,
                           h3: ({node, ...props}) => <h3 className="text-lg font-bold text-white mt-4 mb-2" {...props} />,
                           p: ({node, ...props}) => <p className="mb-4" {...props} />,
-                          a: ({node, ...props}) => <a className="text-violet-400 hover:text-violet-300 underline" {...props} />,
+                          a: ({node, ...props}) => <a className="text-cyan-400 hover:text-cyan-300 underline" {...props} />,
                           ul: ({node, ...props}) => <ul className="list-disc pl-5 mb-4 space-y-1" {...props} />,
                           ol: ({node, ...props}) => <ol className="list-decimal pl-5 mb-4 space-y-1" {...props} />,
                           li: ({node, ...props}) => <li className="text-zinc-300" {...props} />,
-                          blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-violet-500 pl-4 py-1 italic text-zinc-400 bg-zinc-950/50 rounded-r" {...props} />,
+                          blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-cyan-500 pl-4 py-1 italic text-zinc-400 bg-zinc-950/50 rounded-r" {...props} />,
                           code: ({node, ...props}) => {
                             const typedProps = props as any;
                             return typedProps.inline ? 
-                              <code className="bg-zinc-800 px-1.5 py-0.5 rounded text-violet-300 font-mono text-xs" {...props} /> :
+                              <code className="bg-zinc-800 px-1.5 py-0.5 rounded text-cyan-300 font-mono text-xs" {...props} /> :
                               <code className="block bg-zinc-950 p-4 rounded-xl border border-zinc-800 overflow-x-auto text-zinc-300 font-mono text-xs my-4" {...props} />
                           },
                           img: ({node, ...props}) => <img className="rounded-xl border border-zinc-800 my-4 max-w-full" {...props} />,
@@ -1467,7 +1467,7 @@ export const CourseDetail: React.FC = () => {
                   {quizQuestions.length > 0 && (
                     <div id="lesson-evaluation-quiz-block" className="p-6 bg-zinc-900/60 border border-zinc-800 rounded-2xl space-y-6">
                       <div className="flex items-center justify-between gap-4 border-b border-zinc-800 pb-4">
-                        <div className="flex items-center gap-2 text-violet-400">
+                        <div className="flex items-center gap-2 text-cyan-400">
                           <ClipboardCheck className="w-5 h-5" />
                           <h3 className="font-display font-semibold text-lg text-white">Wymagany test wiedzy (Quiz)</h3>
                         </div>
@@ -1488,7 +1488,7 @@ export const CourseDetail: React.FC = () => {
                             return (
                               <div key={q.id} className="space-y-3 bg-zinc-950 p-4 rounded-xl border border-zinc-800/80">
                                 <h4 className="text-sm font-semibold text-zinc-101 flex gap-2">
-                                  <span className="text-violet-400 font-mono">{idx + 1}.</span>
+                                  <span className="text-cyan-400 font-mono">{idx + 1}.</span>
                                   {q.question_text}
                                 </h4>
                                 
@@ -1503,12 +1503,12 @@ export const CourseDetail: React.FC = () => {
                                         onClick={() => handleQuizAnswer(q.id, opt.key)}
                                         className={`p-3 text-left rounded-xl border text-xs leading-relaxed transition-all cursor-pointer flex gap-3 items-center ${
                                           isSelected
-                                            ? "bg-violet-950/20 border-violet-500 text-violet-200 font-semibold"
+                                            ? "bg-cyan-950/20 border-cyan-500 text-cyan-200 font-semibold"
                                             : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-300"
                                         }`}
                                       >
                                         <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-mono font-bold ${
-                                          isSelected ? "bg-violet-500 text-white" : "bg-zinc-950 text-zinc-500"
+                                          isSelected ? "bg-cyan-500 text-white" : "bg-zinc-950 text-zinc-500"
                                         }`}>
                                           {opt.key}
                                         </span>
@@ -1524,7 +1524,7 @@ export const CourseDetail: React.FC = () => {
                           <button
                             id="submit-quiz"
                             type="submit"
-                            className="px-6 py-3.5 bg-gradient-to-r from-violet-600 to-pink-500 hover:from-violet-500 hover:to-pink-400 text-white font-semibold rounded-xl text-xs tracking-widest uppercase shadow-lg transition-all cursor-pointer inline-flex items-center gap-2"
+                            className="px-6 py-3.5 bg-gradient-to-r from-cyan-600 to-teal-500 hover:from-cyan-500 hover:to-teal-400 text-white font-semibold rounded-xl text-xs tracking-widest uppercase shadow-lg transition-all cursor-pointer inline-flex items-center gap-2"
                           >
                             <ClipboardCheck className="w-4 h-4" />
                             Wyślij Odpowiedzi na Serwer
@@ -1534,7 +1534,7 @@ export const CourseDetail: React.FC = () => {
                         /* Quiz Results Panel with Retake button */
                         <div className="p-6 bg-zinc-950 rounded-xl border border-zinc-800 space-y-6 text-center">
                           <div className="inline-flex p-4 rounded-2xl bg-zinc-900 border border-zinc-800">
-                            <Award className={`w-8 h-8 ${quizResult.passed ? "text-amber-400" : "text-zinc-500"}`} />
+                            <Award className={`w-8 h-8 ${quizResult.passed ? "text-cyan-400" : "text-zinc-500"}`} />
                           </div>
                           
                           <div className="space-y-2">
@@ -1548,8 +1548,8 @@ export const CourseDetail: React.FC = () => {
 
                           {/* Certificate generation reward sparkle notification! */}
                           {quizResult.passed && quizResult.score_percent === 100 && (
-                            <div className="max-w-md mx-auto p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 font-mono text-xs text-center flex items-center gap-2.5 justify-center">
-                              <Sparkles className="w-4 h-4 text-amber-400" />
+                            <div className="max-w-md mx-auto p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-xl text-cyan-300 font-mono text-xs text-center flex items-center gap-2.5 justify-center">
+                              <Sparkles className="w-4 h-4 text-cyan-400" />
                               <span>Maksymalny wynik! Dyplom gotowy do pobrania.</span>
                             </div>
                           )}
@@ -1584,7 +1584,7 @@ export const CourseDetail: React.FC = () => {
             </div>
           ) : (
             <div className="p-12 text-center border-2 border-dashed border-zinc-800 rounded-2xl text-zinc-500 space-y-3">
-              <BookOpen className="w-10 h-10 mx-auto opacity-40 text-violet-500" />
+              <BookOpen className="w-10 h-10 mx-auto opacity-40 text-cyan-500" />
               <h3 className="text-white text-sm font-semibold">Brak wybranej lekcji</h3>
               <p className="text-xs text-zinc-400 max-w-xs mx-auto">
                 Wybierz lekcję ze spisu treści po lewej stronie, aby otworzyć materiały dydaktyczne i rozpocząć trening.

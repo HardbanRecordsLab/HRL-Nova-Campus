@@ -20,28 +20,25 @@ export const Navigation: React.FC = () => {
   };
 
   return (
-    <nav id="main-navigation" className="sticky top-0 z-40 bg-zinc-950/80 border-b border-zinc-800 blurred-backdrop">
+    <nav id="main-navigation" className="sticky top-0 z-40 bg-[#0a1120]/80 border-b border-cyan-500/10 blurred-backdrop">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo & Telemetry Indicator */}
           <div className="flex items-center gap-6">
             <Link id="nav-brand-logo" to="/" className="flex items-center gap-3 group">
-              <div className="relative p-0.5 bg-gradient-to-tr from-violet-600 via-amber-400 to-pink-500 rounded-2xl group-hover:scale-105 transition-transform shadow-[0_0_20px_rgba(139,92,246,0.3)]">
+              <div className="relative p-1 brand-logo-tile rounded-2xl group-hover:scale-105 transition-transform">
                 <img
                   src="/logo_3d.jpg"
-                  alt="HRL Pro Logo"
-                  className="w-9 h-9 rounded-xl object-cover border border-zinc-900"
+                  alt="HRL Nova Campus"
+                  className="w-9 h-9 rounded-xl object-cover"
                 />
               </div>
               <div className="flex flex-col">
                 <span className="font-display font-bold text-lg leading-none tracking-tight text-white flex items-center gap-1.5">
-                  HRL Academy
-                  <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-gradient-to-r from-amber-500/20 to-violet-500/20 border border-amber-500/30 text-amber-300 rounded-md">
-                    PRO 3D
-                  </span>
+                  HRL <span className="text-gradient">Nova Campus</span>
                 </span>
-                <span className="text-[10px] font-mono tracking-wider text-zinc-400 font-medium uppercase leading-none mt-1">
-                  Digital Sovereignty Core
+                <span className="text-[10px] font-mono tracking-[0.18em] text-cyan-300/70 font-medium uppercase leading-none mt-1">
+                  Learn · Create · Evolve
                 </span>
               </div>
             </Link>
@@ -106,7 +103,7 @@ export const Navigation: React.FC = () => {
                 to="/admin"
                 className={({ isActive }) =>
                   `px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
-                    isActive ? "bg-zinc-805 bg-violet-950/40 border border-violet-800/40 text-violet-200 font-semibold" : "text-violet-400 hover:text-violet-200"
+                    isActive ? "bg-zinc-805 bg-cyan-950/40 border border-cyan-800/40 text-cyan-200 font-semibold" : "text-cyan-400 hover:text-cyan-200"
                   }`
                 }
               >
@@ -120,7 +117,7 @@ export const Navigation: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
                onClick={toggleLanguage}
-               className="p-2.5 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-violet-400 rounded-xl transition-all cursor-pointer flex items-center gap-2 font-mono text-[10px] font-bold"
+               className="p-2.5 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-cyan-400 rounded-xl transition-all cursor-pointer flex items-center gap-2 font-mono text-[10px] font-bold"
                title="Zmień język"
             >
                <Globe className="w-4 h-4" />
@@ -160,7 +157,7 @@ export const Navigation: React.FC = () => {
                 <Link
                   id="nav-link-register"
                   to="/register"
-                  className="px-4 py-2 bg-gradient-to-r from-violet-600 to-pink-500 hover:from-violet-500 hover:to-pink-400 text-white rounded-xl text-sm font-medium transition-all shadow-lg hover:shadow-violet-600/20"
+                  className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-teal-500 hover:from-cyan-500 hover:to-teal-400 text-white rounded-xl text-sm font-medium transition-all shadow-lg hover:shadow-cyan-600/20"
                 >
                   Rejestracja
                 </Link>

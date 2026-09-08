@@ -30,7 +30,7 @@ export const ActivityLog: React.FC<{ userId: string; token?: string }> = ({ user
   return (
     <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 space-y-5">
       <h3 className="text-sm font-mono uppercase tracking-wider text-white flex items-center gap-2 border-b border-zinc-800/80 pb-3">
-        <Clock className="w-4 h-4 text-violet-400" />
+        <Clock className="w-4 h-4 text-cyan-400" />
         Aktywność w Czasie Rzeczywistym
       </h3>
       <div className="space-y-4">

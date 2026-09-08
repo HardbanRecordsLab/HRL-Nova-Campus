@@ -13,7 +13,7 @@ export const AdminCharts: React.FC<{ logs: ActivityLog[] }> = ({ logs }) => {
     return Object.entries(counts).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value).slice(0, 5);
   }, [logs]);
 
-  const COLORS = ['#8b5cf6', '#ec4899', '#10b981', '#f59e0b', '#3b82f6'];
+  const COLORS = ['#22d3ee', '#14b8a6', '#10b981', '#3b82f6', '#0e7490'];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
@@ -28,7 +28,7 @@ export const AdminCharts: React.FC<{ logs: ActivityLog[] }> = ({ logs }) => {
               <Tooltip 
                 cursor={{fill: '#27272a', opacity: 0.4}}
                 contentStyle={{ backgroundColor: '#09090b', borderColor: '#27272a', fontSize: '12px', color: '#e4e4e7' }} 
-                itemStyle={{ color: '#a78bfa' }}
+                itemStyle={{ color: '#22d3ee' }}
               />
               <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                 {methodData.map((entry, index) => (

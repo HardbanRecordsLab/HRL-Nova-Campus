@@ -179,7 +179,7 @@ export const AdminJSONImporter: React.FC<{ token: string | null; addToast: (msg:
         {/* Left Column Config */}
         <div className="lg:col-span-4 bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-4">
           <div className="flex items-center gap-2 border-b border-zinc-850 pb-2 bg-gradient-to-tr">
-            <Database className="w-4 h-4 text-violet-400" />
+            <Database className="w-4 h-4 text-cyan-400" />
             <h4 className="text-xs font-mono uppercase tracking-wider text-zinc-300">Wytwórnia danych</h4>
           </div>
 
@@ -189,7 +189,7 @@ export const AdminJSONImporter: React.FC<{ token: string | null; addToast: (msg:
               title="Import Type"
               value={importType}
               onChange={(e) => setImportType(e.target.value as any)}
-              className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-3 px-4 text-sm text-zinc-200 focus:outline-none cursor-pointer"
+              className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-3 px-4 text-sm text-zinc-200 focus:outline-none cursor-pointer"
             >
               <option value="courses">Kursy (courses)</option>
               <option value="lessons">Lekcje (lessons)</option>
@@ -267,9 +267,9 @@ export const AdminJSONImporter: React.FC<{ token: string | null; addToast: (msg:
             onDragOver={preventDragDefault}
             onDragEnter={preventDragDefault}
             onDrop={handleFileDrop}
-            className="border-2 border-dashed border-zinc-850 hover:border-violet-500 bg-zinc-950/40 rounded-2xl p-8 hover:bg-zinc-950/20 text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-3 group"
+            className="border-2 border-dashed border-zinc-850 hover:border-cyan-500 bg-zinc-950/40 rounded-2xl p-8 hover:bg-zinc-950/20 text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-3 group"
           >
-            <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-850 group-hover:scale-110 flex items-center justify-center text-zinc-400 group-hover:text-violet-400 transition-all shadow-xl">
+            <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-850 group-hover:scale-110 flex items-center justify-center text-zinc-400 group-hover:text-cyan-400 transition-all shadow-xl">
               <Upload className="w-5 h-5" />
             </div>
             <div className="space-y-1">
@@ -285,7 +285,7 @@ export const AdminJSONImporter: React.FC<{ token: string | null; addToast: (msg:
               value={rawJson}
               onChange={handleTextareaChange}
               placeholder="[{ ... }, { ... }]"
-              className="w-full bg-zinc-950 border border-zinc-850 focus:border-violet-500 rounded-xl p-4 text-xs font-mono text-emerald-400 focus:outline-none transition-all"
+              className="w-full bg-zinc-950 border border-zinc-850 focus:border-cyan-500 rounded-xl p-4 text-xs font-mono text-emerald-400 focus:outline-none transition-all"
             />
           </div>
 
@@ -301,7 +301,7 @@ export const AdminJSONImporter: React.FC<{ token: string | null; addToast: (msg:
           <button
             onClick={handleJsonImportSubmit}
             disabled={isImporting || !rawJson.trim()}
-            className="px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-500 hover:from-violet-500 hover:to-pink-400 text-white font-semibold rounded-xl text-xs uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer font-bold"
+            className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-teal-500 hover:from-cyan-500 hover:to-teal-400 text-white font-semibold rounded-xl text-xs uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer font-bold"
           >
             {isImporting ? "Uruchamianie procedury..." : "Zainicjuj Masowy Import"}
           </button>

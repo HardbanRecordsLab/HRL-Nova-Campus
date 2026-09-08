@@ -22,7 +22,7 @@ const StudentDashboard = lazy(() => import("./pages/StudentDashboard").then((m) 
 function PageLoader() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[50vh] text-zinc-400 gap-3" role="status" aria-label="Ładowanie zawartości">
-      <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
+      <Loader2 className="w-8 h-8 animate-spin text-cyan-500" />
       <span className="text-sm font-medium">Ładowanie modułu...</span>
     </div>
   );
@@ -49,7 +49,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
 
 function AppLayout() {
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-950 font-sans selection:bg-violet-500/30 selection:text-violet-200">
+    <div className="flex flex-col min-h-screen bg-transparent font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
       <Navigation />
       
       {/* Toast container floating alert drawer */}

@@ -5,18 +5,25 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Space Grotesk", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
-  
-  --color-brand-primary: #8b5cf6; /* purple-500 */
-  --color-brand-secondary: #ec4899; /* pink-500 */
-  --color-background-dark: #09090b; /* zinc-950 */
-  --color-surface-dark: #18181b; /* zinc-900 */
+
+  /* Brand palette derived from logo_3d.jpg — deep navy + luminous teal/cyan */
+  --color-brand-primary: #22d3ee;   /* cyan-400 — the sparkle / accent teal */
+  --color-brand-secondary: #14b8a6; /* teal-500 — supporting teal */
+  --color-brand-navy: #0e2a47;      /* deep navy of the HRL wordmark */
+  --color-brand-navy-deep: #0a1a2f; /* darkest navy */
+  --color-background-dark: #0a1120; /* navy-tinted near-black */
+  --color-surface-dark: #111c2e;    /* navy surface */
 }
 
 /* Base modifications for beautiful custom ambient look */
 body {
   font-family: var(--font-sans);
-  background-color: #09090b;
-  color: #f4f4f5;
+  background-color: #0a1120;
+  background-image:
+    radial-gradient(60rem 60rem at 78% -10%, rgba(34, 211, 238, 0.06), transparent 60%),
+    radial-gradient(50rem 50rem at -10% 15%, rgba(20, 184, 166, 0.05), transparent 55%);
+  background-attachment: fixed;
+  color: #eef4f8;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -26,14 +33,14 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #09090b;
+  background: #0a1120;
 }
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: #1e3a52;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: #22d3ee;
 }
 
 /* Beautiful custom blurred backdrops */
@@ -43,7 +50,33 @@ body {
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #a78bfa 0%, #f472b6 100%);
+  background: linear-gradient(135deg, #22d3ee 0%, #14b8a6 55%, #0ea5b7 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+/* Brand logo tile — keeps the light-background logo legible on the dark UI */
+.brand-logo-tile {
+  background: radial-gradient(circle at 30% 25%, #ffffff 0%, #eef4f8 100%);
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.35),
+    0 0 22px rgba(34, 211, 238, 0.28);
+}
+
+/* 4-point sparkle echoing the logo star, usable as a decorative accent */
+.brand-sparkle {
+  position: relative;
+}
+.brand-sparkle::after {
+  content: "";
+  position: absolute;
+  width: 26%;
+  aspect-ratio: 1;
+  top: -9%;
+  right: -7%;
+  background: #22d3ee;
+  clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
+  filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.75));
+  pointer-events: none;
 }

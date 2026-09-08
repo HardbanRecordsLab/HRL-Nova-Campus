@@ -1282,11 +1282,11 @@ export const AdminPanel: React.FC = () => {
     <div id="admin-panel-workspace" className="space-y-8 pb-16">
       
       {/* 1. Pro Command Center Hero Banner */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 border border-amber-500/30 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 justify-between shadow-[0_0_35px_rgba(0,0,0,0.9)]">
+      <section className="relative overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 border border-cyan-500/30 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 justify-between shadow-[0_0_35px_rgba(0,0,0,0.9)]">
         <div className="space-y-3 text-center md:text-left z-10 max-w-2xl">
-          <div className="inline-flex py-1.5 px-3.5 bg-gradient-to-r from-amber-500/10 via-violet-500/10 to-pink-500/10 rounded-full text-xs font-mono text-amber-300 items-center gap-2 border border-amber-500/30 shadow-inner">
-            <ShieldAlert className="w-4 h-4 text-amber-400 animate-pulse" />
-            <span className="font-semibold tracking-wide">Centrum Dowodzenia HRL Academy Pro</span>
+          <div className="inline-flex py-1.5 px-3.5 bg-gradient-to-r from-cyan-500/10 via-cyan-500/10 to-teal-500/10 rounded-full text-xs font-mono text-cyan-300 items-center gap-2 border border-cyan-500/30 shadow-inner">
+            <ShieldAlert className="w-4 h-4 text-cyan-400 animate-pulse" />
+            <span className="font-semibold tracking-wide">Centrum Dowodzenia HRL Nova Campus</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-display font-bold text-white tracking-tight leading-tight">
             Konsola Zarządzania i Administracji
@@ -1298,7 +1298,7 @@ export const AdminPanel: React.FC = () => {
           {/* Quick Metrics Ribbon */}
           <div className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-3">
             <div className="px-3 py-1.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-xs font-mono text-zinc-300 flex items-center gap-2">
-              <Users className="w-3.5 h-3.5 text-violet-400" />
+              <Users className="w-3.5 h-3.5 text-cyan-400" />
               <span>Użytkownicy: <strong className="text-white">{userList.length}</strong></span>
             </div>
             <div className="px-3 py-1.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-xs font-mono text-zinc-300 flex items-center gap-2">
@@ -1306,30 +1306,30 @@ export const AdminPanel: React.FC = () => {
               <span>Kursy: <strong className="text-white">{coursesList.length}</strong></span>
             </div>
             <div className="px-3 py-1.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-xs font-mono text-zinc-300 flex items-center gap-2">
-              <Award className="w-3.5 h-3.5 text-amber-400" />
+              <Award className="w-3.5 h-3.5 text-cyan-400" />
               <span>Dyplomy: <strong className="text-white">{certificatesList.length}</strong></span>
             </div>
             <div className="px-3 py-1.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-xs font-mono text-zinc-300 flex items-center gap-2">
-              <DollarSign className="w-3.5 h-3.5 text-pink-400" />
+              <DollarSign className="w-3.5 h-3.5 text-teal-400" />
               <span>Transakcje: <strong className="text-white">{transactionsList.length}</strong></span>
             </div>
           </div>
         </div>
 
-        {/* 3D Emblem Showcase */}
+        {/* Brand emblem */}
         <div className="flex items-center gap-4 z-10 flex-shrink-0">
-          <div className="relative group p-1 bg-gradient-to-tr from-amber-500 via-violet-600 to-pink-500 rounded-3xl shadow-[0_0_30px_rgba(245,158,11,0.3)]">
+          <div className="brand-logo-tile rounded-2xl p-3 md:p-4">
             <img
               src="/logo_3d.jpg"
-              alt="HRL Pro 3D Logo"
-              className="w-28 h-28 md:w-36 md:h-36 rounded-2xl object-cover border border-zinc-900"
+              alt="HRL Nova Campus"
+              className="w-40 md:w-52 object-contain"
             />
           </div>
         </div>
 
         {/* Decorative background glows */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
       </section>
 
       {/* 2. Unified Modern Command Center Tabs Grid */}
@@ -1341,11 +1341,11 @@ export const AdminPanel: React.FC = () => {
             onClick={() => setActiveTab("users")}
             className={`py-2.5 px-4 text-xs font-medium rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === "users"
-                ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold shadow-lg shadow-violet-500/20"
+                ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold shadow-lg shadow-cyan-500/20"
                 : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
             }`}
           >
-            <Users className="w-4 h-4 text-violet-300" />
+            <Users className="w-4 h-4 text-cyan-300" />
             <span>Użytkownicy</span>
             <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-zinc-950/60 rounded-md text-zinc-400">{userList.length}</span>
           </button>
@@ -1355,7 +1355,7 @@ export const AdminPanel: React.FC = () => {
             onClick={() => setActiveTab("courses")}
             className={`py-2.5 px-4 text-xs font-medium rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === "courses"
-                ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold shadow-lg shadow-violet-500/20"
+                ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold shadow-lg shadow-cyan-500/20"
                 : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
             }`}
           >
@@ -1382,11 +1382,11 @@ export const AdminPanel: React.FC = () => {
             onClick={() => setActiveTab("certificates")}
             className={`py-2.5 px-4 text-xs font-medium rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === "certificates"
-                ? "bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold shadow-lg shadow-amber-500/20"
+                ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold shadow-lg shadow-cyan-500/20"
                 : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
             }`}
           >
-            <Award className="w-4 h-4 text-amber-400" />
+            <Award className="w-4 h-4 text-cyan-400" />
             <span>Dyplomy & Certyfikaty</span>
           </button>
 
@@ -1395,11 +1395,11 @@ export const AdminPanel: React.FC = () => {
             onClick={() => setActiveTab("advertisements")}
             className={`py-2.5 px-4 text-xs font-medium rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === "advertisements"
-                ? "bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold shadow-lg shadow-pink-500/20"
+                ? "bg-gradient-to-r from-teal-600 to-rose-600 text-white font-bold shadow-lg shadow-teal-500/20"
                 : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
             }`}
           >
-            <Megaphone className="w-4 h-4 text-pink-400" />
+            <Megaphone className="w-4 h-4 text-teal-400" />
             <span>Reklamy</span>
           </button>
 
@@ -1434,11 +1434,11 @@ export const AdminPanel: React.FC = () => {
             onClick={() => setActiveTab("limits")}
             className={`py-2.5 px-4 text-xs font-medium rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === "limits"
-                ? "bg-gradient-to-r from-amber-600 to-amber-700 text-white font-bold shadow-lg shadow-amber-500/20"
+                ? "bg-gradient-to-r from-cyan-600 to-cyan-700 text-white font-bold shadow-lg shadow-cyan-500/20"
                 : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
             }`}
           >
-            <SlidersHorizontal className="w-4 h-4 text-amber-400" />
+            <SlidersHorizontal className="w-4 h-4 text-cyan-400" />
             <span>Limity & Quoty</span>
           </button>
 
@@ -1447,11 +1447,11 @@ export const AdminPanel: React.FC = () => {
             onClick={() => setActiveTab("messages")}
             className={`py-2.5 px-4 text-xs font-medium rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === "messages"
-                ? "bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold shadow-lg shadow-violet-500/20"
+                ? "bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-bold shadow-lg shadow-cyan-500/20"
                 : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
             }`}
           >
-            <MessageSquare className="w-4 h-4 text-violet-400" />
+            <MessageSquare className="w-4 h-4 text-cyan-400" />
             <span>Wiadomości</span>
           </button>
 
@@ -1473,7 +1473,7 @@ export const AdminPanel: React.FC = () => {
             onClick={() => setActiveTab("import")}
             className={`py-2.5 px-4 text-xs font-medium rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === "import"
-                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-lg shadow-blue-500/20"
+                ? "bg-gradient-to-r from-blue-600 to-blue-600 text-white font-bold shadow-lg shadow-blue-500/20"
                 : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
             }`}
           >
@@ -1486,11 +1486,11 @@ export const AdminPanel: React.FC = () => {
             onClick={() => setActiveTab("telemetry")}
             className={`py-2.5 px-4 text-xs font-medium rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === "telemetry"
-                ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold shadow-lg shadow-indigo-500/20"
+                ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold shadow-lg shadow-blue-500/20"
                 : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
             }`}
           >
-            <Terminal className="w-4 h-4 text-indigo-400" />
+            <Terminal className="w-4 h-4 text-blue-400" />
             <span>Telemetria Live</span>
           </button>
 
@@ -1517,7 +1517,7 @@ export const AdminPanel: React.FC = () => {
         {activeTab === "users" && (
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl overflow-hidden p-6 space-y-6">
             <div className="flex items-center gap-2 border-b border-zinc-800 pb-3">
-              <UserCog className="w-4 h-4 text-violet-400" />
+              <UserCog className="w-4 h-4 text-cyan-400" />
               <h3 className="text-sm font-mono uppercase tracking-wider text-zinc-300">Aktywni członkowie platformy</h3>
             </div>
 
@@ -1544,7 +1544,7 @@ export const AdminPanel: React.FC = () => {
                           <td className="py-4 px-4 text-center">
                             <span className={`inline-block px-2.5 py-1 rounded-lg text-xs font-mono font-bold uppercase ${
                               item.role === 'admin'
-                                ? 'bg-violet-950/40 border border-violet-500 text-violet-300'
+                                ? 'bg-cyan-950/40 border border-cyan-500 text-cyan-300'
                                 : 'bg-zinc-950 border border-zinc-800 text-zinc-400'
                             }`}>
                               {item.role}
@@ -1565,7 +1565,7 @@ export const AdminPanel: React.FC = () => {
                                 id={`role-btn-admin-${item.id}`}
                                 onClick={() => handleRoleChange(item.id, "admin")}
                                 className={`px-2 py-1 rounded-lg cursor-pointer transition-colors ${
-                                  item.role === "admin" ? "bg-violet-900/40 text-violet-400 font-bold" : "text-zinc-500 hover:text-zinc-300"
+                                  item.role === "admin" ? "bg-cyan-900/40 text-cyan-400 font-bold" : "text-zinc-500 hover:text-zinc-300"
                                 }`}
                               >
                                 ADMIN
@@ -1629,7 +1629,7 @@ export const AdminPanel: React.FC = () => {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <Globe className="w-5 h-5 text-violet-400" />
+                    <Globe className="w-5 h-5 text-cyan-400" />
                     <h2 className="text-base font-mono uppercase tracking-wider text-white font-bold">Wybierz Bramkę Domenową (Course Gateway)</h2>
                   </div>
                   <p className="text-xs text-zinc-400">
@@ -1642,7 +1642,7 @@ export const AdminPanel: React.FC = () => {
                   <select
                     value={selectedCourseIdVal || ""}
                     onChange={(e) => setSelectedCourseIdVal(Number(e.target.value))}
-                    className="bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-2 px-4 text-xs text-zinc-200 focus:outline-none cursor-pointer text-zinc-300 font-bold"
+                    className="bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2 px-4 text-xs text-zinc-200 focus:outline-none cursor-pointer text-zinc-300 font-bold"
                   >
                     <option value="">-- Wybierz Bramkę --</option>
                     {coursesList.map((c) => (
@@ -1664,14 +1664,14 @@ export const AdminPanel: React.FC = () => {
                       onClick={() => setSelectedCourseIdVal(Number(c.id))}
                       className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between h-36 ${
                         isSelected 
-                          ? "bg-violet-950/20 border-violet-500/80 shadow-lg shadow-violet-500/5 cursor-default hover:border-violet-500" 
+                          ? "bg-cyan-950/20 border-cyan-500/80 shadow-lg shadow-cyan-500/5 cursor-default hover:border-cyan-500" 
                           : "bg-zinc-950 border-zinc-850 hover:bg-zinc-900/40"
                       }`}
                     >
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-1">
                           <span className={`text-[8px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded font-bold ${
-                            c.pricing_model === "free" ? "bg-emerald-500/15 text-emerald-400" : "bg-gradient-to-r from-violet-500/20 to-pink-500/20 text-pink-400"
+                            c.pricing_model === "free" ? "bg-emerald-500/15 text-emerald-400" : "bg-gradient-to-r from-cyan-500/20 to-teal-500/20 text-teal-400"
                           }`}>
                             {c.pricing_model === "free" ? "FREE PREVIEW" : c.pricing_model === "subscription" ? "SUBSCRIPTION CHECKOUT" : "LIFETIME PURCHASE"}
                           </span>
@@ -1746,7 +1746,7 @@ export const AdminPanel: React.FC = () => {
 
                   <form onSubmit={handleUpdateCourseGateway} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-4">
                     <div className="flex items-center gap-2 border-b border-zinc-800 pb-3 font-bold text-zinc-200">
-                      <SlidersHorizontal className="w-4 h-4 text-violet-400" />
+                      <SlidersHorizontal className="w-4 h-4 text-cyan-400" />
                       <h3 className="text-xs font-mono uppercase tracking-wider">Konfiguracja Bramki i Paywallu</h3>
                     </div>
 
@@ -1756,7 +1756,7 @@ export const AdminPanel: React.FC = () => {
                         type="text"
                         value={courseTitle}
                         onChange={(e) => setCourseTitle(e.target.value)}
-                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none"
+                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none"
                         required
                       />
                     </div>
@@ -1766,7 +1766,7 @@ export const AdminPanel: React.FC = () => {
                       <textarea
                         value={courseDescription}
                         onChange={(e) => setCourseDescription(e.target.value)}
-                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none"
+                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none"
                         rows={3}
                         required
                       />
@@ -1779,7 +1779,7 @@ export const AdminPanel: React.FC = () => {
                           type="text"
                           value={courseInstructor}
                           onChange={(e) => setCourseInstructor(e.target.value)}
-                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none"
+                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none"
                           required
                         />
                       </div>
@@ -1789,7 +1789,7 @@ export const AdminPanel: React.FC = () => {
                           type="text"
                           value={courseThumbnail}
                           onChange={(e) => setCourseThumbnail(e.target.value)}
-                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none"
+                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none"
                           required
                         />
                       </div>
@@ -1801,7 +1801,7 @@ export const AdminPanel: React.FC = () => {
                         <select
                           value={newPricingModel}
                           onChange={(e) => setNewPricingModel(e.target.value as any)}
-                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none cursor-pointer"
+                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none cursor-pointer"
                         >
                           <option value="free">Darmowy (Direct Enrollment / Brak paywallu)</option>
                           <option value="one_time">Jednorazowa opłata (Lifetime Gateway Access)</option>
@@ -1816,7 +1816,7 @@ export const AdminPanel: React.FC = () => {
                             type="number"
                             value={newOneTimePrice}
                             onChange={(e) => setNewOneTimePrice(e.target.value)}
-                            className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none font-bold"
+                            className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none font-bold"
                             required
                           />
                         </div>
@@ -1830,7 +1830,7 @@ export const AdminPanel: React.FC = () => {
                               type="number"
                               value={newSubscriptionPrice}
                               onChange={(e) => setNewSubscriptionPrice(e.target.value)}
-                              className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none"
+                              className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none"
                               required
                             />
                           </div>
@@ -1839,7 +1839,7 @@ export const AdminPanel: React.FC = () => {
                             <select
                               value={newSubscriptionInterval}
                               onChange={(e) => setNewSubscriptionInterval(e.target.value as any)}
-                              className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none cursor-pointer"
+                              className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none cursor-pointer"
                             >
                               <option value="month">miesięcznie</option>
                               <option value="year">rocznie</option>
@@ -1860,7 +1860,7 @@ export const AdminPanel: React.FC = () => {
                           type="text"
                           value={newTenantDomain}
                           onChange={(e) => setNewTenantDomain(e.target.value)}
-                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none font-mono font-bold text-emerald-400"
+                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none font-mono font-bold text-emerald-400"
                           required
                         />
                       </div>
@@ -1869,7 +1869,7 @@ export const AdminPanel: React.FC = () => {
                     <button
                       type="submit"
                       disabled={isUpdatingCourse}
-                      className="w-full py-3 bg-gradient-to-r from-violet-600 to-pink-500 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-xl hover:opacity-90 transition-all cursor-pointer disabled:opacity-50"
+                      className="w-full py-3 bg-gradient-to-r from-cyan-600 to-teal-500 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-xl hover:opacity-90 transition-all cursor-pointer disabled:opacity-50"
                     >
                       {isUpdatingCourse ? "Zapisywanie..." : (selectedCourseIdVal === -1 ? "Utwórz Nowy Kurs (Bramkę)" : "Zapisz Ograniczenia i Paywall Bramki")}
                     </button>
@@ -1995,7 +1995,7 @@ export const AdminPanel: React.FC = () => {
             {/* Left box: Dynamic stats indicator panel */}
             <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-6">
               <div className="flex items-center gap-2 border-b border-zinc-800 pb-3">
-                <Terminal className="w-4 h-4 text-violet-400 animate-pulse" />
+                <Terminal className="w-4 h-4 text-cyan-400 animate-pulse" />
                 <h3 className="text-sm font-mono uppercase tracking-wider text-zinc-300">Wskaźniki stanu i żywotności bazodanowej</h3>
               </div>
 
@@ -2019,7 +2019,7 @@ export const AdminPanel: React.FC = () => {
               </div>
 
               <div className="p-4 bg-zinc-950 rounded-xl border border-zinc-850 text-xs text-zinc-400 leading-normal space-y-1">
-                <span className="text-white font-mono font-bold block uppercase text-[10px] tracking-wider mb-1 flex items-center gap-1.5 text-orange-400">
+                <span className="text-white font-mono font-bold block uppercase text-[10px] tracking-wider mb-1 flex items-center gap-1.5 text-blue-400">
                   <AlertCircle className="w-3.5 h-3.5" /> status spójności danych:
                 </span>
                 <p>Serwer monitoruje spójność bazodanową SQLite na bieżąco. Automatyczne usuwanie kluczy obcych (cascades) zabezpiecza tabele przed powstawaniem osieroconych rekordów lekcji i quizów.</p>
@@ -2030,7 +2030,7 @@ export const AdminPanel: React.FC = () => {
             <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-5 flex flex-col justify-between">
               <div className="space-y-4">
                 <div className="flex items-center gap-2 border-b border-zinc-805/80 pb-3">
-                  <Database className="w-4 h-4 text-pink-400" />
+                  <Database className="w-4 h-4 text-teal-400" />
                   <h3 className="text-sm font-mono uppercase tracking-wider text-zinc-300">Eksport Schematu Kursów w JSON</h3>
                 </div>
 
@@ -2042,7 +2042,7 @@ export const AdminPanel: React.FC = () => {
               <div className="pt-6 border-t border-zinc-850">
                 <button
                   onClick={handleDownloadBackup}
-                  className="w-full py-4 bg-gradient-to-r from-violet-600 to-pink-500 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg hover:shadow-violet-600/15 flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-4 bg-gradient-to-r from-cyan-600 to-teal-500 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg hover:shadow-cyan-600/15 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Download className="w-4 h-4 animate-bounce" />
                   Wyeksportuj Dane Platformy do JSON
@@ -2068,7 +2068,7 @@ export const AdminPanel: React.FC = () => {
               {/* Form 1: Generate Certificate */}
               <div className="bg-zinc-90 w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4">
                 <div className="flex items-center gap-2 border-b border-zinc-800 pb-3">
-                  <Award className="w-5 h-5 text-violet-400" />
+                  <Award className="w-5 h-5 text-cyan-400" />
                   <h3 className="text-sm font-mono uppercase tracking-wider text-zinc-300 font-bold">Ręczny Generator Certyfikatów</h3>
                 </div>
                 <p className="text-xs text-zinc-400">
@@ -2081,7 +2081,7 @@ export const AdminPanel: React.FC = () => {
                     <select
                       value={selectedUserId}
                       onChange={(e) => setSelectedUserId(e.target.value)}
-                      className="w-full bg-zinc-950 border border-zinc-800 py-2 px-3 rounded-lg text-sm text-zinc-200 focus:outline-none focus:border-violet-500"
+                      className="w-full bg-zinc-950 border border-zinc-800 py-2 px-3 rounded-lg text-sm text-zinc-200 focus:outline-none focus:border-cyan-500"
                     >
                       <option value="">-- Wybierz kursanta --</option>
                       {userList.map(u => (
@@ -2097,7 +2097,7 @@ export const AdminPanel: React.FC = () => {
                     <select
                       value={selectedCourseId}
                       onChange={(e) => setSelectedCourseId(e.target.value)}
-                      className="w-full bg-zinc-950 border border-zinc-800 py-2 px-3 rounded-lg text-sm text-zinc-200 focus:outline-none focus:border-violet-500"
+                      className="w-full bg-zinc-950 border border-zinc-800 py-2 px-3 rounded-lg text-sm text-zinc-200 focus:outline-none focus:border-cyan-500"
                     >
                       <option value="">-- Wybierz kurs --</option>
                       {coursesList.map(c => (
@@ -2115,14 +2115,14 @@ export const AdminPanel: React.FC = () => {
                       value={customCertCode}
                       onChange={(e) => setCustomCertCode(e.target.value)}
                       placeholder="Pozostaw puste dla generowanego kodu HRL-GEN-XXXX"
-                      className="w-full bg-zinc-950 border border-zinc-800 py-2 px-3 rounded-lg text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-violet-500"
+                      className="w-full bg-zinc-950 border border-zinc-800 py-2 px-3 rounded-lg text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-cyan-500"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={isGeneratingCert || !selectedUserId || !selectedCourseId}
-                    className="w-full py-2 px-4 bg-violet-600 hover:bg-violet-700 disabled:opacity-40 disabled:hover:bg-violet-600 text-white rounded-lg text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full py-2 px-4 bg-cyan-600 hover:bg-cyan-700 disabled:opacity-40 disabled:hover:bg-cyan-600 text-white rounded-lg text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
                     {isGeneratingCert ? (
                       <span className="flex items-center gap-2">
@@ -2140,7 +2140,7 @@ export const AdminPanel: React.FC = () => {
               {/* Form 2: Manual Booster Tool */}
               <div className="bg-zinc-90 w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4">
                 <div className="flex items-center gap-2 border-b border-zinc-800 pb-3">
-                  <Zap className="w-5 h-5 text-amber-400" />
+                  <Zap className="w-5 h-5 text-cyan-400" />
                   <h3 className="text-sm font-mono uppercase tracking-wider text-zinc-300 font-bold">Narzędzie Szybkiego Postępu (Booster)</h3>
                 </div>
                 <p className="text-xs text-zinc-400">
@@ -2153,7 +2153,7 @@ export const AdminPanel: React.FC = () => {
                     <select
                       value={boostUserId}
                       onChange={(e) => setBoostUserId(e.target.value)}
-                      className="w-full bg-zinc-950 border border-zinc-800 py-2 px-3 rounded-lg text-sm text-zinc-200 focus:outline-none focus:border-amber-500"
+                      className="w-full bg-zinc-950 border border-zinc-800 py-2 px-3 rounded-lg text-sm text-zinc-200 focus:outline-none focus:border-cyan-500"
                     >
                       <option value="">-- Wybierz kursanta --</option>
                       {userList.map(u => (
@@ -2169,7 +2169,7 @@ export const AdminPanel: React.FC = () => {
                     <select
                       value={boostCourseId}
                       onChange={(e) => setBoostCourseId(e.target.value)}
-                      className="w-full bg-zinc-950 border border-zinc-800 py-2 px-3 rounded-lg text-sm text-zinc-200 focus:outline-none focus:border-amber-500"
+                      className="w-full bg-zinc-950 border border-zinc-800 py-2 px-3 rounded-lg text-sm text-zinc-200 focus:outline-none focus:border-cyan-500"
                     >
                       <option value="">-- Wybierz kurs --</option>
                       {coursesList.map(c => (
@@ -2183,7 +2183,7 @@ export const AdminPanel: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isBoosting || !boostUserId || !boostCourseId}
-                    className="w-full py-2 px-4 bg-amber-600 hover:bg-amber-700 disabled:opacity-40 disabled:hover:bg-amber-600 text-black font-semibold rounded-lg text-sm transition-all cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full py-2 px-4 bg-cyan-600 hover:bg-cyan-700 disabled:opacity-40 disabled:hover:bg-cyan-600 text-black font-semibold rounded-lg text-sm transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
                     {isBoosting ? (
                       <span className="flex items-center gap-2">
@@ -2243,11 +2243,11 @@ export const AdminPanel: React.FC = () => {
             <div className="bg-zinc-90 w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4">
               <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
                 <div className="flex items-center gap-2">
-                  <Award className="w-5 h-5 text-violet-400" />
+                  <Award className="w-5 h-5 text-cyan-400" />
                   <h3 className="text-sm font-mono uppercase tracking-wider text-zinc-350 font-bold">Księga Rejestru Certyfikatów</h3>
                 </div>
                 <span className="text-xs bg-zinc-950 border border-zinc-800 text-zinc-400 py-1 px-2.5 rounded-lg font-mono">
-                  Suma wyemitowanych: <span className="text-violet-400 font-bold">{certificatesList.length}</span>
+                  Suma wyemitowanych: <span className="text-cyan-400 font-bold">{certificatesList.length}</span>
                 </span>
               </div>
 
@@ -2283,12 +2283,12 @@ export const AdminPanel: React.FC = () => {
                           <td className="py-3.5 px-4 max-w-xs truncate font-sans font-semibold text-zinc-200">
                             {cert.course_title}
                           </td>
-                          <td className="py-3.5 px-4 font-mono text-[11px] text-violet-400">
+                          <td className="py-3.5 px-4 font-mono text-[11px] text-cyan-400">
                             <a
                               href={`/certificate-verify?code=${cert.certificate_code}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="hover:underline hover:text-violet-300"
+                              className="hover:underline hover:text-cyan-300"
                             >
                               {cert.certificate_code}
                             </a>
@@ -2319,8 +2319,8 @@ export const AdminPanel: React.FC = () => {
         {activeTab === "telemetry" && (
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-4">
             <div className="flex items-center justify-between gap-4 border-b border-zinc-800 pb-3">
-              <div className="flex items-center gap-2 text-violet-400">
-                <Terminal className="w-4 h-4 text-violet-500 animate-pulse" />
+              <div className="flex items-center gap-2 text-cyan-400">
+                <Terminal className="w-4 h-4 text-cyan-500 animate-pulse" />
                 <h3 className="text-sm font-mono uppercase tracking-wider text-zinc-350 text-gradient font-bold leading-normal">
                   Pulpit telemetryczny serwera gateway (WebSockets)
                 </h3>
@@ -2351,7 +2351,7 @@ export const AdminPanel: React.FC = () => {
                     {/* Event summary route */}
                     <div className="flex items-center gap-2">
                       <span className={`text-[10px] rounded px-1.5 font-bold ${
-                        log.status_code >= 400 ? 'bg-red-950 text-red-400' : 'bg-violet-950 text-violet-400'
+                        log.status_code >= 400 ? 'bg-red-950 text-red-400' : 'bg-cyan-950 text-cyan-400'
                       }`}>
                         {log.event_type.toUpperCase()}
                       </span>
@@ -2399,7 +2399,7 @@ export const AdminPanel: React.FC = () => {
                 <select
                   value={adCourseId}
                   onChange={(e) => setAdCourseId(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-3 px-4 text-xs text-zinc-200 focus:outline-none cursor-pointer"
+                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-3 px-4 text-xs text-zinc-200 focus:outline-none cursor-pointer"
                 >
                   <option value="">Globalna reklama (we wszystkich kursach)</option>
                   {coursesList.map((c) => (
@@ -2415,7 +2415,7 @@ export const AdminPanel: React.FC = () => {
                 <select
                   value={adPlacement}
                   onChange={(e) => setAdPlacement(e.target.value as any)}
-                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-3 px-4 text-xs text-zinc-200 focus:outline-none cursor-pointer"
+                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-3 px-4 text-xs text-zinc-200 focus:outline-none cursor-pointer"
                 >
                   <option value="lesson_start">Początek lekcji (Górny baner)</option>
                   <option value="lesson_end">Koniec lekcji (Dolny panel reklamowy)</option>
@@ -2434,10 +2434,10 @@ export const AdminPanel: React.FC = () => {
               <div className="space-y-2">
                 <label className="block text-xs font-mono text-zinc-400 uppercase tracking-widest">Kod HTML lub Treść Reklamy</label>
                 <textarea
-                  placeholder="np. <div className='bg-violet-950 border border-violet-800 rounded p-4 text-center text-white font-bold'>SPONSOR: Zniżka 50% na hosting z kodem HRLHOSTING!</div>"
+                  placeholder="np. <div className='bg-cyan-950 border border-cyan-800 rounded p-4 text-center text-white font-bold'>SPONSOR: Zniżka 50% na hosting z kodem HRLHOSTING!</div>"
                   value={adCode}
                   onChange={(e) => setAdCode(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-3 px-4 text-xs text-zinc-200 focus:outline-none placeholder-zinc-705"
+                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-3 px-4 text-xs text-zinc-200 focus:outline-none placeholder-zinc-705"
                   rows={4}
                   required
                 />
@@ -2450,7 +2450,7 @@ export const AdminPanel: React.FC = () => {
                   placeholder="https://example.com/promocja"
                   value={adLink}
                   onChange={(e) => setAdLink(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-3 px-4 text-xs text-zinc-200 focus:outline-none"
+                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-3 px-4 text-xs text-zinc-200 focus:outline-none"
                 />
               </div>
 
@@ -2461,7 +2461,7 @@ export const AdminPanel: React.FC = () => {
                   placeholder="https://images.unsplash.com/... (Zamiast kodu tekstowego)"
                   value={adImage}
                   onChange={(e) => setAdImage(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-3 px-4 text-xs text-zinc-200 focus:outline-none"
+                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-3 px-4 text-xs text-zinc-200 focus:outline-none"
                 />
               </div>
 
@@ -2497,7 +2497,7 @@ export const AdminPanel: React.FC = () => {
                               <span className="text-[10px] bg-emerald-950 text-emerald-400 font-mono py-0.5 px-2 rounded-md uppercase font-semibold">
                                 ID: #{ad.id}
                               </span>
-                              <span className="text-[10px] bg-purple-950 text-purple-300 font-mono py-0.5 px-2 rounded-md uppercase font-semibold">
+                              <span className="text-[10px] bg-cyan-950 text-cyan-300 font-mono py-0.5 px-2 rounded-md uppercase font-semibold">
                                 POZYCJA: {ad.placement_location === "lesson_start" ? "Początek lekcji" : ad.placement_location === "lesson_end" ? "Koniec lekcji" : "Pasek boczny"}
                               </span>
                               <span className="text-[10px] bg-zinc-850 text-zinc-300 font-mono py-0.5 px-2 rounded-md uppercase font-semibold">
@@ -2527,7 +2527,7 @@ export const AdminPanel: React.FC = () => {
                                 CTR KPI: <span className="text-emerald-400 font-bold">{ctr}%</span>
                               </div>
                               <div>
-                                PRZYCHÓD: <span className="text-amber-400 font-bold">{(ad.revenue_generated || 0.0).toFixed(2)} PLN</span>
+                                PRZYCHÓD: <span className="text-cyan-400 font-bold">{(ad.revenue_generated || 0.0).toFixed(2)} PLN</span>
                               </div>
                             </div>
                           </div>
@@ -2578,7 +2578,7 @@ export const AdminPanel: React.FC = () => {
 
             <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-4">
               <div className="flex items-center gap-2 border-b border-zinc-800 pb-3">
-                <DollarSign className="w-4 h-4 text-violet-400 font-bold" />
+                <DollarSign className="w-4 h-4 text-cyan-400 font-bold" />
                 <h3 className="text-sm font-mono uppercase tracking-wider text-zinc-300">Rejestr transakcji płatniczych bramki Stripe</h3>
               </div>
 
@@ -2644,7 +2644,7 @@ export const AdminPanel: React.FC = () => {
         {activeTab === "settings" && (
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-6">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <div className="flex items-center gap-2 text-violet-400">
+              <div className="flex items-center gap-2 text-cyan-400">
                 <SettingsIcon className="w-4 h-4 text-cyan-400" />
                 <h3 className="text-sm font-mono uppercase tracking-wider text-zinc-350">Personalizacja brandingu i multi-domain</h3>
               </div>
@@ -2668,7 +2668,7 @@ export const AdminPanel: React.FC = () => {
                       type="text"
                       value={brandingSettings.primary_color || "#8B5CF6"}
                       onChange={(e) => setBrandingSettings({...brandingSettings, primary_color: e.target.value})}
-                      className="flex-1 bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-2 px-4 text-xs text-zinc-200 focus:outline-none font-mono"
+                      className="flex-1 bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2 px-4 text-xs text-zinc-200 focus:outline-none font-mono"
                       maxLength={7}
                     />
                   </div>
@@ -2682,7 +2682,7 @@ export const AdminPanel: React.FC = () => {
                     placeholder="np. https://example.com/logo.png"
                     value={brandingSettings.logo_url || ""}
                     onChange={(e) => setBrandingSettings({...brandingSettings, logo_url: e.target.value})}
-                    className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-3 px-4 text-xs text-zinc-200 focus:outline-none font-mono"
+                    className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-3 px-4 text-xs text-zinc-200 focus:outline-none font-mono"
                   />
                 </div>
 
@@ -2693,7 +2693,7 @@ export const AdminPanel: React.FC = () => {
                     type="number"
                     value={brandingSettings.refund_policy_days || "30"}
                     onChange={(e) => setBrandingSettings({...brandingSettings, refund_policy_days: e.target.value})}
-                    className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-3 px-4 text-xs text-zinc-200 focus:outline-none font-mono"
+                    className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-3 px-4 text-xs text-zinc-200 focus:outline-none font-mono"
                   />
                 </div>
 
@@ -2706,7 +2706,7 @@ export const AdminPanel: React.FC = () => {
                       type="text"
                       value={brandingSettings.custom_domain || "localhost:3000"}
                       onChange={(e) => setBrandingSettings({...brandingSettings, custom_domain: e.target.value})}
-                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-3 pl-16 pr-4 text-xs text-zinc-200 focus:outline-none font-mono"
+                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-3 pl-16 pr-4 text-xs text-zinc-200 focus:outline-none font-mono"
                     />
                   </div>
                 </div>
@@ -2719,7 +2719,7 @@ export const AdminPanel: React.FC = () => {
                 <textarea
                   value={brandingSettings.certificate_template || ""}
                   onChange={(e) => setBrandingSettings({...brandingSettings, certificate_template: e.target.value})}
-                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-3 px-4 text-xs text-zinc-3 w-full text-zinc-300 focus:outline-none font-mono"
+                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-3 px-4 text-xs text-zinc-3 w-full text-zinc-300 focus:outline-none font-mono"
                   rows={6}
                 />
               </div>
@@ -2727,7 +2727,7 @@ export const AdminPanel: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSavingSettings}
-                className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-violet-600 to-pink-500 hover:opacity-90 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer"
+                className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-cyan-600 to-teal-500 hover:opacity-90 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer"
               >
                 {isSavingSettings ? "Zapisywanie..." : "Zapisz i sfinalizuj ustawienia brandingu"}
               </button>
@@ -2739,8 +2739,8 @@ export const AdminPanel: React.FC = () => {
         {activeTab === "limits" && (
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-6">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <div className="flex items-center gap-2 text-amber-400">
-                <SlidersHorizontal className="w-5 h-5 text-amber-400" />
+              <div className="flex items-center gap-2 text-cyan-400">
+                <SlidersHorizontal className="w-5 h-5 text-cyan-400" />
                 <h3 className="text-sm font-mono uppercase tracking-wider text-zinc-200">Zarządzanie Limitami i Quotami Systemowymi</h3>
               </div>
               <span className="text-[10px] font-mono text-zinc-500 uppercase">Tenant Quota Registry</span>
@@ -2757,8 +2757,8 @@ export const AdminPanel: React.FC = () => {
                   {/* Limit 1: Max Free Enrollments */}
                   <div className="bg-zinc-950 p-5 border border-zinc-800 rounded-2xl space-y-3">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-mono text-amber-300 uppercase tracking-wider font-bold">Maksimum darmowych zapisów na kursy</label>
-                      <span className="text-[10px] font-mono px-2 py-0.5 bg-amber-500/10 text-amber-400 rounded-md border border-amber-500/20">Rola: Student</span>
+                      <label className="text-xs font-mono text-cyan-300 uppercase tracking-wider font-bold">Maksimum darmowych zapisów na kursy</label>
+                      <span className="text-[10px] font-mono px-2 py-0.5 bg-cyan-500/10 text-cyan-400 rounded-md border border-cyan-500/20">Rola: Student</span>
                     </div>
                     <p className="text-[11px] text-zinc-400 leading-normal">
                       Określa, na ile bezpłatnych kursów jednocześnie może zapisać się konto z rolą ucznia. Po osiągnięciu limitu zapisy na kolejne kursy są blokowane z komunikiem wyjaśniającym.
@@ -2769,15 +2769,15 @@ export const AdminPanel: React.FC = () => {
                       max={100}
                       value={systemLimits.max_free_enrollments}
                       onChange={(e) => setSystemLimits({ ...systemLimits, max_free_enrollments: Number(e.target.value) })}
-                      className="w-full bg-zinc-900 border border-zinc-800 focus:border-amber-500 rounded-xl py-3 px-4 text-sm text-white font-mono font-bold focus:outline-none"
+                      className="w-full bg-zinc-900 border border-zinc-800 focus:border-cyan-500 rounded-xl py-3 px-4 text-sm text-white font-mono font-bold focus:outline-none"
                     />
                   </div>
 
                   {/* Limit 2: Max Daily Quiz Attempts */}
                   <div className="bg-zinc-950 p-5 border border-zinc-800 rounded-2xl space-y-3">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-mono text-amber-300 uppercase tracking-wider font-bold">Dzienny limit prób rozwiązywania quizu</label>
-                      <span className="text-[10px] font-mono px-2 py-0.5 bg-violet-500/10 text-violet-400 rounded-md border border-violet-500/20">Anti-Spam / 24h</span>
+                      <label className="text-xs font-mono text-cyan-300 uppercase tracking-wider font-bold">Dzienny limit prób rozwiązywania quizu</label>
+                      <span className="text-[10px] font-mono px-2 py-0.5 bg-cyan-500/10 text-cyan-400 rounded-md border border-cyan-500/20">Anti-Spam / 24h</span>
                     </div>
                     <p className="text-[11px] text-zinc-400 leading-normal">
                       Maksymalna liczba podejść do testu wiedzy w ramach danej lekcji na dobę. Chroni przed odgadywaniem metodą prób i błędów.
@@ -2788,14 +2788,14 @@ export const AdminPanel: React.FC = () => {
                       max={50}
                       value={systemLimits.max_daily_quiz_attempts}
                       onChange={(e) => setSystemLimits({ ...systemLimits, max_daily_quiz_attempts: Number(e.target.value) })}
-                      className="w-full bg-zinc-900 border border-zinc-800 focus:border-amber-500 rounded-xl py-3 px-4 text-sm text-white font-mono font-bold focus:outline-none"
+                      className="w-full bg-zinc-900 border border-zinc-800 focus:border-cyan-500 rounded-xl py-3 px-4 text-sm text-white font-mono font-bold focus:outline-none"
                     />
                   </div>
 
                   {/* Limit 3: Max Courses Per Instructor */}
                   <div className="bg-zinc-950 p-5 border border-zinc-800 rounded-2xl space-y-3">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-mono text-amber-300 uppercase tracking-wider font-bold">Limit kursów dla instruktora</label>
+                      <label className="text-xs font-mono text-cyan-300 uppercase tracking-wider font-bold">Limit kursów dla instruktora</label>
                       <span className="text-[10px] font-mono px-2 py-0.5 bg-emerald-500/10 text-emerald-400 rounded-md border border-emerald-500/20">Rola: Instructor</span>
                     </div>
                     <p className="text-[11px] text-zinc-400 leading-normal">
@@ -2807,14 +2807,14 @@ export const AdminPanel: React.FC = () => {
                       max={200}
                       value={systemLimits.max_courses_per_instructor}
                       onChange={(e) => setSystemLimits({ ...systemLimits, max_courses_per_instructor: Number(e.target.value) })}
-                      className="w-full bg-zinc-900 border border-zinc-800 focus:border-amber-500 rounded-xl py-3 px-4 text-sm text-white font-mono font-bold focus:outline-none"
+                      className="w-full bg-zinc-900 border border-zinc-800 focus:border-cyan-500 rounded-xl py-3 px-4 text-sm text-white font-mono font-bold focus:outline-none"
                     />
                   </div>
 
                   {/* Limit 4: Auth Rate Limiter Window */}
                   <div className="bg-zinc-950 p-5 border border-zinc-800 rounded-2xl space-y-3">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-mono text-amber-300 uppercase tracking-wider font-bold">Ochrona Brute-Force (Próby logowania / 15 min)</label>
+                      <label className="text-xs font-mono text-cyan-300 uppercase tracking-wider font-bold">Ochrona Brute-Force (Próby logowania / 15 min)</label>
                       <span className="text-[10px] font-mono px-2 py-0.5 bg-rose-500/10 text-rose-400 rounded-md border border-rose-500/20">Rate Limiter</span>
                     </div>
                     <p className="text-[11px] text-zinc-400 leading-normal">
@@ -2826,7 +2826,7 @@ export const AdminPanel: React.FC = () => {
                       max={100}
                       value={systemLimits.auth_rate_limit_max}
                       onChange={(e) => setSystemLimits({ ...systemLimits, auth_rate_limit_max: Number(e.target.value) })}
-                      className="w-full bg-zinc-900 border border-zinc-800 focus:border-amber-500 rounded-xl py-3 px-4 text-sm text-white font-mono font-bold focus:outline-none"
+                      className="w-full bg-zinc-900 border border-zinc-800 focus:border-cyan-500 rounded-xl py-3 px-4 text-sm text-white font-mono font-bold focus:outline-none"
                     />
                   </div>
 
@@ -2836,7 +2836,7 @@ export const AdminPanel: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isSavingLimits}
-                    className="px-8 py-3 bg-gradient-to-r from-amber-600 via-violet-600 to-pink-600 hover:opacity-90 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-lg shadow-amber-500/10"
+                    className="px-8 py-3 bg-gradient-to-r from-cyan-600 via-cyan-600 to-teal-600 hover:opacity-90 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-lg shadow-cyan-500/10"
                   >
                     {isSavingLimits ? "Zapisywanie..." : "Zapisz i aktywuj nowe limity systemowe"}
                   </button>
@@ -2870,7 +2870,7 @@ export const AdminPanel: React.FC = () => {
                     Forteca Bezpieczeństwa Firestore (Zero-Trust Monitor)
                   </h3>
                   <p className="text-sm text-zinc-400 mt-1 max-w-2xl">
-                    Ten panel pozwala analizować odporność Twojej bazy danych Firestore oraz testować zaimplementowane reguły bezpieczeństwa na wektory ataku zdefiniowane w specyfikacji <code className="text-violet-400 font-mono">security_spec.md</code>.
+                    Ten panel pozwala analizować odporność Twojej bazy danych Firestore oraz testować zaimplementowane reguły bezpieczeństwa na wektory ataku zdefiniowane w specyfikacji <code className="text-cyan-400 font-mono">security_spec.md</code>.
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -2916,7 +2916,7 @@ export const AdminPanel: React.FC = () => {
                           <span className="text-[10px] font-mono px-2 py-1 bg-zinc-900 text-zinc-600 rounded-lg">NIEURUCHOMIONY</span>
                         )}
                         {test.status === "running" && (
-                          <span className="text-[10px] font-mono px-2 py-1 bg-violet-950 text-violet-400 border border-violet-800 rounded-lg animate-pulse">SYMULACJA...</span>
+                          <span className="text-[10px] font-mono px-2 py-1 bg-cyan-950 text-cyan-400 border border-cyan-800 rounded-lg animate-pulse">SYMULACJA...</span>
                         )}
                         {test.status === "blocked" && (
                           <span className="text-[10px] font-mono px-2 py-1 bg-emerald-950 text-emerald-400 border border-emerald-800/60 rounded-lg font-bold">🛡️ BLOCKED</span>
@@ -2960,7 +2960,7 @@ export const AdminPanel: React.FC = () => {
               <p className="text-xs text-zinc-500 mb-4">
                 Próby wykonania powyższych ataków generują wyjątki <code className="text-zinc-400 font-mono">FirebaseError (permission-denied)</code>. Zdarzenia te mogą być przekierowywane bezpośrednio do systemów SIEM takich jak Google Cloud Sentinel lub Stackdriver.
               </p>
-              <div className="p-4 bg-zinc-950 border border-zinc-900 rounded-xl font-mono text-xs text-amber-500/90 space-y-2 h-44 overflow-y-auto">
+              <div className="p-4 bg-zinc-950 border border-zinc-900 rounded-xl font-mono text-xs text-cyan-500/90 space-y-2 h-44 overflow-y-auto">
                 <p className="text-zinc-650 text-zinc-600">[INFO] Skanowanie reguł Firestore ukończone pomyślnie. Status: Zero-Trust Fortress Aktywna.</p>
                 <p className="text-zinc-650 text-zinc-600">[INFO] Wykryte Inwarianty: courses (Invariants active), users (Rules locked).</p>
                 {securityTests.filter(t => t.status === "blocked").map(t => (

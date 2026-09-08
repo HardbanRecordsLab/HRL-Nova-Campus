@@ -27,7 +27,7 @@ export const Register: React.FC = () => {
   const getStrengthLabel = () => {
     if (!password) return { label: "", color: "bg-zinc-800" };
     if (strength <= 2) return { label: "Słabe", color: "bg-rose-500" };
-    if (strength <= 4) return { label: "Średnie", color: "bg-amber-500" };
+    if (strength <= 4) return { label: "Średnie", color: "bg-cyan-500" };
     return { label: "Silne", color: "bg-emerald-500" };
   };
 
@@ -70,15 +70,15 @@ export const Register: React.FC = () => {
   return (
     <div id="register-page-wrapper" className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12">
       <div className="max-w-md w-full bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl relative">
-        <div className="absolute top-0 left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-violet-500 to-transparent" />
+        <div className="absolute top-0 left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
 
         <div className="p-8">
           <div className="text-center mb-8">
-            <div className="inline-flex p-3 bg-violet-600/10 rounded-xl mb-3 text-violet-400">
+            <div className="inline-flex p-3 bg-cyan-600/10 rounded-xl mb-3 text-cyan-400">
               <UserPlus className="w-5 h-5" />
             </div>
             <h2 className="text-2xl font-display font-semibold text-white tracking-tight">
-              Dołącz do HRL Academy
+              Dołącz do HRL Nova Campus
             </h2>
             <p className="text-sm text-zinc-400 mt-2">
               Utwórz konto i zacznij certyfikowaną naukę
@@ -101,7 +101,7 @@ export const Register: React.FC = () => {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="np. mariuszhans"
-                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 transition-all placeholder:text-zinc-600"
+                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all placeholder:text-zinc-600"
                 />
               </div>
             </div>
@@ -120,7 +120,7 @@ export const Register: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="np. mariusz@gmail.com"
-                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 transition-all placeholder:text-zinc-600"
+                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all placeholder:text-zinc-600"
                 />
               </div>
             </div>
@@ -132,7 +132,7 @@ export const Register: React.FC = () => {
                 </label>
                 {password && (
                   <span className="text-xs font-mono text-zinc-400">
-                    Siła: <span className={strength <= 2 ? "text-rose-400" : strength <= 4 ? "text-amber-400" : "text-emerald-400"}>{strengthInfo.label}</span>
+                    Siła: <span className={strength <= 2 ? "text-rose-400" : strength <= 4 ? "text-cyan-400" : "text-emerald-400"}>{strengthInfo.label}</span>
                   </span>
                 )}
               </div>
@@ -146,7 +146,7 @@ export const Register: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 transition-all placeholder:text-zinc-600"
+                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all placeholder:text-zinc-600"
                 />
               </div>
 
@@ -171,7 +171,7 @@ export const Register: React.FC = () => {
               id="register-submit-button"
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3.5 bg-gradient-to-r from-violet-600 to-pink-500 hover:from-violet-500 hover:to-pink-400 text-white rounded-xl text-sm font-semibold transition-all shadow-lg hover:shadow-violet-600/10 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+              className="w-full py-3.5 bg-gradient-to-r from-cyan-600 to-teal-500 hover:from-cyan-500 hover:to-teal-400 text-white rounded-xl text-sm font-semibold transition-all shadow-lg hover:shadow-cyan-600/10 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed mt-4"
             >
               {isSubmitting ? "Tworzenie konta..." : (
                 <>
@@ -184,7 +184,7 @@ export const Register: React.FC = () => {
 
           <div className="text-center mt-6 text-sm text-zinc-500">
             Masz już konto?{" "}
-            <Link id="register-link-login" to="/login" className="text-violet-400 hover:underline font-medium">
+            <Link id="register-link-login" to="/login" className="text-cyan-400 hover:underline font-medium">
               Zaloguj się
             </Link>
           </div>

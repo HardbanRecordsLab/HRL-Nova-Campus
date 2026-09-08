@@ -43,12 +43,12 @@ export const Login: React.FC = () => {
     <div id="login-page-wrapper" className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12">
       <div className="max-w-md w-full bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl relative">
         {/* Glow effect */}
-        <div className="absolute top-0 left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-violet-500 to-transparent" />
+        <div className="absolute top-0 left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
 
         <div className="p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex p-3 bg-violet-600/10 rounded-xl mb-3 text-violet-400">
+            <div className="inline-flex p-3 bg-cyan-600/10 rounded-xl mb-3 text-cyan-400">
               <Sparkles className="w-5 h-5" />
             </div>
             <h2 className="text-2xl font-display font-semibold text-white tracking-tight">
@@ -73,7 +73,7 @@ export const Login: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="np. mariusz@hardban.com"
-                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none transition-all placeholder:text-zinc-600"
+                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none transition-all placeholder:text-zinc-600"
                 />
               </div>
             </div>
@@ -90,7 +90,7 @@ export const Login: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none transition-all placeholder:text-zinc-600"
+                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none transition-all placeholder:text-zinc-600"
                 />
               </div>
             </div>
@@ -99,7 +99,7 @@ export const Login: React.FC = () => {
               id="login-submit-button"
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3.5 bg-gradient-to-r from-violet-600 to-pink-500 hover:from-violet-500 hover:to-pink-400 text-white rounded-xl text-sm font-semibold transition-all shadow-lg hover:shadow-violet-600/10 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3.5 bg-gradient-to-r from-cyan-600 to-teal-500 hover:from-cyan-500 hover:to-teal-400 text-white rounded-xl text-sm font-semibold transition-all shadow-lg hover:shadow-cyan-600/10 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "Autoryzacja..." : (
                 <>
@@ -112,7 +112,7 @@ export const Login: React.FC = () => {
 
           <div className="text-center mt-6 text-sm text-zinc-500">
             Nie masz konta?{" "}
-            <Link id="login-link-register" to="/register" className="text-violet-400 hover:underline">
+            <Link id="login-link-register" to="/register" className="text-cyan-400 hover:underline">
               Zarejestruj się
             </Link>
           </div>

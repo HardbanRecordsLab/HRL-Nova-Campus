@@ -92,8 +92,8 @@ export const AdminMessages: React.FC = () => {
   return (
     <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-4">
       <div className="flex items-center justify-between gap-4 border-b border-zinc-800 pb-3">
-        <div className="flex items-center gap-2 text-violet-400">
-          <Mail className="w-4 h-4 text-violet-500" />
+        <div className="flex items-center gap-2 text-cyan-400">
+          <Mail className="w-4 h-4 text-cyan-500" />
           <h3 className="text-sm font-mono uppercase tracking-wider text-zinc-350 text-gradient font-bold leading-normal">
             Wiadomości & Wsparcie - Czat ze Studentami
           </h3>
@@ -103,7 +103,7 @@ export const AdminMessages: React.FC = () => {
           disabled={loadingConvs}
           className="p-1 px-3 bg-zinc-800/80 hover:bg-zinc-850 border border-zinc-700/60 rounded-md text-zinc-400 hover:text-white flex items-center gap-1.5 text-xs transition-colors cursor-pointer"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${loadingConvs ? "animate-spin text-violet-500" : ""}`} />
+          <RefreshCw className={`w-3.5 h-3.5 ${loadingConvs ? "animate-spin text-cyan-500" : ""}`} />
           Odśwież
         </button>
       </div>
@@ -123,7 +123,7 @@ export const AdminMessages: React.FC = () => {
               />
             </div>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-1 bg-violet-950 text-violet-400 text-[10px] font-bold rounded">
+              <span className="px-2 py-1 bg-cyan-950 text-cyan-400 text-[10px] font-bold rounded">
                 Wszystkich wątków: {filteredConversations.length}
               </span>
             </div>
@@ -142,7 +142,7 @@ export const AdminMessages: React.FC = () => {
                   onClick={() => setSelectedConv(conv)}
                 >
                   <div className="flex items-start gap-3">
-                    <div className="mt-1 w-2.5 h-2.5 rounded-full flex-shrink-0 bg-violet-500" />
+                    <div className="mt-1 w-2.5 h-2.5 rounded-full flex-shrink-0 bg-cyan-500" />
                     <div className="w-full min-w-0">
                       <h5 className="text-xs font-bold text-white truncate">{conv.title || "Wsparcie"}</h5>
                       <p className="text-[11px] text-zinc-400 mt-0.5 truncate">
@@ -188,7 +188,7 @@ export const AdminMessages: React.FC = () => {
                       <div key={msg.id || index} className={`flex ${isAdminSender ? "justify-end" : "justify-start"}`}>
                         <div className={`p-4 rounded-xl max-w-[85%] border shadow-inner ${
                           isAdminSender 
-                            ? "bg-violet-950/40 border-violet-850 text-right text-violet-100" 
+                            ? "bg-cyan-950/40 border-cyan-850 text-right text-cyan-100" 
                             : "bg-zinc-900 border-zinc-850 text-left text-zinc-200"
                         }`}>
                           <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-1.5 block">
@@ -208,7 +208,7 @@ export const AdminMessages: React.FC = () => {
                   rows={3} 
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-800 focus:border-violet-500 rounded-xl p-3 text-xs text-white placeholder-zinc-500 focus:outline-none resize-none"
+                  className="w-full bg-zinc-900 border border-zinc-800 focus:border-cyan-500 rounded-xl p-3 text-xs text-white placeholder-zinc-500 focus:outline-none resize-none"
                   placeholder="Wpisz odpowiedź do studenta..."
                 />
                 <div className="flex justify-between items-center">
@@ -229,7 +229,7 @@ export const AdminMessages: React.FC = () => {
                   <button 
                     onClick={handleSendReply}
                     disabled={!replyText.trim()}
-                    className="px-6 py-2 bg-gradient-to-r from-violet-600 to-pink-500 hover:from-violet-500 hover:to-pink-400 text-white font-semibold rounded-xl text-xs uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+                    className="px-6 py-2 bg-gradient-to-r from-cyan-600 to-teal-500 hover:from-cyan-500 hover:to-teal-400 text-white font-semibold rounded-xl text-xs uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
                   >
                     <Reply className="w-4 h-4" />
                     Wyślij

@@ -70,7 +70,7 @@ export const CertificateVerify: React.FC = () => {
       
       {/* Search Bar section */}
       <section className="text-center space-y-4 max-w-xl mx-auto">
-        <div className="inline-flex p-3 bg-amber-500/10 rounded-xl text-amber-500">
+        <div className="inline-flex p-3 bg-cyan-500/10 rounded-xl text-cyan-500">
           <Award className="w-6 h-6 animate-pulse" />
         </div>
         <h2 className="text-3xl font-display font-semibold tracking-tight text-white leading-tight">
@@ -81,7 +81,7 @@ export const CertificateVerify: React.FC = () => {
         </p>
 
         <form id="verify-code-form" onSubmit={handleSubmit} className="pt-2">
-          <div className="relative flex items-center bg-zinc-90 w-full bg-zinc-900 border border-zinc-800 focus-within:border-amber-500 rounded-2xl p-1.5 transition-all">
+          <div className="relative flex items-center bg-zinc-90 w-full bg-zinc-900 border border-zinc-800 focus-within:border-cyan-500 rounded-2xl p-1.5 transition-all">
             <Search className="w-4 h-4 text-zinc-500 ml-3 flex-shrink-0" />
             <input
               id="verify-input-code"
@@ -95,7 +95,7 @@ export const CertificateVerify: React.FC = () => {
               id="verify-code-submit"
               type="submit"
               disabled={loading || !searchCode.trim()}
-              className="px-5 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 disabled:opacity-50 text-white rounded-xl text-xs font-mono font-bold uppercase transition-all cursor-pointer flex-shrink-0"
+              className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 disabled:opacity-50 text-white rounded-xl text-xs font-mono font-bold uppercase transition-all cursor-pointer flex-shrink-0"
             >
               {loading ? "Szukam..." : "Weryfikuj"}
             </button>
@@ -107,7 +107,7 @@ export const CertificateVerify: React.FC = () => {
       <div id="verification-result">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-3">
-            <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
             <span className="text-zinc-400 text-xs font-mono">Przeszukiwanie baz danych B2B...</span>
           </div>
         ) : certificate ? (
@@ -115,20 +115,20 @@ export const CertificateVerify: React.FC = () => {
           /* GORGEOUS GOLDEN DESIGNED CERTIFICATE REPRESENTATION */
           <div
             id="verified-certificate-card animate-fade-in"
-            className="bg-zinc-950 border-2 border-amber-500/30 rounded-3xl p-8 md:p-12 relative overflow-hidden space-y-8 shadow-2xl relative"
+            className="bg-zinc-950 border-2 border-cyan-500/30 rounded-3xl p-8 md:p-12 relative overflow-hidden space-y-8 shadow-2xl relative"
           >
             {/* Background design accents */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-500/5 rounded-full blur-[80px] pointer-events-none" />
-            <div className="absolute top-4 right-4 text-amber-500 opacity-5">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/5 rounded-full blur-[80px] pointer-events-none" />
+            <div className="absolute top-4 right-4 text-cyan-500 opacity-5">
               <Award className="w-56 h-56" />
             </div>
 
             {/* Header certified tag */}
-            <div className="flex items-center justify-between gap-4 border-b border-amber-500/20 pb-6 flex-wrap">
+            <div className="flex items-center justify-between gap-4 border-b border-cyan-500/20 pb-6 flex-wrap">
               <div className="flex items-center gap-3">
-                <Disc className="w-5 h-5 text-amber-500 animate-spin-pulse" />
-                <span className="font-display font-medium text-xs tracking-widest text-amber-400 uppercase font-bold leading-none">
-                  HRL ACADEMY OFFICIAL RECORD
+                <Disc className="w-5 h-5 text-cyan-500 animate-spin-pulse" />
+                <span className="font-display font-medium text-xs tracking-widest text-cyan-400 uppercase font-bold leading-none">
+                  HRL NOVA CAMPUS OFFICIAL RECORD
                 </span>
               </div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-800/40 rounded-full text-xs font-mono text-emerald-400">
@@ -157,10 +157,10 @@ export const CertificateVerify: React.FC = () => {
             </div>
 
             {/* Serial code, issue date and verify shares */}
-            <div className="border-t border-amber-500/20 pt-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="border-t border-cyan-500/20 pt-8 flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="space-y-2 text-center md:text-left">
                 <span className="block text-[10px] font-mono text-zinc-500 uppercase tracking-widest leading-none">NUMER SERYJNY CERTYFIKATU</span>
-                <span className="block text-sm font-mono text-amber-300 font-bold leading-none">{certificate.code}</span>
+                <span className="block text-sm font-mono text-cyan-300 font-bold leading-none">{certificate.code}</span>
               </div>
 
               <div className="space-y-2 text-center md:text-left">
@@ -176,7 +176,7 @@ export const CertificateVerify: React.FC = () => {
                   id="cert-qr-code"
                   src={certificate.qr_payload_url}
                   alt="Kod QR weryfikacji certyfikatu"
-                  className="w-20 h-20 rounded-lg border border-amber-500/30 bg-white p-1 flex-shrink-0"
+                  className="w-20 h-20 rounded-lg border border-cyan-500/30 bg-white p-1 flex-shrink-0"
                 />
               )}
 
@@ -200,16 +200,16 @@ export const CertificateVerify: React.FC = () => {
             <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
             <h3 className="text-white font-medium text-base">Niepoprawny kod certyfikatu</h3>
             <p className="text-xs text-zinc-400 max-w-xs mx-auto leading-relaxed">
-              Certyfikat o kodzie seryjnym <span className="font-mono text-red-400">{searchCode}</span> nie widnieje w rejestrach HRL Academy. Upewnij się, że wpisałeś go poprawnie (często ze złą wielkością liter lub bez myślników).
+              Certyfikat o kodzie seryjnym <span className="font-mono text-red-400">{searchCode}</span> nie widnieje w rejestrach HRL Nova Campus. Upewnij się, że wpisałeś go poprawnie (często ze złą wielkością liter lub bez myślników).
             </p>
           </div>
         ) : (
           /* Simple placeholder welcome card */
           <div className="p-12 text-center border border-dashed border-zinc-800 rounded-3xl max-w-xl mx-auto text-zinc-500 space-y-3">
-            <Globe className="w-10 h-10 mx-auto text-amber-500 opacity-40 animate-pulse" />
+            <Globe className="w-10 h-10 mx-auto text-cyan-500 opacity-40 animate-pulse" />
             <h3 className="text-zinc-300 font-medium text-sm">Wprowadź kod seryjny</h3>
             <p className="text-xs text-zinc-400 leading-relaxed max-w-xs mx-auto">
-              Jeżeli otrzymałeś certyfikat od studenta HRL Academy Core, wprowadź jego kod powyżej, aby natychmiastowo zwerfikować cyfrowe poświadczenie ukończenia szkolenia.
+              Jeżeli otrzymałeś certyfikat od studenta HRL Nova Campus, wprowadź jego kod powyżej, aby natychmiastowo zwerfikować cyfrowe poświadczenie ukończenia szkolenia.
             </p>
           </div>
         )}

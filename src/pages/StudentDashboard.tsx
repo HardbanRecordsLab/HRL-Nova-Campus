@@ -256,7 +256,7 @@ export const StudentDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-24 space-y-4">
-        <Clock className="w-8 h-8 text-violet-500 animate-spin" />
+        <Clock className="w-8 h-8 text-cyan-500 animate-spin" />
         <span className="text-sm font-mono text-zinc-400">Pobieranie danych Twojego panelu kursanta z HRL Core...</span>
       </div>
     );
@@ -279,40 +279,40 @@ export const StudentDashboard: React.FC = () => {
     <div id="student-dashboard-workspace" className="space-y-8 pb-16">
       
       {/* 1. Welcoming Hero Banner */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 border border-amber-500/20 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_0_30px_rgba(0,0,0,0.8)]">
+      <section className="relative overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 border border-cyan-500/20 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_0_30px_rgba(0,0,0,0.8)]">
         <div className="space-y-4 text-center md:text-left z-10 max-w-2xl">
-          <div className="inline-flex py-1.5 px-3.5 bg-gradient-to-r from-amber-500/10 via-violet-500/10 to-pink-500/10 rounded-full text-xs font-mono text-amber-300 items-center gap-2 border border-amber-500/30 shadow-inner">
-            <Trophy className="w-4 h-4 text-amber-400 animate-bounce" />
-            <span className="font-semibold tracking-wide">HRL Academy Enterprise Dashboard Pro</span>
+          <div className="inline-flex py-1.5 px-3.5 bg-gradient-to-r from-cyan-500/10 via-cyan-500/10 to-teal-500/10 rounded-full text-xs font-mono text-cyan-300 items-center gap-2 border border-cyan-500/30 shadow-inner">
+            <Trophy className="w-4 h-4 text-cyan-400 animate-bounce" />
+            <span className="font-semibold tracking-wide">HRL Nova Campus — Panel Studenta</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-display font-bold text-white tracking-tight leading-tight">
-            Witaj ponownie, <span className="bg-gradient-to-r from-amber-300 via-violet-400 to-pink-400 bg-clip-text text-transparent font-extrabold">{user?.username}</span>!
+            Witaj ponownie, <span className="bg-gradient-to-r from-cyan-300 via-cyan-400 to-teal-400 bg-clip-text text-transparent font-extrabold">{user?.username}</span>!
           </h1>
           <p className="text-zinc-300 text-sm leading-relaxed">
-            Twój osobisty panel suwerenności cyfrowej i certyfikowanej edukacji. Śledź postępy modułów, rozwiązuj testy kompetencyjne i pobieraj zweryfikowane dyplomy z kryptograficznym potwierdzeniem.
+            Twój osobisty panel certyfikowanej edukacji. Śledź postępy modułów, rozwiązuj testy kompetencyjne i pobieraj zweryfikowane dyplomy z kodem QR i kryptograficznym potwierdzeniem.
           </p>
         </div>
 
         <div className="flex items-center gap-4 z-10 flex-shrink-0">
-          <div className="relative group p-1 bg-gradient-to-tr from-amber-500 via-violet-500 to-pink-500 rounded-3xl shadow-[0_0_25px_rgba(245,158,11,0.25)]">
+          <div className="brand-logo-tile rounded-2xl p-3 md:p-4">
             <img
               src="/logo_3d.jpg"
-              alt="HRL 3D Logo"
-              className="w-28 h-28 md:w-32 md:h-32 rounded-2xl object-cover border border-zinc-900"
+              alt="HRL Nova Campus"
+              className="w-36 md:w-48 object-contain"
             />
           </div>
         </div>
 
         {/* Ambient absolute background decorative layer */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
       </section>
 
       {/* 2. Key Metrics Widgets Grid */}
       <section className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Metric 1: Enrolled Courses */}
-        <div className="p-4 bg-zinc-900/80 backdrop-blur border border-zinc-800 hover:border-violet-500/40 transition-all rounded-2xl flex items-center gap-4 shadow-lg group">
-          <div className="p-3 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20 group-hover:scale-110 transition-transform">
+        <div className="p-4 bg-zinc-900/80 backdrop-blur border border-zinc-800 hover:border-cyan-500/40 transition-all rounded-2xl flex items-center gap-4 shadow-lg group">
+          <div className="p-3 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 group-hover:scale-110 transition-transform">
             <BookOpen className="w-5 h-5" />
           </div>
           <div>
@@ -322,8 +322,8 @@ export const StudentDashboard: React.FC = () => {
         </div>
 
         {/* Metric 2: Completed Lessons */}
-        <div className="p-4 bg-zinc-900/80 backdrop-blur border border-zinc-800 hover:border-pink-500/40 transition-all rounded-2xl flex items-center gap-4 shadow-lg group">
-          <div className="p-3 rounded-xl bg-pink-500/10 text-pink-400 border border-pink-500/20 group-hover:scale-110 transition-transform">
+        <div className="p-4 bg-zinc-900/80 backdrop-blur border border-zinc-800 hover:border-teal-500/40 transition-all rounded-2xl flex items-center gap-4 shadow-lg group">
+          <div className="p-3 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/20 group-hover:scale-110 transition-transform">
             <CheckCircle className="w-5 h-5" />
           </div>
           <div>
@@ -333,8 +333,8 @@ export const StudentDashboard: React.FC = () => {
         </div>
 
         {/* Metric 3: Quizzes count */}
-        <div className="p-4 bg-zinc-900/80 backdrop-blur border border-zinc-800 hover:border-amber-500/40 transition-all rounded-2xl flex items-center gap-4 shadow-lg group">
-          <div className="p-3 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 group-hover:scale-110 transition-transform">
+        <div className="p-4 bg-zinc-900/80 backdrop-blur border border-zinc-800 hover:border-cyan-500/40 transition-all rounded-2xl flex items-center gap-4 shadow-lg group">
+          <div className="p-3 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 group-hover:scale-110 transition-transform">
             <FileCheck2 className="w-5 h-5" />
           </div>
           <div>
@@ -355,12 +355,12 @@ export const StudentDashboard: React.FC = () => {
         </div>
 
         {/* Metric 5: Certified courses */}
-        <div className="col-span-2 lg:col-span-1 p-4 bg-zinc-900/80 backdrop-blur border border-amber-500/30 hover:border-amber-400 transition-all rounded-2xl flex items-center gap-4 shadow-lg group">
-          <div className="p-3 rounded-xl bg-gradient-to-tr from-amber-500 to-violet-600 text-white shadow-[0_0_15px_rgba(245,158,11,0.3)] group-hover:scale-110 transition-transform">
+        <div className="col-span-2 lg:col-span-1 p-4 bg-zinc-900/80 backdrop-blur border border-cyan-500/30 hover:border-cyan-400 transition-all rounded-2xl flex items-center gap-4 shadow-lg group">
+          <div className="p-3 rounded-xl bg-gradient-to-tr from-cyan-500 to-cyan-600 text-white shadow-[0_0_15px_rgba(6,182,212,0.3)] group-hover:scale-110 transition-transform">
             <Award className="w-5 h-5" />
           </div>
           <div>
-            <span className="block text-2xl font-extrabold text-amber-300 leading-none mb-1">{stats.certCount}</span>
+            <span className="block text-2xl font-extrabold text-cyan-300 leading-none mb-1">{stats.certCount}</span>
             <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest block font-medium">Uzyskane dyplomy</span>
           </div>
         </div>
@@ -372,7 +372,7 @@ export const StudentDashboard: React.FC = () => {
           onClick={() => setActiveTab("overview")}
           className={`py-3 px-5 text-sm font-medium transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-2 ${
             activeTab === "overview"
-              ? "border-violet-500 text-white font-semibold"
+              ? "border-cyan-500 text-white font-semibold"
               : "border-transparent text-zinc-400 hover:text-zinc-200"
           }`}
         >
@@ -384,7 +384,7 @@ export const StudentDashboard: React.FC = () => {
           onClick={() => setActiveTab("courses")}
           className={`py-3 px-5 text-sm font-medium transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-2 ${
             activeTab === "courses"
-              ? "border-violet-500 text-white font-semibold"
+              ? "border-cyan-500 text-white font-semibold"
               : "border-transparent text-zinc-400 hover:text-zinc-200"
           }`}
         >
@@ -396,7 +396,7 @@ export const StudentDashboard: React.FC = () => {
           onClick={() => setActiveTab("certificates")}
           className={`py-3 px-5 text-sm font-medium transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-2 ${
             activeTab === "certificates"
-              ? "border-violet-500 text-white font-semibold"
+              ? "border-cyan-500 text-white font-semibold"
               : "border-transparent text-zinc-400 hover:text-zinc-200"
           }`}
         >
@@ -408,7 +408,7 @@ export const StudentDashboard: React.FC = () => {
           onClick={() => setActiveTab("quizzes")}
           className={`py-3 px-5 text-sm font-medium transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-2 ${
             activeTab === "quizzes"
-              ? "border-violet-500 text-white font-semibold"
+              ? "border-cyan-500 text-white font-semibold"
               : "border-transparent text-zinc-400 hover:text-zinc-200"
           }`}
         >
@@ -420,7 +420,7 @@ export const StudentDashboard: React.FC = () => {
           onClick={() => setActiveTab("leaderboard")}
           className={`py-3 px-5 text-sm font-medium transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-2 ${
             activeTab === "leaderboard"
-              ? "border-violet-500 text-white font-semibold"
+              ? "border-cyan-500 text-white font-semibold"
               : "border-transparent text-zinc-400 hover:text-zinc-200"
           }`}
         >
@@ -441,10 +441,10 @@ export const StudentDashboard: React.FC = () => {
               <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 space-y-5">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-mono uppercase tracking-wider text-white flex items-center gap-2">
-                    <Bookmark className="w-4 h-4 text-violet-400" />
+                    <Bookmark className="w-4 h-4 text-cyan-400" />
                     Ostatnio Aktywne Programy
                   </h3>
-                  <button onClick={() => setActiveTab("courses")} className="text-xs text-violet-400 hover:text-violet-300 font-mono flex items-center gap-1 cursor-pointer">
+                  <button onClick={() => setActiveTab("courses")} className="text-xs text-cyan-400 hover:text-cyan-300 font-mono flex items-center gap-1 cursor-pointer">
                     Zobacz wszystko
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>
@@ -457,7 +457,7 @@ export const StudentDashboard: React.FC = () => {
                         <div className="flex justify-between items-center text-xs">
                           <span className="font-bold text-white flex items-center gap-2">
                             {course.title || "Zewnętrzny Kurs"}
-                            {course.access_type === 'paid' && !course.progress && <span className="text-[10px] bg-amber-950 text-amber-400 px-1.5 py-0.5 rounded">LOCKED</span>}
+                            {course.access_type === 'paid' && !course.progress && <span className="text-[10px] bg-cyan-950 text-cyan-400 px-1.5 py-0.5 rounded">LOCKED</span>}
                           </span>
                           <span className={`${course.progress ? 'text-emerald-400' : 'text-zinc-600'} font-mono`}>{course.progress || 0}%</span>
                         </div>
@@ -491,20 +491,20 @@ export const StudentDashboard: React.FC = () => {
 
                         <div className="w-full sm:w-auto flex flex-col gap-2 flex-shrink-0 sm:text-right">
                           <div className="flex items-center sm:justify-end gap-3 text-xs">
-                            <span className="font-mono text-zinc-400">Postęp: <strong className="text-violet-400 font-semibold">{percent}%</strong></span>
+                            <span className="font-mono text-zinc-400">Postęp: <strong className="text-cyan-400 font-semibold">{percent}%</strong></span>
                             <span className="text-zinc-650 text-zinc-500">|</span>
                             <span className="font-mono text-zinc-500 text-[11px]">{course.completed_lessons_count}/{course.lessons_count} lekcji</span>
                           </div>
                           
                           <div className="flex items-center gap-3">
                             <div className="w-32 h-1.5 bg-zinc-950 rounded-full overflow-hidden border border-zinc-850">
-                              <div className="h-full bg-gradient-to-r from-violet-500 to-pink-500 rounded-full" style={{ width: `${percent}%` }} />
+                              <div className="h-full bg-gradient-to-r from-cyan-500 to-teal-500 rounded-full" style={{ width: `${percent}%` }} />
                             </div>
                             <Link
                               to={`/course/${course.id}`}
                               className="px-4 py-1.5 bg-zinc-950 hover:bg-zinc-850 border border-zinc-800 hover:border-zinc-750 text-xs font-mono font-medium rounded-lg text-white transition-all flex items-center gap-1 shadow-md cursor-pointer"
                             >
-                              <Play className="w-3 h-3 text-pink-500 fill-pink-500" />
+                              <Play className="w-3 h-3 text-teal-500 fill-teal-500" />
                               Otwórz
                             </Link>
                           </div>
@@ -524,7 +524,7 @@ export const StudentDashboard: React.FC = () => {
               {/* Verified certificates highlight card list */}
               <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 space-y-4">
                 <h3 className="text-sm font-mono uppercase tracking-wider text-white flex items-center gap-2">
-                  <Award className="w-4 h-4 text-pink-400" />
+                  <Award className="w-4 h-4 text-teal-400" />
                   Najnowsze Osiągnięcia Akredytacyjne
                 </h3>
 
@@ -533,13 +533,13 @@ export const StudentDashboard: React.FC = () => {
                     {certificates.slice(0, 2).map((crt) => (
                       <div key={crt.id} className="p-4 bg-zinc-950 border border-zinc-850 rounded-xl relative overflow-hidden flex flex-col justify-between h-36">
                         <div>
-                          <span className="text-[9px] font-mono text-pink-400 font-semibold uppercase block mb-1">KOD SERYJNY: {crt.certificate_code}</span>
+                          <span className="text-[9px] font-mono text-teal-400 font-semibold uppercase block mb-1">KOD SERYJNY: {crt.certificate_code}</span>
                           <h4 className="text-xs font-bold text-white line-clamp-2 leading-snug">{crt.course_title}</h4>
                         </div>
                         <div className="flex items-center justify-between pt-2 border-t border-zinc-900/80">
                           <button
                             onClick={() => setSelectedCertificate(crt)}
-                            className="text-[10px] font-mono font-semibold text-violet-400 hover:text-violet-300 flex items-center gap-1 cursor-pointer"
+                            className="text-[10px] font-mono font-semibold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer"
                           >
                             <Printer className="w-3.5 h-3.5" />
                             ZOBACZ CERT
@@ -573,10 +573,10 @@ export const StudentDashboard: React.FC = () => {
                 <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 space-y-4">
                   <h3 className="text-sm font-mono uppercase tracking-wider text-white flex items-center justify-between border-b border-zinc-800/80 pb-3">
                     <span className="flex items-center gap-2">
-                      <SlidersHorizontal className="w-4 h-4 text-amber-400" />
+                      <SlidersHorizontal className="w-4 h-4 text-cyan-400" />
                       Limity Konta i Quoty
                     </span>
-                    <span className="text-[10px] bg-amber-500/10 text-amber-300 font-mono px-2 py-0.5 rounded border border-amber-500/20 uppercase font-semibold">
+                    <span className="text-[10px] bg-cyan-500/10 text-cyan-300 font-mono px-2 py-0.5 rounded border border-cyan-500/20 uppercase font-semibold">
                       {limitsInfo.role}
                     </span>
                   </h3>
@@ -586,13 +586,13 @@ export const StudentDashboard: React.FC = () => {
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-zinc-400 font-mono text-[11px]">Darmowe zapisy na kursy:</span>
-                        <span className="font-mono font-bold text-amber-300">
+                        <span className="font-mono font-bold text-cyan-300">
                           {limitsInfo.enrollments?.current} / {limitsInfo.enrollments?.max}
                         </span>
                       </div>
                       <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden border border-zinc-800">
                         <div
-                          className="h-full bg-gradient-to-r from-amber-500 to-amber-300 rounded-full transition-all"
+                          className="h-full bg-gradient-to-r from-cyan-500 to-cyan-300 rounded-full transition-all"
                           style={{
                             width: `${Math.min(100, Math.round((limitsInfo.enrollments?.current / limitsInfo.enrollments?.max) * 100))}%`
                           }}
@@ -608,7 +608,7 @@ export const StudentDashboard: React.FC = () => {
                     <div className="p-3 bg-zinc-950 border border-zinc-850 rounded-xl space-y-1">
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-zinc-400 font-mono text-[11px]">Dzienny limit rozwiązań quizu:</span>
-                        <span className="font-mono font-bold text-violet-400">{limitsInfo.quiz_attempts?.max_per_day} próby / 24h</span>
+                        <span className="font-mono font-bold text-cyan-400">{limitsInfo.quiz_attempts?.max_per_day} próby / 24h</span>
                       </div>
                       <p className="text-[10px] text-zinc-500">Chroni przed losowym zaznaczaniem pytań.</p>
                     </div>
@@ -619,12 +619,12 @@ export const StudentDashboard: React.FC = () => {
               {/* Osiagnięcia (Badges) Section */}
               <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 space-y-5">
                 <h3 className="text-sm font-mono uppercase tracking-wider text-white flex items-center gap-2 border-b border-zinc-800/80 pb-3">
-                  <Trophy className="w-4 h-4 text-yellow-400" />
+                  <Trophy className="w-4 h-4 text-blue-400" />
                   Moje Osiągnięcia (Badges)
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-zinc-950 border border-zinc-850 p-3 rounded-xl flex flex-col items-center justify-center text-center space-y-2 relative overflow-hidden group">
-                    <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400 group-hover:scale-110 transition-transform">
+                    <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
                       <Sparkles className="w-5 h-5" />
                     </div>
                     <div>
@@ -633,7 +633,7 @@ export const StudentDashboard: React.FC = () => {
                     </div>
                   </div>
                   <div className="bg-zinc-950 border border-zinc-850 p-3 rounded-xl flex flex-col items-center justify-center text-center space-y-2 relative overflow-hidden group">
-                    <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400 group-hover:scale-110 transition-transform">
+                    <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
                       <Zap className="w-5 h-5" />
                     </div>
                     <div>
@@ -642,7 +642,7 @@ export const StudentDashboard: React.FC = () => {
                     </div>
                   </div>
                   <div className="bg-zinc-950 border border-zinc-850 p-3 rounded-xl flex flex-col items-center justify-center text-center space-y-2 relative overflow-hidden group">
-                    <div className="w-10 h-10 rounded-full bg-violet-500/20 flex items-center justify-center text-violet-400 group-hover:scale-110 transition-transform">
+                    <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
                       <Award className="w-5 h-5" />
                     </div>
                     <div>
@@ -666,7 +666,7 @@ export const StudentDashboard: React.FC = () => {
 
               <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 space-y-5">
                 <h3 className="text-sm font-mono uppercase tracking-wider text-white flex items-center gap-2 border-b border-zinc-800/80 pb-3">
-                  <Clock className="w-4 h-4 text-violet-400" />
+                  <Clock className="w-4 h-4 text-cyan-400" />
                   Historia Nauki (Dziennik)
                 </h3>
 
@@ -676,9 +676,9 @@ export const StudentDashboard: React.FC = () => {
                       {/* Timeline circular dot indicator */}
                       <span className={`absolute -left-[24px] top-1.5 w-3.5 h-3.5 rounded-full border border-zinc-950 ${
                         act.type === 'certificate'
-                          ? 'bg-gradient-to-r from-violet-500 to-pink-500'
+                          ? 'bg-gradient-to-r from-cyan-500 to-teal-500'
                           : act.type === 'enrollment'
-                          ? 'bg-violet-400'
+                          ? 'bg-cyan-400'
                           : 'bg-zinc-700'
                       }`} />
                       
@@ -712,7 +712,7 @@ export const StudentDashboard: React.FC = () => {
         {/* --- DETAILED COURSES TAB --- */}
         {activeTab === "courses" && (
           <div className="space-y-6">
-            <h3 className="text-base font-semibold text-white font-display border-l-4 border-violet-500 pl-3">
+            <h3 className="text-base font-semibold text-white font-display border-l-4 border-cyan-500 pl-3">
               Katalog Twoich Zapisanych Kursów i Lekcji
             </h3>
             
@@ -738,7 +738,7 @@ export const StudentDashboard: React.FC = () => {
                             <span className="px-2 py-0.5 bg-zinc-950 border border-zinc-805/80 text-[8px] font-mono text-zinc-400 rounded uppercase">
                               {course.category || "Ogólny"}
                             </span>
-                            <span className="px-2 py-0.5 bg-zinc-950 border border-zinc-805/80 text-[8px] font-mono text-violet-400 font-semibold rounded uppercase">
+                            <span className="px-2 py-0.5 bg-zinc-950 border border-zinc-805/80 text-[8px] font-mono text-cyan-400 font-semibold rounded uppercase">
                               {course.difficulty || "Dowolny"}
                             </span>
                           </div>
@@ -754,7 +754,7 @@ export const StudentDashboard: React.FC = () => {
                         <div className="flex flex-col gap-1 items-start md:items-end">
                           <span className="text-xs text-zinc-400 font-mono">Ukończono <strong className="text-gradient font-bold">{percent}%</strong></span>
                           <div className="w-28 h-1 bg-zinc-950 rounded-full overflow-hidden border border-zinc-850">
-                            <div className="h-full bg-gradient-to-r from-violet-500 to-pink-500" style={{ width: `${percent}%` }} />
+                            <div className="h-full bg-gradient-to-r from-cyan-500 to-teal-500" style={{ width: `${percent}%` }} />
                           </div>
                         </div>
 
@@ -768,7 +768,7 @@ export const StudentDashboard: React.FC = () => {
                           </button>
                           <Link
                             to={`/course/${course.id}`}
-                            className="px-4 py-2 bg-gradient-to-r from-violet-600 to-pink-500 text-white hover:opacity-90 font-mono text-xs rounded-xl transition-all cursor-pointer flex items-center gap-1 font-bold"
+                            className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-teal-500 text-white hover:opacity-90 font-mono text-xs rounded-xl transition-all cursor-pointer flex items-center gap-1 font-bold"
                           >
                             Ucz się
                           </Link>
@@ -803,7 +803,7 @@ export const StudentDashboard: React.FC = () => {
                                       onClick={() => handleToggleLessonCompletion(course.id, les.id, isCompleted)}
                                       className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all cursor-pointer ${
                                         isCompleted
-                                          ? "bg-gradient-to-tr from-violet-600 to-pink-500 border-transparent text-white"
+                                          ? "bg-gradient-to-tr from-cyan-600 to-teal-500 border-transparent text-white"
                                           : "border-zinc-800 hover:border-zinc-700 bg-zinc-90 text-zinc-900"
                                       }`}
                                     >
@@ -838,7 +838,7 @@ export const StudentDashboard: React.FC = () => {
                 <div className="text-center py-12 bg-zinc-900/30 border border-zinc-80 w-full border-zinc-800 rounded-3xl space-y-4">
                   <BookOpen className="w-12 h-12 text-zinc-650 text-zinc-500 mx-auto" />
                   <p className="text-zinc-400 font-mono text-xs">Nie zapisałeś się na żaden program szkoleniowy.</p>
-                  <Link to="/" className="px-5 py-2.5 inline-block bg-gradient-to-r from-violet-600 to-pink-500 text-white font-mono text-xs uppercase font-bold rounded-xl cursor-pointer">
+                  <Link to="/" className="px-5 py-2.5 inline-block bg-gradient-to-r from-cyan-600 to-teal-500 text-white font-mono text-xs uppercase font-bold rounded-xl cursor-pointer">
                     Zobacz Dostępne Kursy Certyfikatów
                   </Link>
                 </div>
@@ -850,7 +850,7 @@ export const StudentDashboard: React.FC = () => {
         {/* --- CERTIFICATES TAB --- */}
         {activeTab === "certificates" && (
           <div className="space-y-6">
-            <h3 className="text-base font-semibold text-white font-display border-l-4 border-violet-500 pl-3">
+            <h3 className="text-base font-semibold text-white font-display border-l-4 border-cyan-500 pl-3">
               Twoje Uzyskane Dyplomy Uczestnictwa
             </h3>
 
@@ -890,7 +890,7 @@ export const StudentDashboard: React.FC = () => {
                           onClick={() => setSelectedCertificate(crt)}
                           className="w-full py-2.5 bg-zinc-950 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 rounded-xl text-xs font-mono transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                         >
-                          <Printer className="w-3.5 h-3.5 text-violet-400" />
+                          <Printer className="w-3.5 h-3.5 text-cyan-400" />
                           Generuuj / Drukuj
                         </button>
                         <button
@@ -920,7 +920,7 @@ export const StudentDashboard: React.FC = () => {
         {/* --- QUIZZES TAB --- */}
         {activeTab === "quizzes" && (
           <div className="space-y-6">
-            <h3 className="text-base font-semibold text-white font-display border-l-4 border-violet-500 pl-3">
+            <h3 className="text-base font-semibold text-white font-display border-l-4 border-cyan-500 pl-3">
               Rejestr Sprawdzianów i Podejść Egzaminacyjnych
             </h3>
 
@@ -981,7 +981,7 @@ export const StudentDashboard: React.FC = () => {
         {/* --- LEADERBOARD TAB --- */}
         {activeTab === "leaderboard" && (
           <div className="space-y-6">
-            <h3 className="text-base font-semibold text-white font-display border-l-4 border-violet-500 pl-3">
+            <h3 className="text-base font-semibold text-white font-display border-l-4 border-cyan-500 pl-3">
               Ogólnoświatowa Tablica Wyników
             </h3>
 
@@ -1004,7 +1004,7 @@ export const StudentDashboard: React.FC = () => {
             
             {/* Control panel buttons for inside modal */}
             <div className="flex justify-between items-center pb-4 border-b border-zinc-850 print:hidden">
-              <span className="text-xs font-mono text-zinc-400">Podgląd Akredytacji HRL Academy Certyfikat</span>
+              <span className="text-xs font-mono text-zinc-400">Podgląd Akredytacji HRL Nova Campus</span>
               <div className="flex gap-2">
                 <button
                   disabled={isGeneratingPDF}
@@ -1013,7 +1013,7 @@ export const StudentDashboard: React.FC = () => {
                     await generateCertificatePDF("print-area", `Certyfikat_${selectedCertificate.certificate_code}.pdf`);
                     setIsGeneratingPDF(false);
                   }}
-                  className="px-4 py-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-semibold rounded-xl text-xs font-mono flex items-center gap-1.5 cursor-pointer transition-colors"
+                  className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-semibold rounded-xl text-xs font-mono flex items-center gap-1.5 cursor-pointer transition-colors"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   {isGeneratingPDF ? "Generowanie..." : "Pobierz Dyplom PDF"}
@@ -1028,25 +1028,25 @@ export const StudentDashboard: React.FC = () => {
             </div>
 
             {/* HIGH FIDELITY PRINT DESIGN (A4 landscape proportions approx) */}
-            <div id="print-area" className="border-8 double border-amber-500/20 p-8 md:p-12 bg-zinc-950 text-center space-y-8 relative print:border-amber-500 print:text-black">
+            <div id="print-area" className="border-8 double border-cyan-500/20 p-8 md:p-12 bg-zinc-950 text-center space-y-8 relative print:border-cyan-500 print:text-black">
               
               {/* Gold corners */}
-              <div className="absolute top-4 left-4 w-12 h-12 border-t-2 border-l-2 border-amber-500/40 pointer-events-none" />
-              <div className="absolute top-4 right-4 w-12 h-12 border-t-2 border-r-2 border-amber-500/40 pointer-events-none" />
-              <div className="absolute bottom-4 left-4 w-12 h-12 border-b-2 border-l-2 border-amber-500/40 pointer-events-none" />
-              <div className="absolute bottom-4 right-4 w-12 h-12 border-b-2 border-r-2 border-amber-500/40 pointer-events-none" />
+              <div className="absolute top-4 left-4 w-12 h-12 border-t-2 border-l-2 border-cyan-500/40 pointer-events-none" />
+              <div className="absolute top-4 right-4 w-12 h-12 border-t-2 border-r-2 border-cyan-500/40 pointer-events-none" />
+              <div className="absolute bottom-4 left-4 w-12 h-12 border-b-2 border-l-2 border-cyan-500/40 pointer-events-none" />
+              <div className="absolute bottom-4 right-4 w-12 h-12 border-b-2 border-r-2 border-cyan-500/40 pointer-events-none" />
 
               {/* Watermark crest behind text */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5">
-                <Award className="w-96 h-96 text-amber-500" />
+                <Award className="w-96 h-96 text-cyan-500" />
               </div>
 
               {/* Header / Crest */}
               <div className="space-y-2 z-10 relative">
-                <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-550/40 border-amber-500/30 flex items-center justify-center mx-auto text-amber-500 mb-2">
+                <div className="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-550/40 border-cyan-500/30 flex items-center justify-center mx-auto text-cyan-500 mb-2">
                   <Award className="w-6 h-6" />
                 </div>
-                <h2 className="text-xs font-mono tracking-[0.3em] text-amber-500 uppercase">OFFICIAL CERTIFICATE OF COMPLETION</h2>
+                <h2 className="text-xs font-mono tracking-[0.3em] text-cyan-500 uppercase">OFFICIAL CERTIFICATE OF COMPLETION</h2>
                 <h3 className="text-3xl font-serif tracking-tight text-white leading-normal print:text-black">DYPLOM ACCREDYTACYJNY</h3>
               </div>
 
@@ -1059,7 +1059,7 @@ export const StudentDashboard: React.FC = () => {
                 <p className="text-xs text-zinc-505 text-zinc-500 leading-normal max-w-md mx-auto font-mono">
                   ukończył z wynikiem pozytywnym pełny cykl edukacyjny, zaliczył wymagane laboratoria kodowania oraz testy rygorystyczne w specjalizacji:
                 </p>
-                <p className="text-2xl font-bold font-display text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-200 py-1.5 leading-snug print:text-zinc-900 print:bg-none">
+                <p className="text-2xl font-bold font-display text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-cyan-200 py-1.5 leading-snug print:text-zinc-900 print:bg-none">
                   {selectedCertificate.course_title}
                 </p>
               </div>
@@ -1069,7 +1069,7 @@ export const StudentDashboard: React.FC = () => {
                 
                 {/* Board / Academy Seal */}
                 <div className="flex flex-col items-center justify-end text-center space-y-1">
-                  <div className="w-14 h-14 rounded-full border border-amber-500/40 flex items-center justify-center text-amber-500/80 mb-1">
+                  <div className="w-14 h-14 rounded-full border border-cyan-500/40 flex items-center justify-center text-cyan-500/80 mb-1">
                     <span className="text-[10px] font-mono font-bold">HRL SEAL</span>
                   </div>
                   <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">Pieczęć Instytutu</span>
@@ -1077,7 +1077,7 @@ export const StudentDashboard: React.FC = () => {
 
                 {/* Validation Serial QR block */}
                 <div className="flex flex-col items-center justify-end text-center space-y-1">
-                  <span className="text-[10px] font-mono font-bold text-amber-500 uppercase tracking-widest mb-1">
+                  <span className="text-[10px] font-mono font-bold text-cyan-500 uppercase tracking-widest mb-1">
                     B2B Verification
                   </span>
                   {selectedCertificate.qr_payload_url && (

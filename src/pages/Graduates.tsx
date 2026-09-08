@@ -43,18 +43,18 @@ export const Graduates: React.FC = () => {
   return (
     <div id="graduates-registry" className="max-w-4xl mx-auto py-8 space-y-10">
       <section className="text-center space-y-4 max-w-xl mx-auto">
-        <div className="inline-flex p-3 bg-violet-500/10 rounded-xl text-violet-400">
+        <div className="inline-flex p-3 bg-cyan-500/10 rounded-xl text-cyan-400">
           <GraduationCap className="w-6 h-6" />
         </div>
         <h2 className="text-3xl font-display font-semibold tracking-tight text-white leading-tight">
           Publiczna Baza Absolwentów
         </h2>
         <p className="text-sm text-zinc-400">
-          Absolwenci HRL Academy, którzy dobrowolnie zgodzili się na publikację swojego ukończenia
+          Absolwenci HRL Nova Campus, którzy dobrowolnie zgodzili się na publikację swojego ukończenia
           w tym rejestrze. Każdy wpis odpowiada zweryfikowanemu certyfikatowi.
         </p>
 
-        <div className="relative flex items-center bg-zinc-900 border border-zinc-800 focus-within:border-violet-500 rounded-2xl p-1.5 transition-all">
+        <div className="relative flex items-center bg-zinc-900 border border-zinc-800 focus-within:border-cyan-500 rounded-2xl p-1.5 transition-all">
           <Search className="w-4 h-4 text-zinc-500 ml-3 flex-shrink-0" />
           <input
             id="graduates-search-input"
@@ -73,11 +73,11 @@ export const Graduates: React.FC = () => {
       <section className="space-y-3">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16 space-y-3">
-            <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : items.length === 0 ? (
           <div className="p-12 text-center border border-dashed border-zinc-800 rounded-3xl text-zinc-500 space-y-3">
-            <GraduationCap className="w-10 h-10 mx-auto opacity-40 text-violet-400" />
+            <GraduationCap className="w-10 h-10 mx-auto opacity-40 text-cyan-400" />
             <h3 className="text-zinc-300 font-medium text-sm">Brak wyników</h3>
             <p className="text-xs text-zinc-400 max-w-xs mx-auto">
               {query ? "Nie znaleziono absolwentów pasujących do wyszukiwania." : "Rejestr jest jeszcze pusty."}
@@ -89,9 +89,9 @@ export const Graduates: React.FC = () => {
               <Link
                 key={entry.id}
                 to={`/verify/${entry.certificateCode}`}
-                className="p-5 bg-zinc-900/40 border border-zinc-800 hover:border-violet-500/40 rounded-2xl transition-colors flex items-start gap-4"
+                className="p-5 bg-zinc-900/40 border border-zinc-800 hover:border-cyan-500/40 rounded-2xl transition-colors flex items-start gap-4"
               >
-                <div className="p-2 bg-violet-500/10 rounded-lg text-violet-400 flex-shrink-0">
+                <div className="p-2 bg-cyan-500/10 rounded-lg text-cyan-400 flex-shrink-0">
                   <Award className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
