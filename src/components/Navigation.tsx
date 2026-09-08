@@ -26,13 +26,11 @@ export const Navigation: React.FC = () => {
           {/* Logo & Telemetry Indicator */}
           <div className="flex items-center gap-6">
             <Link id="nav-brand-logo" to="/" className="flex items-center gap-3 group">
-              <div className="relative p-1 brand-logo-tile rounded-2xl group-hover:scale-105 transition-transform">
-                <img
-                  src="/logo_3d.jpg"
-                  alt="HRL Nova Campus"
-                  className="w-9 h-9 rounded-xl object-cover"
-                />
-              </div>
+              <img
+                src="/icon.svg"
+                alt="HRL Nova Campus"
+                className="w-10 h-10 rounded-xl group-hover:scale-105 transition-transform"
+              />
               <div className="flex flex-col">
                 <span className="font-display font-bold text-lg leading-none tracking-tight text-white flex items-center gap-1.5">
                   HRL <span className="text-gradient">Nova Campus</span>

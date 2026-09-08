@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="HRL Nova Campus">
+  <defs>
+    <linearGradient id="hrlTeal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#33e7ff"/>
+      <stop offset="1" stop-color="#0c9fb3"/>
+    </linearGradient>
+    <linearGradient id="hrlNavy" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1e456b"/>
+      <stop offset="1" stop-color="#0a1f36"/>
+    </linearGradient>
+  </defs>
+
+  <!-- white tile, matching the logo's field -->
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="#ffffff"/>
+  <rect x="2.5" y="2.5" width="59" height="59" rx="14.5" fill="none" stroke="#0e2a47" stroke-opacity="0.10"/>
+
+  <!-- shooting-star arc -->
+  <path d="M14 22 C 22 12, 42 12, 50 22"
+        fill="none" stroke="url(#hrlTeal)" stroke-width="1.9" stroke-linecap="round"/>
+
+  <!-- 4-point sparkle at the arc peak -->
+  <path d="M31 5 L32.7 10.7 L38.4 12.4 L32.7 14.1 L31 19.8 L29.3 14.1 L23.6 12.4 L29.3 10.7 Z"
+        fill="url(#hrlTeal)"/>
+
+  <!-- HRL wordmark -->
+  <text x="32" y="51" text-anchor="middle"
+        font-family="'Space Grotesk', Verdana, 'Segoe UI', Arial, sans-serif"
+        font-weight="700" font-size="28" letter-spacing="-1.6">
+    <tspan fill="url(#hrlNavy)">HR</tspan><tspan fill="url(#hrlTeal)">L</tspan>
+  </text>
+</svg>
