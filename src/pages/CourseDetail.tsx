@@ -1582,6 +1582,23 @@ export const CourseDetail: React.FC = () => {
                 />
               )}
             </div>
+          ) : data.structure.length === 0 ? (
+            // Kurs bez własnych modułów/lekcji — żyje jako pojedynczy hostowany
+            // plik HTML albo pod zewnętrznym adresem (integration_type != natywny model lekcji).
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                <h1 className="text-2xl font-display font-semibold text-white tracking-tight leading-tight">
+                  {data.course.title}
+                </h1>
+              </div>
+              {data && (
+                <StudentEnterpriseTools
+                  courseId={Number(id)}
+                  courseTitle={data.course.title}
+                  isEnrolled={data.enrolled}
+                />
+              )}
+            </div>
           ) : (
             <div className="p-12 text-center border-2 border-dashed border-zinc-800 rounded-2xl text-zinc-500 space-y-3">
               <BookOpen className="w-10 h-10 mx-auto opacity-40 text-cyan-500" />

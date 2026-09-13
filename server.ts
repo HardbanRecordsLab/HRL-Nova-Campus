@@ -41,7 +41,7 @@ app.use(
   })
 );
 
-app.use(express.json());
+app.use(express.json({ limit: "5mb" })); // podniesiony limit — kursy HOSTED_HTML mogą przesyłać spory blok HTML/CSS/JS naraz
 
 // Enterprise Rate Limiters
 const authLimiter = rateLimit({
@@ -386,6 +386,7 @@ function toLegacyCourse(course: any) {
     tenant_domain: course.domains?.[0]?.hostname ?? "all_domains",
     external_url: course.externalUrl,
     integration_type: course.integrationType,
+    html_content: course.htmlContent ?? null,
     status: course.status,
     created_at: course.createdAt,
     updated_at: course.updatedAt,
@@ -427,7 +428,13 @@ app.get("/api/courses", async (req, res) => {
       include: { ...courseListInclude, modules: { select: { _count: { select: { lessons: true } } } } },
       orderBy: { createdAt: "desc" },
     });
-    const legacyCourses = courses.map(toLegacyCourse);
+    // Katalog jest publiczny (brak wymogu autoryzacji) — nie ujawniaj pełnej treści
+    // kursów HOSTED_HTML tutaj, tylko na widoku szczegółów po sprawdzeniu zapisu.
+    const legacyCourses = courses.map((c) => {
+      const legacy = toLegacyCourse(c);
+      legacy.html_content = null;
+      return legacy;
+    });
 
     // Only cache if there are no active filters
     if (!hasFilters) {
@@ -522,8 +529,14 @@ app.get("/api/courses/:id", async (req, res) => {
       }
     }
 
+    const legacyCourse = toLegacyCourse(course);
+    if (!userEnrolled) {
+      // Nie ujawniaj treści płatnego kursu HOSTED_HTML komuś bez aktywnego zapisu (ten sam wzorzec co ukrywanie video_url wyżej).
+      legacyCourse.html_content = null;
+    }
+
     res.json({
-      course: toLegacyCourse(course),
+      course: legacyCourse,
       enrolled: userEnrolled,
       structure,
       certificate_code
@@ -1172,6 +1185,21 @@ app.get("/api/admin/export-database", authenticateToken, requireAdmin, async (re
   }
 });
 
+// Pełna lista kursów dla panelu admina — w odróżnieniu od publicznego GET
+// /api/courses, ten endpoint zwraca też html_content (kursy HOSTED_HTML)
+// i externalUrl, bo admin edytujący kurs musi widzieć to, co sam zapisał.
+app.get("/api/admin/courses", authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const courses = await prisma.course.findMany({
+      include: { ...courseListInclude, modules: { select: { _count: { select: { lessons: true } } } } },
+      orderBy: { createdAt: "desc" },
+    });
+    res.json(courses.map(toLegacyCourse));
+  } catch (err: any) {
+    res.status(500).json({ message: "Błąd bazy danych przy pobieraniu kursów: " + err.message });
+  }
+});
+
 app.post("/api/admin/courses", authenticateToken, requireAdmin, async (req, res) => {
   const { 
     title, 
@@ -1194,11 +1222,19 @@ app.post("/api/admin/courses", authenticateToken, requireAdmin, async (req, res)
   try {
     const instructorUserId = String((req as any).user.id);
     const slug = `${String(title).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-${Date.now()}`;
+    const validIntegrationTypes = ["JWT", "OAUTH2", "IFRAME", "REDIRECT_COOKIE", "CUSTOM_API", "HOSTED_HTML"];
+    const integrationType = validIntegrationTypes.includes(req.body.integration_type) ? req.body.integration_type : "JWT";
+    if (integrationType === "HOSTED_HTML" && (!req.body.html_content || typeof req.body.html_content !== "string" || !req.body.html_content.trim())) {
+      return res.status(400).json({ message: "Kurs typu HOSTED_HTML wymaga treści HTML (html_content)." });
+    }
+
     const newCourse = await prisma.course.create({
       data: {
         slug,
         instructorUserId,
         externalUrl: req.body.external_url || "https://example.invalid",
+        integrationType,
+        htmlContent: integrationType === "HOSTED_HTML" ? req.body.html_content : null,
         imageUrl: thumbnail,
         level: difficulty || null,
         status: req.body.status === "PUBLISHED" ? "PUBLISHED" : "DRAFT",
@@ -1317,12 +1353,23 @@ app.put("/api/admin/courses/:id", authenticateToken, requireAdmin, async (req, r
   }
 
   try {
+    const validIntegrationTypes = ["JWT", "OAUTH2", "IFRAME", "REDIRECT_COOKIE", "CUSTOM_API", "HOSTED_HTML"];
+    const integrationTypeUpdate = validIntegrationTypes.includes(req.body.integration_type)
+      ? { integrationType: req.body.integration_type }
+      : {};
+    if (req.body.integration_type === "HOSTED_HTML" && (!req.body.html_content || typeof req.body.html_content !== "string" || !req.body.html_content.trim())) {
+      return res.status(400).json({ message: "Kurs typu HOSTED_HTML wymaga treści HTML (html_content)." });
+    }
+    const htmlContentUpdate = typeof req.body.html_content === "string" ? { htmlContent: req.body.html_content } : {};
+
     const updatedCourse = await prisma.course.update({
       where: { id: courseId },
       data: {
         imageUrl: thumbnail,
         level: difficulty || null,
         ...(req.body.external_url ? { externalUrl: req.body.external_url } : {}),
+        ...integrationTypeUpdate,
+        ...htmlContentUpdate,
         translations: { upsert: { where: { courseId_locale: { courseId, locale: "pl" } }, update: { title, description }, create: { locale: "pl", title, description } } },
       },
       include: courseListInclude,
@@ -1740,9 +1787,19 @@ app.post("/api/access/launch", authenticateToken, async (req, res) => {
   }
 
   // Find course details
-  const course = await prisma.course.findUnique({ where: { id: String(courseId) }, select: { externalUrl: true, integrationType: true, domains: { select: { hostname: true } } } });
+  const course = await prisma.course.findUnique({ where: { id: String(courseId) }, select: { externalUrl: true, integrationType: true, htmlContent: true, domains: { select: { hostname: true } } } });
   if (!course) {
     return res.status(404).json({ message: "Kurs nie istnieje" });
+  }
+
+  // Kurs hostowany bezpośrednio jako gotowy HTML — nie ma zewnętrznego adresu do przekierowania,
+  // treść wraca wprost (dostęp już zweryfikowany przez aktywny enrollment powyżej).
+  if (course.integrationType === "HOSTED_HTML") {
+    if (!course.htmlContent) {
+      return res.status(500).json({ message: "Kurs HOSTED_HTML nie ma zapisanej treści HTML." });
+    }
+    await prisma.enrollment.update({ where: { id: enrollment.id }, data: { lastLaunchedAt: new Date() } }).catch(() => {});
+    return res.json({ hosted: true, htmlContent: course.htmlContent });
   }
 
   const url = new URL(course.externalUrl);

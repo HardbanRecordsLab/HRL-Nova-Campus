@@ -20,6 +20,9 @@ export interface Course {
   subscription_price?: number;
   subscription_interval?: "month" | "year";
   tenant_domain?: string;
+  external_url?: string;
+  integration_type?: "JWT" | "OAUTH2" | "IFRAME" | "REDIRECT_COOKIE" | "CUSTOM_API" | "HOSTED_HTML";
+  html_content?: string | null;
 }
 
 export interface Lesson {

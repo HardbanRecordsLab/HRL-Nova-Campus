@@ -39,7 +39,7 @@ import { AdminMessages } from "../components/AdminMessages";
 export const AdminPanel: React.FC = () => {
   const { user, token, logs, addToast } = useApp();
   const [activeTab, setActiveTab] = useState<
-    "users" | "courses" | "external" | "certificates" | "advertisements" | "transactions" | "settings" | "limits" | "backup" | "import" | "telemetry" | "messages" | "security"
+    "users" | "courses" | "certificates" | "advertisements" | "transactions" | "settings" | "limits" | "backup" | "import" | "telemetry" | "messages" | "security"
   >("users");
 
   // System limits state
@@ -68,6 +68,8 @@ export const AdminPanel: React.FC = () => {
   const [newSubscriptionPrice, setNewSubscriptionPrice] = useState<string>("9");
   const [newSubscriptionInterval, setNewSubscriptionInterval] = useState<"month" | "year">("month");
   const [newTenantDomain, setNewTenantDomain] = useState<string>("all_domains");
+  const [newExternalUrl, setNewExternalUrl] = useState<string>("");
+  const [newIntegrationType, setNewIntegrationType] = useState<"JWT" | "OAUTH2" | "IFRAME" | "REDIRECT_COOKIE" | "CUSTOM_API">("JWT");
 
   // Live course edit state (Optional but super robust!)
   const [editingCourseId, setEditingCourseId] = useState<number | null>(null);
@@ -126,6 +128,9 @@ export const AdminPanel: React.FC = () => {
   const [courseDescription, setCourseDescription] = useState("");
   const [courseInstructor, setCourseInstructor] = useState("");
   const [courseThumbnail, setCourseThumbnail] = useState("");
+  const [courseExternalUrl, setCourseExternalUrl] = useState("");
+  const [courseIntegrationType, setCourseIntegrationType] = useState<"JWT" | "OAUTH2" | "IFRAME" | "REDIRECT_COOKIE" | "CUSTOM_API" | "HOSTED_HTML">("JWT");
+  const [courseHtmlContent, setCourseHtmlContent] = useState("");
 
   // Lesson fields:
   const [lessonTitle, setLessonTitle] = useState("");
@@ -136,11 +141,6 @@ export const AdminPanel: React.FC = () => {
   const [lessonVideoUrl, setLessonVideoUrl] = useState("");
   const [lessonDuration, setLessonDuration] = useState("10");
 
-  const [extCourseTitle, setExtCourseTitle] = useState("");
-  const [extCourseDescription, setExtCourseDescription] = useState("");
-  const [extCourseAccess, setExtCourseAccess] = useState<"free" | "paid">("free");
-  const [extCourseUrl, setExtCourseUrl] = useState("");
-  const [isSavingExtCourse, setIsSavingExtCourse] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newCategory, setNewCategory] = useState("Programowanie");
@@ -322,7 +322,11 @@ export const AdminPanel: React.FC = () => {
   const fetchCourses = async () => {
     try {
       setCoursesLoading(true);
-      const response = await fetch("/api/courses");
+      // Endpoint administracyjny (nie publiczny katalog) — zwraca też pełne
+      // html_content i externalUrl, potrzebne do edycji istniejących kursów.
+      const response = await fetch("/api/admin/courses", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       if (!response.ok) throw new Error("Nie udało się pobrać kursów z API");
       const data: Course[] = await response.json();
       setCoursesList(data);
@@ -532,6 +536,9 @@ export const AdminPanel: React.FC = () => {
         setNewSubscriptionPrice(String(match.subscription_price || "19"));
         setNewSubscriptionInterval(match.subscription_interval || "month");
         setNewTenantDomain(match.tenant_domain || "all_domains");
+        setCourseExternalUrl(match.external_url && match.external_url !== "https://example.invalid" ? match.external_url : "");
+        setCourseIntegrationType(match.integration_type || "JWT");
+        setCourseHtmlContent(match.html_content || "");
       }
     } else if (selectedCourseIdVal === -1) {
       setCourseTitle("");
@@ -543,6 +550,9 @@ export const AdminPanel: React.FC = () => {
       setNewSubscriptionPrice("19");
       setNewSubscriptionInterval("month");
       setNewTenantDomain("all_domains");
+      setCourseExternalUrl("");
+      setCourseIntegrationType("JWT");
+      setCourseHtmlContent("");
     }
   }, [selectedCourseIdVal, coursesList]);
 
@@ -570,7 +580,10 @@ export const AdminPanel: React.FC = () => {
             one_time_price: Number(newOneTimePrice) || 0,
             subscription_price: Number(newSubscriptionPrice) || 0,
             subscription_interval: newSubscriptionInterval,
-            tenant_domain: newTenantDomain
+            tenant_domain: newTenantDomain,
+            external_url: courseExternalUrl.trim() || undefined,
+            integration_type: courseIntegrationType,
+            html_content: courseIntegrationType === "HOSTED_HTML" ? courseHtmlContent : undefined
           })
         });
 
@@ -609,7 +622,10 @@ export const AdminPanel: React.FC = () => {
           one_time_price: Number(newOneTimePrice) || 0,
           subscription_price: Number(newSubscriptionPrice) || 0,
           subscription_interval: newSubscriptionInterval,
-          tenant_domain: newTenantDomain
+          tenant_domain: newTenantDomain,
+          external_url: courseExternalUrl.trim() || undefined,
+          integration_type: courseIntegrationType,
+          html_content: courseIntegrationType === "HOSTED_HTML" ? courseHtmlContent : undefined
         })
       });
 
@@ -1075,21 +1091,6 @@ export const AdminPanel: React.FC = () => {
     }
   };
 
-  // Direct Creation of Courses from dynamic UI Admin
-  const handleCreateExtCourse = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!extCourseTitle || !extCourseUrl) return;
-    
-    try {
-      setIsSavingExtCourse(true);
-      addToast("Kursy zewnętrzne wymagają jeszcze modelu Prisma.", "info");
-    } catch (err: any) {
-      addToast("Błąd łączenia z Firebase: " + err.message, "error");
-    } finally {
-      setIsSavingExtCourse(false);
-    }
-  };
-
   const handleCreateCourseSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !newDescription.trim() || !newThumbnail.trim()) {
@@ -1114,6 +1115,8 @@ export const AdminPanel: React.FC = () => {
           subscription_price: newPricingModel === "subscription" ? Number(newSubscriptionPrice) : 0,
           subscription_interval: newPricingModel === "subscription" ? newSubscriptionInterval : "month",
           tenant_domain: newTenantDomain || "all_domains",
+          external_url: newExternalUrl.trim() || undefined,
+          integration_type: newIntegrationType,
         }),
       });
       if (!response.ok) throw new Error("API nie zapisało kursu");
@@ -1122,6 +1125,8 @@ export const AdminPanel: React.FC = () => {
       // Reset form
       setNewTitle("");
       setNewDescription("");
+      setNewExternalUrl("");
+      setNewIntegrationType("JWT");
       // Reload
       fetchCourses();
     } catch (err: any) {
@@ -1362,19 +1367,6 @@ export const AdminPanel: React.FC = () => {
             <BookOpen className="w-4 h-4 text-emerald-400" />
             <span>Kursy & Bramki</span>
             <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-zinc-950/60 rounded-md text-zinc-400">{coursesList.length}</span>
-          </button>
-
-          <button
-            id="tab-btn-external"
-            onClick={() => setActiveTab("external")}
-            className={`py-2.5 px-4 text-xs font-medium rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
-              activeTab === "external"
-                ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-lg shadow-emerald-500/20"
-                : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
-            }`}
-          >
-            <Globe className="w-4 h-4 text-emerald-400" />
-            <span>Kursy Zewnętrzne</span>
           </button>
 
           <button
@@ -1695,55 +1687,6 @@ export const AdminPanel: React.FC = () => {
                 
                 {/* Domain Tenant General & Paywall settings */}
                 <div className="lg:col-span-12 max-w-3xl mx-auto w-full space-y-6">
-                  {/* New Form for Course Metadata */}
-                  <div className="bg-zinc-900/60 border border-emerald-500/20 rounded-2xl p-6 space-y-4">
-                    <div className="flex items-center gap-2 border-b border-emerald-500/20 pb-3 font-bold text-zinc-200">
-                      <Globe className="w-4 h-4 text-emerald-400" />
-                      <h3 className="text-xs font-mono uppercase tracking-wider text-emerald-400">Zarządzanie Metadanymi Kursu (Firestore)</h3>
-                    </div>
-                    
-                    {/* Bulk JSON Upload */}
-                    <div className="space-y-2">
-                        <label className="text-xs text-zinc-400">Masowy import (JSON):</label>
-                        <input type="file" onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          setIsSavingExtCourse(true);
-                          const reader = new FileReader();
-                          reader.onload = async (event) => {
-                            try {
-                              const json = JSON.parse(event.target?.result as string);
-                              if (!Array.isArray(json)) throw new Error("Oczekiwano tablicy kursów");
-                              for (const item of json) {
-                                // Validation
-                                if (!item.title || typeof item.title !== 'string') throw new Error("Każdy kurs musi mieć poprawny tytuł");
-                                if (!item.external_url || typeof item.external_url !== 'string') throw new Error("Każdy kurs musi mieć poprawny adres URL");
-                                
-                                throw new Error("Import kursów zewnętrznych wymaga jeszcze modelu Prisma");
-                              }
-                              addToast("Pomyślnie zaimportowano kursy", "success");
-                            } catch (err: any) {
-                              addToast("Błąd importu: " + err.message, "error");
-                            } finally {
-                              setIsSavingExtCourse(false);
-                            }
-                          };
-                          reader.readAsText(file);
-                        }} accept=".json" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-2.5 px-4 text-xs text-white" />
-                    </div>
-
-                    <form onSubmit={handleCreateExtCourse} className="space-y-4">
-                        <input type="text" value={extCourseTitle} onChange={(e) => setExtCourseTitle(e.target.value)} placeholder="Tytuł kursu" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-2.5 px-4 text-xs text-white" required />
-                        <textarea value={extCourseDescription} onChange={(e) => setExtCourseDescription(e.target.value)} placeholder="Opis" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-2.5 px-4 text-xs text-white" rows={2} />
-                        <select value={extCourseAccess} onChange={(e) => setExtCourseAccess(e.target.value as any)} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-2.5 px-4 text-xs text-white">
-                          <option value="free">Free</option>
-                          <option value="paid">Paid</option>
-                        </select>
-                        <input type="url" value={extCourseUrl} onChange={(e) => setExtCourseUrl(e.target.value)} placeholder="https://url-kursu.pl" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-2.5 px-4 text-xs text-white" required/>
-                        <button type="submit" className="w-full py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl" disabled={isSavingExtCourse}>Zapisz Metadane</button>
-                    </form>
-                  </div>
-
                   <form onSubmit={handleUpdateCourseGateway} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-4">
                     <div className="flex items-center gap-2 border-b border-zinc-800 pb-3 font-bold text-zinc-200">
                       <SlidersHorizontal className="w-4 h-4 text-cyan-400" />
@@ -1793,6 +1736,73 @@ export const AdminPanel: React.FC = () => {
                           required
                         />
                       </div>
+                    </div>
+
+                    <div className="space-y-4 border-t border-zinc-850 pt-4">
+                      <div className="space-y-2">
+                        <label className="block text-xs font-mono text-zinc-400 uppercase tracking-widest">Sposób integracji</label>
+                        <select
+                          value={courseIntegrationType}
+                          onChange={(e) => setCourseIntegrationType(e.target.value as any)}
+                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none cursor-pointer"
+                        >
+                          <option value="HOSTED_HTML">Gotowy kurs HTML — wgrywasz plik, hostujemy go sami (HOSTED_HTML)</option>
+                          <option value="IFRAME">Osadzony w ramce (IFRAME) — kurs zewnętrzny renderuje się wewnątrz Nova Campus</option>
+                          <option value="REDIRECT_COOKIE">Przekierowanie z podpisanym tokenem (REDIRECT_COOKIE)</option>
+                          <option value="JWT">Przekierowanie z tokenem JWT w URL (JWT)</option>
+                          <option value="OAUTH2">OAuth2 (dostawca obsługuje własne logowanie)</option>
+                          <option value="CUSTOM_API">Integracja przez własne API dostawcy (CUSTOM_API)</option>
+                        </select>
+                        <p className="text-[10px] text-zinc-500">
+                          Decyduje, jak student trafia do kursu po zapisaniu: gotowy plik HTML hostowany u nas, kurs w ramce na tej stronie, czy przekierowanie do zewnętrznego adresu z podpisanym dostępem.
+                        </p>
+                      </div>
+
+                      {courseIntegrationType === "HOSTED_HTML" ? (
+                        <div className="space-y-2">
+                          <label className="block text-xs font-mono text-zinc-400 uppercase tracking-widest">Plik kursu (HTML)</label>
+                          <input
+                            type="file"
+                            accept=".html,.htm,text/html"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              const reader = new FileReader();
+                              reader.onload = (event) => setCourseHtmlContent(String(event.target?.result || ""));
+                              reader.readAsText(file);
+                            }}
+                            className="w-full bg-zinc-950 border border-zinc-800 focus:border-emerald-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:text-white file:text-xs file:cursor-pointer cursor-pointer"
+                          />
+                          <p className="text-[10px] text-zinc-500">
+                            Wgraj samodzielny plik .html (może zawierać własny CSS/JS w środku, np. interaktywna lekcja). Renderowany studentom w piaskownicy (sandboxed iframe) dopiero po weryfikacji aktywnego zapisu na kurs.
+                          </p>
+                          <textarea
+                            value={courseHtmlContent}
+                            onChange={(e) => setCourseHtmlContent(e.target.value)}
+                            rows={8}
+                            placeholder="<!doctype html>...  (możesz też wkleić treść ręcznie zamiast wgrywać plik)"
+                            spellCheck={false}
+                            className="w-full bg-zinc-950 border border-zinc-800 focus:border-emerald-500 rounded-xl py-2.5 px-4 text-[11px] font-mono text-zinc-300 focus:outline-none"
+                          />
+                          <p className="text-[10px] text-zinc-500">
+                            {courseHtmlContent ? `Zapisana treść: ${(new Blob([courseHtmlContent]).size / 1024).toFixed(1)} KB` : "Brak jeszcze wgranej treści dla tego kursu."}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <label className="block text-xs font-mono text-zinc-400 uppercase tracking-widest">Adres kursu (URL zewnętrzny)</label>
+                          <input
+                            type="text"
+                            value={courseExternalUrl}
+                            onChange={(e) => setCourseExternalUrl(e.target.value)}
+                            placeholder="https://przyklad-dostawcy-kursu.pl/moj-kurs"
+                            className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none"
+                          />
+                          <p className="text-[10px] text-zinc-500">
+                            Kurs żyje pod innym adresem (własna platforma dostawcy, dowolny URL).
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-4 border-t border-zinc-850 pt-4">
@@ -1908,83 +1918,6 @@ export const AdminPanel: React.FC = () => {
               </p>
             )}
 
-          </div>
-        )}
-
-        {/* TAB EXTERNAL: Firestore External Courses */}
-        {activeTab === "external" && (
-          <div className="space-y-6">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4 max-w-3xl mx-auto">
-              <div className="flex items-center gap-2 border-b border-zinc-800 pb-3">
-                <Globe className="w-5 h-5 text-emerald-400" />
-                <h3 className="text-sm font-mono uppercase tracking-wider text-zinc-300 font-bold">Kreator Zewnętrznych Kursów (Firestore)</h3>
-              </div>
-              <p className="text-xs text-zinc-400 leading-relaxed mb-4">
-                Zapisuje metadane zewnętrzne bezpośrednio do chmurowej bazy noSQL (Firestore). Żadne quizy, lokalne nagrania MP4 czy certyfikaty HRL nie są powiązane z tymi elementami.
-              </p>
-
-              <form onSubmit={handleCreateExtCourse} className="space-y-4 border border-emerald-500/10 p-5 rounded-xl bg-zinc-950/50">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-mono uppercase text-emerald-500/80 tracking-widest font-bold block">Tytuł kursu widoczny dla studentów</label>
-                  <input
-                    type="text"
-                    value={extCourseTitle}
-                    onChange={(e) => setExtCourseTitle(e.target.value)}
-                    required
-                    maxLength={140}
-                    placeholder="np. Bootkamp Wiosna 2026 (Zewnętrzny)"
-                    className="w-full bg-zinc-900 border border-zinc-800 focus:border-emerald-500 rounded-lg py-2.5 px-4 text-xs text-white outline-none"
-                  />
-                </div>
-                
-                <div className="space-y-1.5">
-                  <label className="text-xs font-mono uppercase text-emerald-500/80 tracking-widest font-bold block">Opis krótki (SEO / Wizytówka)</label>
-                  <textarea
-                    value={extCourseDescription}
-                    onChange={(e) => setExtCourseDescription(e.target.value)}
-                    rows={3}
-                    placeholder="Krótki tekst promocyjny..."
-                    className="w-full bg-zinc-900 border border-zinc-800 focus:border-emerald-500 rounded-lg py-2.5 px-4 text-xs text-white outline-none"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-mono uppercase text-emerald-500/80 tracking-widest font-bold block">Poziom Dostępu (Access)</label>
-                    <select
-                      value={extCourseAccess}
-                      onChange={(e) => setExtCourseAccess(e.target.value as any)}
-                      className="w-full bg-zinc-900 border border-zinc-800 focus:border-emerald-500 rounded-lg py-2.5 px-4 text-xs text-emerald-400 font-bold outline-none cursor-pointer"
-                    >
-                      <option value="free">DARMOWY / OTWARTY (Free)</option>
-                      <option value="paid">PŁATNY / VIP (Paid)</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-mono uppercase text-emerald-500/80 tracking-widest font-bold block">Zewnętrzny Adres URL (Deep Link)</label>
-                    <input
-                      type="url"
-                      value={extCourseUrl}
-                      onChange={(e) => setExtCourseUrl(e.target.value)}
-                      required
-                      placeholder="https://platforma.inna-domena.pl/kod-kursu"
-                      className="w-full bg-zinc-900 border border-zinc-800 focus:border-emerald-500 rounded-lg py-2.5 px-4 text-xs text-white outline-none font-mono"
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-4">
-                  <button
-                    type="submit"
-                    disabled={isSavingExtCourse}
-                    className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-zinc-950 font-mono font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_25px_rgba(16,185,129,0.4)] flex justify-center items-center cursor-pointer disabled:opacity-50"
-                  >
-                    {isSavingExtCourse ? "Synchronizacja z Firebase..." : "Publikuj Kurs Zewnętrzny"}
-                  </button>
-                </div>
-              </form>
-            </div>
           </div>
         )}
 

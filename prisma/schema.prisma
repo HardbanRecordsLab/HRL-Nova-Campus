@@ -24,6 +24,7 @@ enum IntegrationType {
   IFRAME
   REDIRECT_COOKIE
   CUSTOM_API
+  HOSTED_HTML
 }
 
 enum PaywallType {
@@ -137,6 +138,7 @@ model Course {
   instructorUserId      String
   externalUrl           String
   integrationType       IntegrationType @default(JWT)
+  htmlContent           String?
   webhookUrl            String?
   integrationSecretHash String?
   defaultLocale         String          @default("pl")

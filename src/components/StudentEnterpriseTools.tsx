@@ -29,6 +29,8 @@ export const StudentEnterpriseTools: React.FC<StudentEnterpriseToolsProps> = ({
   const [launchUrl, setLaunchUrl] = useState<string | null>(null);
   const [tokenPayload, setTokenPayload] = useState<any>(null);
   const [loadingLaunch, setLoadingLaunch] = useState(false);
+  // Kurs HOSTED_HTML — treść wraca bezpośrednio, bez zewnętrznego URL/tokenu.
+  const [hostedHtmlContent, setHostedHtmlContent] = useState<string | null>(null);
 
   // Sync Progress states
   const [syncPercent, setSyncPercent] = useState(85);
@@ -109,7 +111,11 @@ export const StudentEnterpriseTools: React.FC<StudentEnterpriseToolsProps> = ({
       });
 
       const resData = await res.json();
-      if (res.ok && resData.launchUrl) {
+      if (res.ok && resData.hosted && resData.htmlContent) {
+        setHostedHtmlContent(resData.htmlContent);
+        addToast("Kurs załadowany.", "success");
+        trackEvent("course_hosted_html_launched", { courseId });
+      } else if (res.ok && resData.launchUrl) {
         setLaunchUrl(resData.launchUrl);
         addToast("Wygenerowano podpisany token dostępowy JWT!", "success");
 
@@ -293,9 +299,25 @@ export const StudentEnterpriseTools: React.FC<StudentEnterpriseToolsProps> = ({
                   className="w-full py-2.5 bg-zinc-950 hover:bg-zinc-800 hover:text-white text-zinc-300 font-mono text-xs font-bold rounded-xl border border-zinc-800 hover:border-zinc-700 cursor-pointer flex items-center justify-center gap-2 transition-all"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 text-cyan-400 ${loadingLaunch ? "animate-spin" : ""}`} />
-                  {loadingLaunch ? "Uwierzytelnianie..." : "Wygeneruj Uwierzytelnienie JWT"}
+                  {loadingLaunch ? "Ładowanie..." : hostedHtmlContent ? "Odśwież kurs" : "Rozpocznij kurs"}
                 </button>
               </div>
+
+              {hostedHtmlContent && (
+                <div className="space-y-2 pt-2">
+                  <span className="text-[10px] font-mono text-zinc-500 block">
+                    Treść kursu (wgrany plik HTML, hostowany bezpośrednio)
+                  </span>
+                  <div className="rounded-xl overflow-hidden border border-zinc-800 bg-white" style={{ height: "70vh" }}>
+                    <iframe
+                      title="Treść kursu"
+                      srcDoc={hostedHtmlContent}
+                      sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                      className="w-full h-full border-0"
+                    />
+                  </div>
+                </div>
+              )}
 
               {launchUrl && (
                 <div className="space-y-3 pt-2">
