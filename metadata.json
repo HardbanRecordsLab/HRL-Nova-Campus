@@ -1,6 +1,5 @@
 {
   "name": "HRL Nova Campus",
   "description": "HRL Nova Campus — Learn · Create · Evolve. Platforma certyfikowanych kursów online z analityką, integracją Stripe i weryfikowalnymi dyplomami.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "requestFramePermissions": []
 }
