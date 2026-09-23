@@ -1,5 +1,5 @@
 import React from "react";
-import { Disc } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const Footer: React.FC = () => {
   return (
@@ -10,11 +10,9 @@ export const Footer: React.FC = () => {
           <span>&copy; {new Date().getFullYear()} Hardban Records Lab &middot; <span className="text-cyan-300/70 font-mono text-xs uppercase tracking-wider">Learn · Create · Evolve</span></span>
         </div>
         <div className="flex gap-6 text-xs font-mono text-zinc-500 uppercase tracking-widest">
-          <span>Enterprise B2B SLA Verified</span>
+          <Link to="/terms" className="hover:text-cyan-400 transition-colors">Regulamin</Link>
           <span className="hidden sm:inline">|</span>
-          <a href="#" className="hover:text-cyan-400 transition-colors">Polityka Bezpieczeństwa</a>
-          <span className="hidden sm:inline">|</span>
-          <a href="#" className="hover:text-cyan-400 transition-colors">API Spec</a>
+          <Link to="/privacy" className="hover:text-cyan-400 transition-colors">Polityka Prywatności</Link>
         </div>
       </div>
     </footer>
