@@ -114,10 +114,6 @@ export const CourseDetail: React.FC = () => {
   // Active advertisements view state
   const [activeAds, setActiveAds] = useState<any[]>([]);
 
-  // Stripe checkout credentials fields
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvc, setCardCvc] = useState("");
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   
   // Custom video playback state
@@ -214,52 +210,36 @@ export const CourseDetail: React.FC = () => {
     }
   };
 
+  // Real Stripe Checkout — redirects to Stripe's own hosted payment page.
+  // Never collects card details ourselves: the previous version of this
+  // function posted a raw card number/expiry/CVC to our backend, which
+  // never actually charged anything (see server.ts's checkout route for
+  // the full story) — that whole flow is gone, not just this handler.
   const handleStripeCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) {
       addToast("Zaloguj się, aby sfinalizować transakcję.", "warning");
       return;
     }
-    if (!cardNumber || !cardExpiry || !cardCvc) {
-      addToast("Uzupełnij wszystkie dane karty płatniczej Stripe Connect.", "warning");
-      return;
-    }
 
     try {
       setIsProcessingPayment(true);
-      const paymentAmount = data?.course?.pricing_model === "subscription" 
-        ? data?.course?.subscription_price 
-        : data?.course?.one_time_price;
-      const paymentType = data?.course?.pricing_model === "subscription" ? "subscription" : "charge";
-
       const res = await fetch(`/api/courses/${id}/checkout`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          cardNumber,
-          cardExpiry,
-          cardCvc,
-          amount: paymentAmount || 49,
-          type: paymentType
-        })
       });
 
       const resJson = await res.json();
-      if (res.ok) {
-        addToast(resJson.message, "success");
-        setCardNumber("");
-        setCardExpiry("");
-        setCardCvc("");
-        fetchCourseDetails();
+      if (res.ok && resJson.url) {
+        window.location.href = resJson.url;
       } else {
-        throw new Error(resJson.message);
+        throw new Error(resJson.message || "Nie udało się rozpocząć płatności.");
       }
     } catch (err: any) {
       addToast(err.message, "error");
-    } finally {
       setIsProcessingPayment(false);
     }
   };
@@ -738,10 +718,10 @@ export const CourseDetail: React.FC = () => {
           ) : course.pricing_model && course.pricing_model !== "free" ? (
             <form onSubmit={handleStripeCheckout} className="space-y-4 border-t border-zinc-800/60 pt-4">
               <div className="space-y-1">
-                <span className="text-[10px] text-zinc-500 font-mono uppercase block">Szybka płatność kartą (Stripe Security)</span>
+                <span className="text-[10px] text-zinc-500 font-mono uppercase block">Płatność bezpieczna przez Stripe</span>
                 <div className="text-xl font-bold text-white tracking-tight">
-                  {course.pricing_model === "one_time" 
-                    ? `${course.one_time_price || 49}.00 PLN` 
+                  {course.pricing_model === "one_time"
+                    ? `${course.one_time_price || 49}.00 PLN`
                     : `${course.subscription_price || 9}.00 PLN`
                   }
                   <span className="text-xs text-zinc-500 font-normal font-mono">
@@ -750,59 +730,17 @@ export const CourseDetail: React.FC = () => {
                 </div>
               </div>
 
-              <div className="space-y-2.5">
-                <div className="space-y-1">
-                  <label className="block text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Numer karty płatniczej</label>
-                  <input
-                    type="text"
-                    placeholder="4242 4242 4242 4242"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
-                    className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-3.5 text-xs text-zinc-200 focus:outline-none font-mono"
-                    maxLength={19}
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="block text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Data ważności</label>
-                    <input
-                      type="text"
-                      placeholder="12/28"
-                      value={cardExpiry}
-                      onChange={(e) => setCardExpiry(e.target.value)}
-                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-3.5 text-xs text-zinc-200 focus:outline-none font-mono"
-                      maxLength={5}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="block text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Kod CVC</label>
-                    <input
-                      type="password"
-                      placeholder="123"
-                      value={cardCvc}
-                      onChange={(e) => setCardCvc(e.target.value)}
-                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-3.5 text-xs text-zinc-200 focus:outline-none font-mono"
-                      maxLength={3}
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
               <button
                 type="submit"
                 disabled={isProcessingPayment}
                 className="w-full py-3 bg-gradient-to-r from-cyan-600 to-teal-500 hover:opacity-90 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer"
               >
-                {isProcessingPayment ? "Przetwarzanie..." : "Sfinalizuj płatność"}
+                {isProcessingPayment ? "Przekierowanie do Stripe..." : "Przejdź do płatności"}
               </button>
 
               <p className="text-[10px] text-zinc-500 text-center leading-normal">
-                Bezpieczne połączenie szyfrowane SSL. Formularz jest zabezpieczony protokołem Stripe i chroniony hasłem.
+                Zostaniesz przekierowany na bezpieczną stronę płatności Stripe. Nie zbieramy ani nie
+                przechowujemy danych Twojej karty na naszych serwerach.
               </p>
             </form>
           ) : (
@@ -1197,10 +1135,10 @@ export const CourseDetail: React.FC = () => {
                 /* Sleek integrated checkout form inside overview */
                 <form onSubmit={handleStripeCheckout} className="max-w-md mx-auto p-5 bg-zinc-950 rounded-xl border border-zinc-800 space-y-4 text-left shadow-2xl">
                   <div className="text-center pb-2 border-b border-zinc-900">
-                    <span className="text-[10px] font-mono text-zinc-500 block">SZYBKA PŁATNOŚĆ STRIPE SECURITY</span>
+                    <span className="text-[10px] font-mono text-zinc-500 block">PŁATNOŚĆ BEZPIECZNA PRZEZ STRIPE</span>
                     <div className="text-2xl font-bold text-white tracking-tight mt-1">
-                      {course.pricing_model === "one_time" 
-                        ? `${course.one_time_price || 49}.00 PLN` 
+                      {course.pricing_model === "one_time"
+                        ? `${course.one_time_price || 49}.00 PLN`
                         : `${course.subscription_price || 9}.00 PLN`
                       }
                       <span className="text-xs text-zinc-500 font-normal font-mono ml-1">
@@ -1209,59 +1147,17 @@ export const CourseDetail: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-3">
-                    <div className="space-y-1">
-                      <label className="block text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Numer karty płatniczej</label>
-                      <input
-                        type="text"
-                        placeholder="4242 4242 4242 4242"
-                        value={cardNumber}
-                        onChange={(e) => setCardNumber(e.target.value)}
-                        className="w-full bg-zinc-900 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-3.5 text-xs text-zinc-200 focus:outline-none font-mono"
-                        maxLength={19}
-                        required
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <label className="block text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Ważność</label>
-                        <input
-                          type="text"
-                          placeholder="12/28"
-                          value={cardExpiry}
-                          onChange={(e) => setCardExpiry(e.target.value)}
-                          className="w-full bg-zinc-900 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-3.5 text-xs text-zinc-200 focus:outline-none font-mono"
-                          maxLength={5}
-                          required
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="block text-[10px] font-mono text-zinc-400 uppercase tracking-wider">CVC</label>
-                        <input
-                          type="password"
-                          placeholder="123"
-                          value={cardCvc}
-                          onChange={(e) => setCardCvc(e.target.value)}
-                          className="w-full bg-zinc-900 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-3.5 text-xs text-zinc-200 focus:outline-none font-mono"
-                          maxLength={3}
-                          required
-                        />
-                      </div>
-                    </div>
-                  </div>
-
                   <button
                     type="submit"
                     disabled={isProcessingPayment}
                     className="w-full py-3 bg-gradient-to-r from-cyan-600 to-teal-500 hover:opacity-90 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer"
                   >
-                    {isProcessingPayment ? "Przetwarzanie transakcji..." : `Sfinalizuj płatność i odblokuj kurs`}
+                    {isProcessingPayment ? "Przekierowanie do Stripe..." : `Przejdź do płatności`}
                   </button>
-                  
+
                   <p className="text-[9px] text-zinc-500 text-center">
-                    Bezpieczne połączenie szyfrowane. Formularz zabezpieczony protokołem Stripe SSL.
+                    Zostaniesz przekierowany na bezpieczną stronę płatności Stripe. Nie zbieramy ani nie
+                    przechowujemy danych Twojej karty na naszych serwerach.
                   </p>
                 </form>
               ) : (

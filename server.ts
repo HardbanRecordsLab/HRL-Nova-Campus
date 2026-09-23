@@ -216,20 +216,62 @@ app.get("/api/activity-log", authenticateToken, async (req, res) => {
 });
 
 // --- STRIPE ENDPOINTS ---
-app.post("/api/create-checkout-session", authenticateToken, async (req: Request, res: Response) => {
-  const { priceId, userId, courseId } = req.body;
+// Real Stripe Checkout, price computed server-side from this course's own
+// active Price row(s) — never trusted from the client. Uses price_data
+// inline (built at request time, not a pre-created Stripe Price object),
+// same pattern as CMLP/Dropify: a new course needs zero manual Stripe
+// dashboard step, its price already lives in our own database.
+//
+// Replaces two things found broken 2026-09-23: (1) this endpoint used to
+// trust a client-supplied `priceId` naming a Stripe Price that no course
+// ever actually had (the `stripePriceId` column was never populated
+// anywhere in the app), so it could never have worked; (2) the ACTUAL
+// checkout the frontend called (`/api/courses/:id/checkout`, now removed)
+// collected a raw card number/expiry/CVC in a plain form POST, never
+// called Stripe at all, and unlocked the course for any 16+-digit string —
+// a live pay-nothing exploit, not a real payment flow.
+app.post("/api/courses/:id/checkout", authenticateToken, async (req: Request, res: Response) => {
+  const courseId = req.params.id;
+  const user = (req as any).user;
+
   try {
-    const session = await getStripe().checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [{ price: priceId, quantity: 1 }],
-      mode: 'payment',
-      success_url: `${process.env.APP_URL}/success`,
-      cancel_url: `${process.env.APP_URL}/cancel`,
-      metadata: { user_id: userId, course_id: courseId }
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      include: { prices: true, translations: true },
     });
-    res.json({ sessionId: session.id });
+    if (!course) return res.status(404).json({ message: "Kurs nie istnieje." });
+
+    const activePrices = (course.prices ?? []).filter((p) => p.isActive);
+    const oneTime = activePrices.find((p) => p.type === "ONE_TIME");
+    const subscription = activePrices.find((p) => p.type === "SUBSCRIPTION");
+    const price = subscription ?? oneTime;
+    if (!price || !price.amount) {
+      return res.status(400).json({ message: "Ten kurs nie ma ustawionej ceny — nie można go kupić." });
+    }
+
+    const title = course.translations?.[0]?.title ?? course.slug;
+    const isSubscription = price.type === "SUBSCRIPTION";
+
+    const session = await getStripe().checkout.sessions.create({
+      mode: isSubscription ? "subscription" : "payment",
+      line_items: [{
+        price_data: {
+          currency: (price.currency || "PLN").toLowerCase(),
+          product_data: { name: title },
+          unit_amount: Math.round(price.amount * 100),
+          ...(isSubscription ? { recurring: { interval: (price.billingInterval || "month") as "day" | "week" | "month" | "year" } } : {}),
+        },
+        quantity: 1,
+      }],
+      customer_email: user.email,
+      success_url: `${process.env.APP_URL}/course/${course.slug}?checkout=success`,
+      cancel_url: `${process.env.APP_URL}/course/${course.slug}?checkout=cancelled`,
+      metadata: { user_id: String(user.id), course_id: courseId },
+    });
+
+    res.json({ url: session.url });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: "Błąd inicjowania płatności Stripe: " + error.message });
   }
 });
 
@@ -248,16 +290,32 @@ app.post("/api/webhook/stripe", express.raw({type: 'application/json'}), async (
     const courseId = session.metadata.course_id;
     
     if (userId && courseId) {
-      await prisma.enrollment.upsert({
-        where: { userId_courseId: { userId: String(userId), courseId: String(courseId) } },
-        update: { status: "ACTIVE", source: "PURCHASE" },
-        create: {
-          userId: String(userId),
-          courseId: String(courseId),
-          source: "PURCHASE",
-          status: "ACTIVE",
-        },
-      });
+      await prisma.$transaction([
+        prisma.enrollment.upsert({
+          where: { userId_courseId: { userId: String(userId), courseId: String(courseId) } },
+          update: { status: "ACTIVE", source: "PURCHASE" },
+          create: {
+            userId: String(userId),
+            courseId: String(courseId),
+            source: "PURCHASE",
+            status: "ACTIVE",
+          },
+        }),
+        // Real, Stripe-confirmed payment record — the AdminPanel's "Rejestr
+        // transakcji" ledger now only ever reflects money Stripe actually
+        // captured, never the unconditional fake "succeeded" row the old
+        // card-form endpoint used to write on any 16-digit input.
+        prisma.transaction.create({
+          data: {
+            userId: String(userId),
+            courseId: String(courseId),
+            amount: (session.amount_total ?? 0) / 100,
+            currency: (session.currency ?? "pln").toUpperCase(),
+            status: "succeeded",
+            transactionType: session.mode === "subscription" ? "subscription" : "charge",
+          },
+        }),
+      ]);
     }
   }
 
@@ -2200,42 +2258,6 @@ app.post("/api/admin/transactions/:id/refund", authenticateToken, requireAdmin, 
     res.json({ success: true, message: "Zwrot środków zlecony pomyślnie. Zapisy użytkownika na kurs zostały unieważnione." });
   } catch (err: any) {
     res.status(500).json({ message: err.message });
-  }
-});
-
-// Stripe gateway checkout route
-app.post("/api/courses/:id/checkout", authenticateToken, async (req, res) => {
-  const courseId = req.params.id;
-  const user = (req as any).user;
-  const { cardNumber, cardExpiry, cardCvc, amount, type } = req.body;
-
-  if (!cardNumber || !cardExpiry || !cardCvc) {
-    return res.status(400).json({ message: "Brak danych karty płatniczej Stripe Connect." });
-  }
-
-  try {
-    // Validate card specs (e.g. standard payment checks)
-    if (cardNumber.replace(/\s+/g, "").length < 16) {
-      return res.status(400).json({ message: "Niewłaściwy numer karty płatniczej Stripe." });
-    }
-
-    await prisma.$transaction([
-      prisma.enrollment.upsert({
-        where: { userId_courseId: { userId: String(user.id), courseId } },
-        create: { userId: String(user.id), courseId, source: "PURCHASE", status: "ACTIVE" },
-        update: { status: "ACTIVE", revokedAt: null },
-      }),
-      prisma.transaction.create({
-        data: { userId: String(user.id), courseId, amount: Number(amount) || 49.0, status: "succeeded", transactionType: type || "charge" },
-      }),
-    ]);
-
-    logActivity(user.id, "stripe_checkout_success", req, 201, null, { courseId, amount });
-    clearCache();
-
-    res.json({ success: true, message: "Płatność Stripe Connect sfinalizowana pomyślnie! Kurs został odblokowany." });
-  } catch (err: any) {
-    res.status(505).json({ message: "Błąd bramki płatniczej Stripe Connect: " + err.message });
   }
 });
 
