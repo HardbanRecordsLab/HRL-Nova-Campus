@@ -396,7 +396,7 @@ app.post("/api/auth/login", authLimiter, async (req, res) => {
         id: user.id,
         username: user.username ?? user.name ?? "",
         email: user.email,
-        role: user.role
+        role: user.role.toLowerCase()
       }
     });
 
