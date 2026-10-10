@@ -1637,6 +1637,7 @@ export const AdminPanel: React.FC = () => {
                     className="bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2 px-4 text-xs text-zinc-200 focus:outline-none cursor-pointer text-zinc-300 font-bold"
                   >
                     <option value="">-- Wybierz Bramkę --</option>
+                    <option value="-1">+ Dodaj Nowy Kurs</option>
                     {coursesList.map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.title} ({c.tenant_domain || "all_domains"})
