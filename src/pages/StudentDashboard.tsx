@@ -492,8 +492,12 @@ export const StudentDashboard: React.FC = () => {
                         <div className="w-full sm:w-auto flex flex-col gap-2 flex-shrink-0 sm:text-right">
                           <div className="flex items-center sm:justify-end gap-3 text-xs">
                             <span className="font-mono text-zinc-400">Postęp: <strong className="text-cyan-400 font-semibold">{percent}%</strong></span>
-                            <span className="text-zinc-650 text-zinc-500">|</span>
-                            <span className="font-mono text-zinc-500 text-[11px]">{course.completed_lessons_count}/{course.lessons_count} lekcji</span>
+                            {course.lessons_count > 0 && (
+                              <>
+                                <span className="text-zinc-650 text-zinc-500">|</span>
+                                <span className="font-mono text-zinc-500 text-[11px]">{course.completed_lessons_count}/{course.lessons_count} lekcji</span>
+                              </>
+                            )}
                           </div>
                           
                           <div className="flex items-center gap-3">

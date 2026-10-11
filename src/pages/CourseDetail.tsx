@@ -423,9 +423,18 @@ export const CourseDetail: React.FC = () => {
 
   if (data && data.course) {
     const tc = data.course as any;
-    if (tc.tenant_domain && tc.tenant_domain !== "all_domains" && tc.tenant_domain !== "") {
-      const url = tc.tenant_domain.startsWith("http") ? tc.tenant_domain : `https://${tc.tenant_domain}`;
-      
+    // Kurs pokazywany w oryginalnej wersji (osadzona strona kursu): domena tenanta albo —
+    // gdy kurs nie ma własnych lekcji w Nova Campus — jego zewnętrzny adres.
+    const tenantUrl = tc.tenant_domain && tc.tenant_domain !== "all_domains" && tc.tenant_domain !== ""
+      ? (tc.tenant_domain.startsWith("http") ? tc.tenant_domain : `https://${tc.tenant_domain}`)
+      : "";
+    const externalUrl = typeof tc.external_url === "string" && /^https?:\/\//.test(tc.external_url) && tc.external_url !== "https://example.invalid"
+      ? tc.external_url
+      : "";
+    const hasNativeLessons = (data.structure?.length ?? 0) > 0;
+    const url = tenantUrl || (!hasNativeLessons && tc.integration_type !== "HOSTED_HTML" ? externalUrl : "");
+    if (url) {
+
       return (
         <div className={`space-y-6 pb-12 w-full mx-auto px-4 ${isTheaterMode ? 'max-w-none' : 'max-w-[1440px]'}`}>
           {/* Header Dashboard Bar with Controls */}

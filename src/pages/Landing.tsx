@@ -551,11 +551,13 @@ export const Landing: React.FC = () => {
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
 
-                      {/* Lessons Badge */}
-                      <div className="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1 bg-zinc-950/90 border border-zinc-800 rounded-full text-[10px] font-mono font-semibold uppercase text-zinc-300 backdrop-blur">
-                        <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>{course.lessons_count} Lekcji</span>
-                      </div>
+                      {/* Lessons Badge — tylko dla kursów z lekcjami w Nova Campus; kursy z własną stroną nie mają tu lekcji */}
+                      {course.lessons_count > 0 && (
+                        <div className="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1 bg-zinc-950/90 border border-zinc-800 rounded-full text-[10px] font-mono font-semibold uppercase text-zinc-300 backdrop-blur">
+                          <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>{course.lessons_count} Lekcji</span>
+                        </div>
+                      )}
 
                       {/* Float Price Tag */}
                       <div className="absolute top-4 right-4 inline-flex items-center gap-1 px-3 py-1 bg-zinc-950/90 border border-zinc-800 rounded-xl text-[11px] font-mono font-extrabold backdrop-blur">
