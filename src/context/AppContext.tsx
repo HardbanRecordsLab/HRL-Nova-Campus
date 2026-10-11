@@ -15,11 +15,15 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+// The DB stores roles uppercase ("ADMIN"); every UI check compares against lowercase.
+const normalizeUser = (u: User | null): User | null =>
+  u && typeof u.role === "string" ? { ...u, role: u.role.toLowerCase() as User["role"] } : u;
+
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
     try {
       const saved = localStorage.getItem("hrl_user");
-      return saved ? JSON.parse(saved) : null;
+      return saved ? normalizeUser(JSON.parse(saved)) : null;
     } catch (e) {
       console.error("Failed to parse user from localStorage", e);
       localStorage.removeItem("hrl_user");
@@ -34,13 +38,33 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isSocketConnected, setIsSocketConnected] = useState<boolean>(false);
 
   // Authentication Helpers
-  const login = (userData: User, userToken: string) => {
+  const login = (rawUser: User, userToken: string) => {
+    const userData = normalizeUser(rawUser) as User;
     setUser(userData);
     setToken(userToken);
     localStorage.setItem("hrl_user", JSON.stringify(userData));
     localStorage.setItem("hrl_token", userToken);
     addToast(`Zalogowano pomyślnie jako ${userData.username}`, "success");
   };
+
+  // Refresh the cached profile from the server on load, so a role changed (or
+  // fixed) server-side reaches an already-logged-in browser without re-login.
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((fresh) => {
+        if (cancelled || !fresh) return;
+        const userData = normalizeUser(fresh as User) as User;
+        setUser(userData);
+        localStorage.setItem("hrl_user", JSON.stringify(userData));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
 
   const logout = () => {
     setUser(null);

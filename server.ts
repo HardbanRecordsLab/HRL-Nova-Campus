@@ -171,6 +171,10 @@ const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
     if (err) {
       return res.status(403).json({ message: "Token jest niepoprawny lub wygasł" });
     }
+    // Tokens issued before the login fix carry the DB's uppercase role ("ADMIN").
+    if (user && typeof (user as any).role === "string") {
+      (user as any).role = (user as any).role.toLowerCase();
+    }
     (req as any).user = user;
     next();
   });
