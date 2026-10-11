@@ -23,10 +23,7 @@ import {
   RefreshCw,
   ExternalLink,
   Megaphone,
-  Maximize2,
-  Minimize2,
   Sliders,
-  Settings,
   Link2
 } from "lucide-react";
 
@@ -72,6 +69,76 @@ interface CourseDetailData {
   certificate_code: string | null;
 }
 
+// Kurs w oryginalnej wersji: osadzona strona kursu na całym ekranie pod nawigacją.
+// Przewijanie strony jest zablokowane na czas oglądania, więc przewija się tylko kurs
+// (bez podwójnego paska przewijania).
+const OriginalCourseView: React.FC<{
+  url: string;
+  title: string;
+  onCopyLink: () => void;
+  copiedLink: boolean;
+}> = ({ url, title, onCopyLink, copiedLink }) => {
+  const [top, setTop] = useState(64);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    const measure = () => {
+      const nav = document.getElementById("main-navigation");
+      setTop(nav ? Math.max(0, Math.round(nav.getBoundingClientRect().bottom)) : 64);
+    };
+    window.scrollTo(0, 0);
+    measure();
+    window.addEventListener("resize", measure);
+    const html = document.documentElement;
+    const prev = { html: html.style.overflow, body: document.body.style.overflow };
+    html.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("resize", measure);
+      html.style.overflow = prev.html;
+      document.body.style.overflow = prev.body;
+    };
+  }, []);
+
+  const barButton =
+    "px-3 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 rounded-lg text-[11px] font-mono uppercase tracking-wide transition-all flex items-center gap-1.5 cursor-pointer";
+
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-30 flex flex-col bg-zinc-950" style={{ top }}>
+      <div className="flex items-center justify-between gap-3 px-3 sm:px-4 h-11 shrink-0 border-b border-zinc-800 bg-zinc-900">
+        <div className="flex items-center gap-3 min-w-0">
+          <Link to="/" className={barButton}>
+            ← <span className="hidden sm:inline">Katalog</span>
+          </Link>
+          <h2 className="text-sm font-medium text-white truncate">{title}</h2>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <button type="button" onClick={() => setReloadKey((k) => k + 1)} className={barButton} title="Odśwież kurs">
+            <RefreshCw className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden sm:inline">Odśwież</span>
+          </button>
+          <button type="button" onClick={onCopyLink} className={barButton} title="Skopiuj odnośnik do kursu">
+            {copiedLink ? (
+              <ClipboardCheck className="w-3.5 h-3.5 text-emerald-400" />
+            ) : (
+              <Link2 className="w-3.5 h-3.5 text-teal-400" />
+            )}
+            <span className="hidden sm:inline">{copiedLink ? "Skopiowano" : "Kopiuj link"}</span>
+          </button>
+        </div>
+      </div>
+      <iframe
+        key={reloadKey}
+        src={url}
+        title={title}
+        className="block w-full flex-1 min-h-0 border-0 bg-zinc-950"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+        sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+      />
+    </div>
+  );
+};
+
 export const CourseDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user, token, addToast } = useApp();
@@ -79,9 +146,6 @@ export const CourseDetail: React.FC = () => {
   const [data, setData] = useState<CourseDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeLesson, setActiveLesson] = useState<DetailLesson | null>(null);
-  const [iframeKey, setIframeKey] = useState(0);
-  const [playerHeight, setPlayerHeight] = useState<number>(768);
-  const [isTheaterMode, setIsTheaterMode] = useState<boolean>(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
   const handleCopyLink = () => {
@@ -434,224 +498,7 @@ export const CourseDetail: React.FC = () => {
     const hasNativeLessons = (data.structure?.length ?? 0) > 0;
     const url = tenantUrl || (!hasNativeLessons && tc.integration_type !== "HOSTED_HTML" ? externalUrl : "");
     if (url) {
-
-      return (
-        <div className={`space-y-6 pb-12 w-full mx-auto px-4 ${isTheaterMode ? 'max-w-none' : 'max-w-[1440px]'}`}>
-          {/* Header Dashboard Bar with Controls */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-xl relative overflow-hidden">
-            {/* Ambient indicator lights */}
-            <div className="absolute top-0 left-0 w-1/2 h-[2px] bg-gradient-to-r from-cyan-600/30 via-teal-500/30 to-transparent" />
-            
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-wider">
-                  Ujednolicony Odtwarzacz Partnerski HRL • Adres Ukryty
-                </span>
-              </div>
-              <h2 className="text-xl font-display font-medium text-white tracking-tight">
-                {tc.title}
-              </h2>
-              <p className="text-xs text-zinc-400">
-                Prywatna sesja edukacyjna z maskowaniem źródłowego adresu URL w standardzie HRL Nova Campus.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2.5">
-              <Link
-                to="/"
-                className="px-4 py-2.5 bg-zinc-950 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 rounded-xl text-xs font-mono font-medium tracking-wide uppercase transition-all flex items-center gap-1.5 cursor-pointer"
-              >
-                ← Katalog
-              </Link>
-              <button
-                onClick={() => setIframeKey(k => k + 1)}
-                className="px-4 py-2.5 bg-zinc-950 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 rounded-xl text-xs font-mono font-medium tracking-wide uppercase transition-all flex items-center gap-1.5 cursor-pointer"
-                title="Odśwież sesję"
-              >
-                <RefreshCw className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Odśwież</span>
-              </button>
-              <button
-                onClick={handleCopyLink}
-                className="px-4 py-2.5 bg-zinc-950 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 rounded-xl text-xs font-mono font-medium tracking-wide uppercase transition-all flex items-center gap-1.5 cursor-pointer min-w-[130px] justify-center"
-                title="Skopiuj bezpośredni odnośnik do tej podstrony kursowej"
-              >
-                {copiedLink ? (
-                  <>
-                    <ClipboardCheck className="w-3.5 h-3.5 text-emerald-450 text-emerald-400" />
-                    <span className="text-emerald-450 text-emerald-400 font-bold">Skopiowano!</span>
-                  </>
-                ) : (
-                  <>
-                    <Link2 className="w-3.5 h-3.5 text-teal-400" />
-                    <span>Kopiuj Link</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* ADVANCED VIEWPORT RESIZER & CONFIGURATOR PANEL */}
-          <div className="bg-zinc-900 border border-zinc-850 bg-gradient-to-b from-zinc-900 to-zinc-950/40 p-5 rounded-2xl space-y-4 shadow-lg border-zinc-800">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-zinc-250">
-                  <Settings className="w-4 h-4 text-cyan-400" />
-                  <span className="text-xs font-mono uppercase tracking-widest text-zinc-350 font-bold">
-                    Konfigurator Oryginalnych Wymiarów Kursu
-                  </span>
-                </div>
-                <p className="text-[11px] text-zinc-400">
-                  Zastosuj natywne proporcje oryginalnego panelu kursowego by wyeliminować wewnętrzne paski przewijania i zachować oryginalną makietę.
-                </p>
-              </div>
-
-              {/* Precise Dimension Indicator Badge */}
-              <div className="inline-flex items-center gap-2 bg-zinc-950 border border-zinc-800 px-3 py-1.5 rounded-lg text-xs font-mono shrink-0">
-                <span className="text-zinc-550 text-zinc-450">AKTYWNY ROZMIAR:</span>
-                <span className="text-cyan-450 text-cyan-400 font-bold">100%</span>
-                <span className="text-zinc-500">x</span>
-                <span className="text-teal-400 font-bold">{playerHeight}px</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2 border-t border-zinc-850 border-zinc-800/60">
-              
-              {/* Presets Column */}
-              <div className="space-y-2">
-                <span className="block text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Szybkie Presety Wysokości</span>
-                <div className="grid grid-cols-2 gap-1.5">
-                  <button
-                    onClick={() => setPlayerHeight(620)}
-                    className={`px-3 py-2 text-[10.5px] font-mono rounded-lg border text-center transition-all ${
-                      playerHeight === 620
-                        ? "bg-cyan-600/10 border-cyan-550 text-cyan-405 font-bold text-cyan-400 border-cyan-500"
-                        : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200"
-                    }`}
-                  >
-                    Kompakt (620px)
-                  </button>
-                  <button
-                    onClick={() => setPlayerHeight(768)}
-                    className={`px-3 py-2 text-[10.5px] font-mono rounded-lg border text-center transition-all ${
-                      playerHeight === 768
-                        ? "bg-cyan-600/10 border-cyan-550 text-cyan-405 font-bold text-cyan-400 border-cyan-500"
-                        : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200"
-                    }`}
-                  >
-                    Laptop (768px)
-                  </button>
-                  <button
-                    onClick={() => setPlayerHeight(950)}
-                    className={`px-3 py-2 text-[10.5px] font-mono rounded-lg border text-center transition-all ${
-                      playerHeight === 950
-                        ? "bg-cyan-600/10 border-cyan-550 text-cyan-405 font-bold text-cyan-400 border-cyan-500"
-                        : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200"
-                    }`}
-                  >
-                    Full HD (950px)
-                  </button>
-                  <button
-                    onClick={() => setPlayerHeight(1200)}
-                    className={`px-3 py-2 text-[10.5px] font-mono rounded-lg border text-center transition-all ${
-                      playerHeight === 1200
-                        ? "bg-cyan-600/10 border-cyan-550 text-cyan-405 font-bold text-cyan-400 border-cyan-500"
-                        : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200"
-                    }`}
-                  >
-                    Maxi (1200px)
-                  </button>
-                </div>
-              </div>
-
-              {/* Slider Adjustment Column */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="block text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Precyzyjne strojenie wysokości</span>
-                  <span className="text-xs font-mono text-zinc-400 font-bold">{playerHeight}px</span>
-                </div>
-                <div className="space-y-3 pt-1">
-                  <input
-                    type="range"
-                    min="450"
-                    max="1400"
-                    step="20"
-                    value={playerHeight}
-                    onChange={(e) => setPlayerHeight(Number(e.target.value))}
-                    className="w-full accent-cyan-500 cursor-pointer"
-                  />
-                  <div className="flex justify-between text-[9px] font-mono text-zinc-600">
-                    <span>Min (450px)</span>
-                    <span>Max (1400px)</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Width / Theater mode controller Column */}
-              <div className="space-y-2">
-                <span className="block text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Tryb szerokości makiety</span>
-                <div className="space-y-2.5">
-                  <button
-                    onClick={() => setIsTheaterMode(!isTheaterMode)}
-                    className={`w-full px-4 py-2.5 rounded-lg border font-mono text-xs uppercase tracking-wide transition-all flex items-center justify-center gap-2 ${
-                      isTheaterMode
-                        ? "bg-gradient-to-r from-cyan-600/20 to-teal-500/20 border-cyan-500 text-white font-bold"
-                        : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200"
-                    }`}
-                  >
-                    {isTheaterMode ? (
-                      <>
-                        <Minimize2 className="w-4 h-4 text-teal-400" />
-                        <span>Szerokość: Pełny Ekran (Włączona)</span>
-                      </>
-                    ) : (
-                      <>
-                        <Maximize2 className="w-4 h-4 text-cyan-400" />
-                        <span>Szerokość: Standardowa (Tryb Kinowy)</span>
-                      </>
-                    )}
-                  </button>
-                  <p className="text-[10px] text-zinc-500 leading-normal">
-                    {isTheaterMode 
-                      ? "Makieta zmaksymalizowana do krawędzi okna przeglądarki. Pełna szerokość robocza." 
-                      : "Standardowa zwężona makieta odtwarzacza z marginesami bocznymi."}
-                  </p>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {/* MAIN EMBEDDED PLAYER CONTAINER (Address fully masked!) */}
-          <div className="space-y-3">
-            {/* Iframe Loading/Player panel */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-2 shadow-2xl overflow-hidden relative">
-              {/* Embedded Website Frame wrapper */}
-              <iframe
-                key={iframeKey}
-                src={url}
-                style={{ height: `${playerHeight}px` }}
-                className="w-full rounded-xl border-0 bg-zinc-950 block transition-all duration-300"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-                title={tc.title}
-              />
-            </div>
-
-            {/* Secure navigation status footer */}
-            <div className="bg-zinc-950 border border-zinc-900 rounded-xl py-2.5 px-4 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-[10px] font-mono text-zinc-500">
-              <span className="flex items-center gap-1.5 uppercase select-none">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
-                Szyfrowanie sesji: TLS 1.3 Enterprise Masked Environment
-              </span>
-              <span>
-                Środowisko zweryfikowane • Autoryzowany operator platformy
-              </span>
-            </div>
-          </div>
-        </div>
-      );
+      return <OriginalCourseView url={url} title={tc.title} onCopyLink={handleCopyLink} copiedLink={copiedLink} />;
     }
   }
 
