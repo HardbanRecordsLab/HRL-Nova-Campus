@@ -115,7 +115,8 @@ export const AdminPanel: React.FC = () => {
   const [isBoosting, setIsBoosting] = useState(false);
 
   // External Domain Gateways & Lesson access controls
-  const [selectedCourseIdVal, setSelectedCourseIdVal] = useState<number | null>(null);
+  // ID kursu to cuid (tekst) albo "new" dla formularza nowego kursu.
+  const [selectedCourseIdVal, setSelectedCourseIdVal] = useState<string | null>(null);
   const [lessonsForSelectedCourse, setLessonsForSelectedCourse] = useState<any[]>([]);
   const [modulesForActiveCourse, setModulesForActiveCourse] = useState<any[]>([]);
   const [selectedLessonId, setSelectedLessonId] = useState<number | null>(null);
@@ -131,6 +132,8 @@ export const AdminPanel: React.FC = () => {
   const [courseExternalUrl, setCourseExternalUrl] = useState("");
   const [courseIntegrationType, setCourseIntegrationType] = useState<"JWT" | "OAUTH2" | "IFRAME" | "REDIRECT_COOKIE" | "CUSTOM_API" | "HOSTED_HTML">("JWT");
   const [courseHtmlContent, setCourseHtmlContent] = useState("");
+  const [courseStatus, setCourseStatus] = useState<"PUBLISHED" | "DRAFT">("PUBLISHED");
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
 
   // Lesson fields:
   const [lessonTitle, setLessonTitle] = useState("");
@@ -435,8 +438,8 @@ export const AdminPanel: React.FC = () => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          user_id: Number(selectedUserId),
-          course_id: Number(selectedCourseId),
+          user_id: selectedUserId,
+          course_id: selectedCourseId,
           custom_code: customCertCode || undefined,
           template: previewTemplate,
           certificate_hash
@@ -518,14 +521,14 @@ export const AdminPanel: React.FC = () => {
   // Auto-selects the first course if none is selected
   useEffect(() => {
     if (coursesList.length > 0 && selectedCourseIdVal === null) {
-      setSelectedCourseIdVal(Number(coursesList[0].id));
+      setSelectedCourseIdVal(String(coursesList[0].id));
     }
   }, [coursesList, selectedCourseIdVal]);
 
   // Sync general selected course fields reactively
   useEffect(() => {
-    if (selectedCourseIdVal && selectedCourseIdVal !== -1) {
-      const match = coursesList.find(c => Number(c.id) === selectedCourseIdVal);
+    if (selectedCourseIdVal && selectedCourseIdVal !== "new") {
+      const match = coursesList.find(c => String(c.id) === selectedCourseIdVal);
       if (match) {
         setCourseTitle(match.title || "");
         setCourseDescription(match.description || "");
@@ -539,8 +542,9 @@ export const AdminPanel: React.FC = () => {
         setCourseExternalUrl(match.external_url && match.external_url !== "https://example.invalid" ? match.external_url : "");
         setCourseIntegrationType(match.integration_type || "JWT");
         setCourseHtmlContent(match.html_content || "");
+        setCourseStatus(match.status === "PUBLISHED" ? "PUBLISHED" : "DRAFT");
       }
-    } else if (selectedCourseIdVal === -1) {
+    } else if (selectedCourseIdVal === "new") {
       setCourseTitle("");
       setCourseDescription("");
       setCourseInstructor("");
@@ -553,14 +557,48 @@ export const AdminPanel: React.FC = () => {
       setCourseExternalUrl("");
       setCourseIntegrationType("JWT");
       setCourseHtmlContent("");
+      setCourseStatus("PUBLISHED");
     }
   }, [selectedCourseIdVal, coursesList]);
+
+  // Okładka wgrywana na serwer od razu po wyborze pliku; do kursu trafia przy zapisie formularza.
+  const handleCoverUpload = async (file: File) => {
+    const type = file.type || (/\.png$/i.test(file.name) ? "image/png" : /\.jpe?g$/i.test(file.name) ? "image/jpeg" : "");
+    if (type !== "image/png" && type !== "image/jpeg") {
+      addToast("Okładka musi być plikiem PNG albo JPG.", "error");
+      return;
+    }
+    if (file.size > 4 * 1024 * 1024) {
+      addToast("Okładka może mieć maksymalnie 4 MB.", "error");
+      return;
+    }
+    try {
+      setIsUploadingCover(true);
+      const res = await fetch("/api/admin/uploads/cover", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}`, "Content-Type": type },
+        body: file
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.url) throw new Error(data.message || "Nie udało się wgrać okładki.");
+      setCourseThumbnail(data.url);
+      addToast("Okładka wgrana — zapisz kurs, żeby ją zachować.", "success");
+    } catch (err: any) {
+      addToast(err.message, "error");
+    } finally {
+      setIsUploadingCover(false);
+    }
+  };
 
   const handleUpdateCourseGateway = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCourseIdVal) return;
-    
-    if (selectedCourseIdVal === -1) {
+    if (!courseThumbnail) {
+      addToast("Wgraj okładkę kursu (PNG lub JPG).", "error");
+      return;
+    }
+
+    if (selectedCourseIdVal === "new") {
       try {
         setIsUpdatingCourse(true);
         const res = await fetch(`/api/admin/courses`, {
@@ -583,15 +621,16 @@ export const AdminPanel: React.FC = () => {
             tenant_domain: newTenantDomain,
             external_url: courseExternalUrl.trim() || undefined,
             integration_type: courseIntegrationType,
-            html_content: courseIntegrationType === "HOSTED_HTML" ? courseHtmlContent : undefined
+            html_content: courseIntegrationType === "HOSTED_HTML" ? courseHtmlContent : undefined,
+            status: courseStatus
           })
         });
 
         const data = await res.json();
         if (res.ok) {
-          addToast("Nowy kurs / bramka domeny została utworzona pomyślnie!", "success");
+          addToast(courseStatus === "PUBLISHED" ? "Kurs utworzony i opublikowany w katalogu." : "Kurs zapisany jako szkic — nie jest widoczny w publicznym katalogu.", "success");
           fetchCourses();
-          setSelectedCourseIdVal(data.courseId || null);
+          setSelectedCourseIdVal(data.course?.id ? String(data.course.id) : null);
         } else {
           throw new Error(data.message);
         }
@@ -625,13 +664,14 @@ export const AdminPanel: React.FC = () => {
           tenant_domain: newTenantDomain,
           external_url: courseExternalUrl.trim() || undefined,
           integration_type: courseIntegrationType,
-          html_content: courseIntegrationType === "HOSTED_HTML" ? courseHtmlContent : undefined
+          html_content: courseIntegrationType === "HOSTED_HTML" ? courseHtmlContent : undefined,
+          status: courseStatus
         })
       });
 
       const data = await res.json();
       if (res.ok) {
-        addToast("Bramka płatnicza i parametry domeny zostały zapisane pomyślnie!", "success");
+        addToast(courseStatus === "PUBLISHED" ? "Zapisano — kurs jest widoczny w publicznym katalogu." : "Zapisano jako szkic — kurs ukryty w publicznym katalogu.", "success");
         // Force refresh of the courses list to reflect updated name or domain
         fetchCourses();
       } else {
@@ -646,7 +686,7 @@ export const AdminPanel: React.FC = () => {
 
   // Preloads lessons for the chosen course domain gateway
   useEffect(() => {
-    if (!selectedCourseIdVal) {
+    if (!selectedCourseIdVal || selectedCourseIdVal === "new") {
       setLessonsForSelectedCourse([]);
       setSelectedLessonId(null);
       return;
@@ -692,7 +732,7 @@ export const AdminPanel: React.FC = () => {
   }, [selectedCourseIdVal]);
 
   const reloadCourseHierarchy = async () => {
-    if (!selectedCourseIdVal || selectedCourseIdVal === -1) return;
+    if (!selectedCourseIdVal || selectedCourseIdVal === "new") return;
     try {
       setLessonsLoadingState(true);
       const res = await fetch(`/api/courses/${selectedCourseIdVal}`);
@@ -1633,11 +1673,11 @@ export const AdminPanel: React.FC = () => {
                   <span className="text-xs font-mono text-zinc-500 uppercase flex items-center">Aktywny Tenant:</span>
                   <select
                     value={selectedCourseIdVal || ""}
-                    onChange={(e) => setSelectedCourseIdVal(Number(e.target.value))}
+                    onChange={(e) => setSelectedCourseIdVal(e.target.value || null)}
                     className="bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2 px-4 text-xs text-zinc-200 focus:outline-none cursor-pointer text-zinc-300 font-bold"
                   >
                     <option value="">-- Wybierz Bramkę --</option>
-                    <option value="-1">+ Dodaj Nowy Kurs</option>
+                    <option value="new">+ Dodaj Nowy Kurs</option>
                     {coursesList.map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.title} ({c.tenant_domain || "all_domains"})
@@ -1650,11 +1690,11 @@ export const AdminPanel: React.FC = () => {
               {/* Grid of Course/Domain Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
                 {coursesList.map((c) => {
-                  const isSelected = selectedCourseIdVal === Number(c.id);
+                  const isSelected = selectedCourseIdVal === String(c.id);
                   return (
                     <div
                       key={c.id}
-                      onClick={() => setSelectedCourseIdVal(Number(c.id))}
+                      onClick={() => setSelectedCourseIdVal(String(c.id))}
                       className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between h-36 ${
                         isSelected 
                           ? "bg-cyan-950/20 border-cyan-500/80 shadow-lg shadow-cyan-500/5 cursor-default hover:border-cyan-500" 
@@ -1668,7 +1708,11 @@ export const AdminPanel: React.FC = () => {
                           }`}>
                             {c.pricing_model === "free" ? "FREE PREVIEW" : c.pricing_model === "subscription" ? "SUBSCRIPTION CHECKOUT" : "LIFETIME PURCHASE"}
                           </span>
-                          <span className="text-[10px] text-zinc-650 font-mono">ID: {c.id}</span>
+                          <span className={`text-[8px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded font-bold ${
+                            c.status === "PUBLISHED" ? "bg-emerald-500/15 text-emerald-400" : "bg-amber-500/15 text-amber-400"
+                          }`} title={c.status === "PUBLISHED" ? "Widoczny w publicznym katalogu" : "Ukryty w publicznym katalogu"}>
+                            {c.status === "PUBLISHED" ? "OPUBLIKOWANY" : "SZKIC"}
+                          </span>
                         </div>
                         <h4 className="text-xs font-bold text-white line-clamp-1">{c.title}</h4>
                         <p className="text-[10px] text-zinc-400 line-clamp-2 mt-1 leading-normal">{c.description}</p>
@@ -1728,14 +1772,50 @@ export const AdminPanel: React.FC = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="block text-xs font-mono text-zinc-400 uppercase tracking-widest">Adres okładki (URL)</label>
-                        <input
-                          type="text"
-                          value={courseThumbnail}
-                          onChange={(e) => setCourseThumbnail(e.target.value)}
-                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none"
-                          required
-                        />
+                        <label className="block text-xs font-mono text-zinc-400 uppercase tracking-widest">Widoczność w katalogu</label>
+                        <select
+                          value={courseStatus}
+                          onChange={(e) => setCourseStatus(e.target.value as "PUBLISHED" | "DRAFT")}
+                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none cursor-pointer"
+                        >
+                          <option value="PUBLISHED">Opublikowany — widoczny publicznie</option>
+                          <option value="DRAFT">Szkic — tylko w panelu admina</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-xs font-mono text-zinc-400 uppercase tracking-widest">Okładka kursu (PNG lub JPG)</label>
+                      <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                        {courseThumbnail ? (
+                          <img
+                            src={courseThumbnail}
+                            alt="Podgląd okładki kursu"
+                            className="w-full sm:w-40 h-24 object-cover rounded-lg border border-zinc-800 bg-zinc-950 shrink-0"
+                          />
+                        ) : (
+                          <div className="w-full sm:w-40 h-24 rounded-lg border border-dashed border-zinc-800 bg-zinc-950 flex items-center justify-center text-[10px] text-zinc-600 font-mono shrink-0">
+                            brak okładki
+                          </div>
+                        )}
+                        <div className="flex-1 space-y-2">
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,.png,.jpg,.jpeg"
+                            disabled={isUploadingCover}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              e.target.value = "";
+                              if (file) handleCoverUpload(file);
+                            }}
+                            className="w-full bg-zinc-950 border border-zinc-800 focus:border-cyan-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-cyan-600 file:text-white file:text-xs file:cursor-pointer cursor-pointer disabled:opacity-50"
+                          />
+                          <p className="text-[10px] text-zinc-500">
+                            {isUploadingCover
+                              ? "Wgrywanie okładki..."
+                              : "Maksymalnie 4 MB, najlepiej poziomo (np. 1280×720 px). Plik trafia na serwer od razu, a do kursu zapisuje się po kliknięciu przycisku zapisu poniżej."}
+                          </p>
+                        </div>
                       </div>
                     </div>
 
@@ -1882,11 +1962,11 @@ export const AdminPanel: React.FC = () => {
                       disabled={isUpdatingCourse}
                       className="w-full py-3 bg-gradient-to-r from-cyan-600 to-teal-500 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-xl hover:opacity-90 transition-all cursor-pointer disabled:opacity-50"
                     >
-                      {isUpdatingCourse ? "Zapisywanie..." : (selectedCourseIdVal === -1 ? "Utwórz Nowy Kurs (Bramkę)" : "Zapisz Ograniczenia i Paywall Bramki")}
+                      {isUpdatingCourse ? "Zapisywanie..." : (selectedCourseIdVal === "new" ? "Utwórz Nowy Kurs (Bramkę)" : "Zapisz Ograniczenia i Paywall Bramki")}
                     </button>
                   </form>
 
-                  {selectedCourseIdVal !== -1 && (
+                  {selectedCourseIdVal !== "new" && (
                   <div className="p-4 bg-zinc-900/30 border border-zinc-850 rounded-xl space-y-2">
                     <h4 className="text-xs font-mono text-zinc-400 uppercase tracking-widest font-bold flex items-center gap-1.5 text-zinc-350">
                       <Trash2 className="w-3.5 h-3.5 text-red-400" /> Trwałe wycofanie bramki
@@ -2160,8 +2240,8 @@ export const AdminPanel: React.FC = () => {
                  <VisualCertificatePreview
                    ref={certificateRef}
                    template={previewTemplate}
-                   studentName={selectedUserId ? userList.find(u => u.id === Number(selectedUserId))?.username || '' : 'Imię i Nazwisko'}
-                   courseTitle={selectedCourseId ? coursesList.find(c => c.id === Number(selectedCourseId))?.title || '' : 'Wybierz kurs...'}
+                   studentName={selectedUserId ? userList.find(u => String(u.id) === selectedUserId)?.username || '' : 'Imię i Nazwisko'}
+                   courseTitle={selectedCourseId ? coursesList.find(c => String(c.id) === selectedCourseId)?.title || '' : 'Wybierz kurs...'}
                    issueDate={new Date().toLocaleDateString('pl-PL')}
                    certificateCode={customCertCode || 'HRL-GEN-PREVIEW'}
                  />

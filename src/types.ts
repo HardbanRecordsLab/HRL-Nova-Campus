@@ -23,6 +23,7 @@ export interface Course {
   external_url?: string;
   integration_type?: "JWT" | "OAUTH2" | "IFRAME" | "REDIRECT_COOKIE" | "CUSTOM_API" | "HOSTED_HTML";
   html_content?: string | null;
+  status?: "PUBLISHED" | "DRAFT" | "ARCHIVED";
 }
 
 export interface Lesson {

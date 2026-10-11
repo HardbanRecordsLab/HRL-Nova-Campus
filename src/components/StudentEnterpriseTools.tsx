@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 interface StudentEnterpriseToolsProps {
-  courseId: number;
+  courseId: string; // cuid z bazy — nie rzutować na Number (daje NaN → null w JSON)
   courseTitle: string;
   isEnrolled: boolean;
 }

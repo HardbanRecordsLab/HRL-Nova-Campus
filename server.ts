@@ -2,6 +2,8 @@ import express, { Request, Response, NextFunction } from "express";
 import http from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import path from "path";
+import fs from "fs";
+import { randomUUID } from "crypto";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
@@ -42,6 +44,27 @@ app.use(
 );
 
 app.use(express.json({ limit: "5mb" })); // podniesiony limit — kursy HOSTED_HTML mogą przesyłać spory blok HTML/CSS/JS naraz
+
+// Okładki kursów wgrywane z panelu admina (PNG/JPG) — pliki na dysku serwera, poza repo.
+// Serwowane przed apiLimiterem, żeby katalog z wieloma okładkami nie zjadał limitu zapytań.
+const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(process.cwd(), "uploads");
+const COVER_DIR = path.join(UPLOAD_DIR, "covers");
+const COVER_MAX_BYTES = 4 * 1024 * 1024; // poniżej limitu proxy Vercela (4,5 MB) dla zapytań przez rewrite /api/*
+fs.mkdirSync(COVER_DIR, { recursive: true });
+app.use(
+  "/api/uploads/covers",
+  express.static(COVER_DIR, {
+    index: false,
+    dotfiles: "deny",
+    immutable: true,
+    maxAge: "30d",
+    setHeaders: (res) => {
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    },
+  })
+);
+app.use("/api/uploads/covers", (_req, res) => res.status(404).end());
 
 // Enterprise Rate Limiters
 const authLimiter = rateLimit({
@@ -1262,6 +1285,34 @@ app.get("/api/admin/courses", authenticateToken, requireAdmin, async (req, res) 
   }
 });
 
+// Wgranie okładki kursu: surowe bajty pliku w body, Content-Type image/png albo image/jpeg.
+// Typ sprawdzany po sygnaturze pliku, nie tylko po nagłówku; nazwa pliku losowa.
+app.post(
+  "/api/admin/uploads/cover",
+  authenticateToken,
+  requireAdmin,
+  express.raw({ type: ["image/png", "image/jpeg"], limit: COVER_MAX_BYTES }),
+  async (req, res) => {
+    const body = req.body;
+    if (!Buffer.isBuffer(body) || body.length === 0) {
+      return res.status(400).json({ message: "Wyślij plik PNG albo JPG (Content-Type: image/png lub image/jpeg)." });
+    }
+    const isPng = body.length > 8 && body.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+    const isJpeg = body.length > 3 && body[0] === 0xff && body[1] === 0xd8 && body[2] === 0xff;
+    if (!isPng && !isJpeg) {
+      return res.status(400).json({ message: "Plik nie jest prawidłowym obrazem PNG ani JPG." });
+    }
+    try {
+      const fileName = `${randomUUID()}.${isPng ? "png" : "jpg"}`;
+      await fs.promises.writeFile(path.join(COVER_DIR, fileName), body, { flag: "wx" });
+      logActivity((req as any).user.id, "admin_course_cover_uploaded", req, 201, null, { fileName, bytes: body.length });
+      res.status(201).json({ url: `/api/uploads/covers/${fileName}` });
+    } catch (err: any) {
+      res.status(500).json({ message: "Nie udało się zapisać okładki: " + err.message });
+    }
+  }
+);
+
 app.post("/api/admin/courses", authenticateToken, requireAdmin, async (req, res) => {
   const { 
     title, 
@@ -1300,6 +1351,7 @@ app.post("/api/admin/courses", authenticateToken, requireAdmin, async (req, res)
         imageUrl: thumbnail,
         level: difficulty || null,
         status: req.body.status === "PUBLISHED" ? "PUBLISHED" : "DRAFT",
+        publishedAt: req.body.status === "PUBLISHED" ? new Date() : null,
         translations: { create: { locale: "pl", title, description } },
         ...(tenant_domain && tenant_domain !== "all_domains" ? { domains: { create: { hostname: normalizeHostname(tenant_domain) ?? tenant_domain } } } : {}),
       },
@@ -1423,6 +1475,14 @@ app.put("/api/admin/courses/:id", authenticateToken, requireAdmin, async (req, r
       return res.status(400).json({ message: "Kurs typu HOSTED_HTML wymaga treści HTML (html_content)." });
     }
     const htmlContentUpdate = typeof req.body.html_content === "string" ? { htmlContent: req.body.html_content } : {};
+    // Publiczny katalog (/api/courses) pokazuje tylko PUBLISHED — status ustawiany z panelu admina.
+    let statusUpdate: { status?: "PUBLISHED" | "DRAFT"; publishedAt?: Date } = {};
+    if (req.body.status === "PUBLISHED") {
+      const current = await prisma.course.findUnique({ where: { id: courseId }, select: { publishedAt: true } });
+      statusUpdate = { status: "PUBLISHED", publishedAt: current?.publishedAt ?? new Date() };
+    } else if (req.body.status === "DRAFT") {
+      statusUpdate = { status: "DRAFT" };
+    }
 
     const updatedCourse = await prisma.course.update({
       where: { id: courseId },
@@ -1432,6 +1492,7 @@ app.put("/api/admin/courses/:id", authenticateToken, requireAdmin, async (req, r
         ...(req.body.external_url ? { externalUrl: req.body.external_url } : {}),
         ...integrationTypeUpdate,
         ...htmlContentUpdate,
+        ...statusUpdate,
         translations: { upsert: { where: { courseId_locale: { courseId, locale: "pl" } }, update: { title, description }, create: { locale: "pl", title, description } } },
       },
       include: courseListInclude,

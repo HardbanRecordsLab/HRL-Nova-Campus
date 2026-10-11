@@ -1472,7 +1472,7 @@ export const CourseDetail: React.FC = () => {
               
               {data && (
                 <StudentEnterpriseTools
-                  courseId={Number(id)}
+                  courseId={String(id)}
                   courseTitle={data.course.title}
                   isEnrolled={data.enrolled}
                 />
@@ -1489,7 +1489,7 @@ export const CourseDetail: React.FC = () => {
               </div>
               {data && (
                 <StudentEnterpriseTools
-                  courseId={Number(id)}
+                  courseId={String(id)}
                   courseTitle={data.course.title}
                   isEnrolled={data.enrolled}
                 />
