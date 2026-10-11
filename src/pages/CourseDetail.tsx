@@ -179,6 +179,9 @@ export const CourseDetail: React.FC = () => {
   const [activeAds, setActiveAds] = useState<any[]>([]);
 
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  // Art. 38 ust. 1 pkt 13 ustawy o prawach konsumenta: kurs to treść cyfrowa udostępniana od razu —
+  // prawo odstąpienia wygasa tylko za wyraźną, uprzednią zgodą. Bez zaznaczenia nie ma płatności.
+  const [waiverAccepted, setWaiverAccepted] = useState(false);
   
   // Custom video playback state
   const [isPlaying, setIsPlaying] = useState(false);
@@ -281,6 +284,10 @@ export const CourseDetail: React.FC = () => {
   // the full story) — that whole flow is gone, not just this handler.
   const handleStripeCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!waiverAccepted) {
+      addToast("Zaznacz zgodę na natychmiastowy dostęp do kursu.", "warning");
+      return;
+    }
     if (!token) {
       addToast("Zaloguj się, aby sfinalizować transakcję.", "warning");
       return;
@@ -586,9 +593,18 @@ export const CourseDetail: React.FC = () => {
                 </div>
               </div>
 
+              <label className="flex items-start gap-2 text-[11px] text-zinc-400 leading-relaxed cursor-pointer">
+                <input type="checkbox" checked={waiverAccepted} onChange={(e) => setWaiverAccepted(e.target.checked)} className="mt-0.5 shrink-0 accent-cyan-500" />
+                <span>
+                  Żądam dostępu do kursu od razu po zapłacie i przyjmuję do wiadomości, że wtedy tracę prawo odstąpienia od
+                  umowy. Akceptuję{" "}
+                  <a href="https://hardbanrecordslab.online/terms/" target="_blank" rel="noopener noreferrer" className="underline">Regulamin</a>.
+                </span>
+              </label>
+
               <button
                 type="submit"
-                disabled={isProcessingPayment}
+                disabled={isProcessingPayment || !waiverAccepted}
                 className="w-full py-3 bg-gradient-to-r from-cyan-600 to-teal-500 hover:opacity-90 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer"
               >
                 {isProcessingPayment ? "Przekierowanie do Stripe..." : "Przejdź do płatności"}
@@ -1003,9 +1019,18 @@ export const CourseDetail: React.FC = () => {
                     </div>
                   </div>
 
+                  <label className="flex items-start gap-2 text-[11px] text-zinc-400 leading-relaxed cursor-pointer">
+                    <input type="checkbox" checked={waiverAccepted} onChange={(e) => setWaiverAccepted(e.target.checked)} className="mt-0.5 shrink-0 accent-cyan-500" />
+                    <span>
+                      Żądam dostępu do kursu od razu po zapłacie i przyjmuję do wiadomości, że wtedy tracę prawo odstąpienia od
+                      umowy. Akceptuję{" "}
+                      <a href="https://hardbanrecordslab.online/terms/" target="_blank" rel="noopener noreferrer" className="underline">Regulamin</a>.
+                    </span>
+                  </label>
+
                   <button
                     type="submit"
-                    disabled={isProcessingPayment}
+                    disabled={isProcessingPayment || !waiverAccepted}
                     className="w-full py-3 bg-gradient-to-r from-cyan-600 to-teal-500 hover:opacity-90 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer"
                   >
                     {isProcessingPayment ? "Przekierowanie do Stripe..." : `Przejdź do płatności`}
