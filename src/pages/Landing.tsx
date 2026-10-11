@@ -541,12 +541,14 @@ export const Landing: React.FC = () => {
                       to={`/course/${course.id}`}
                       className="block h-52 relative overflow-hidden bg-zinc-950"
                     >
-                      <img
-                        referrerPolicy="no-referrer"
-                        src={course.thumbnail}
-                        alt={course.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-85"
-                      />
+                      {course.thumbnail && (
+                        <img
+                          referrerPolicy="no-referrer"
+                          src={course.thumbnail}
+                          alt={course.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-85"
+                        />
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
 
                       {/* Lessons Badge */}
