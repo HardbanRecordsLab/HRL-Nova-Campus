@@ -41,6 +41,14 @@ export const Navigation: React.FC = () => {
               </div>
             </Link>
 
+            <a
+              href="https://hardbanrecordslab.online/"
+              className="hidden md:inline text-[11px] font-mono uppercase tracking-wider text-zinc-400 hover:text-cyan-300 transition-colors"
+              title="hardbanrecordslab.online"
+            >
+              ← Hardban Records Lab
+            </a>
+
             {/* Socket connection dot */}
             <div
               id="ws-status-badge"

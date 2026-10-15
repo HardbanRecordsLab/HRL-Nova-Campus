@@ -10,6 +10,8 @@ export const Footer: React.FC = () => {
           <span>&copy; {new Date().getFullYear()} Hardban Records Lab &middot; <span className="text-cyan-300/70 font-mono text-xs uppercase tracking-wider">Learn · Create · Evolve</span></span>
         </div>
         <div className="flex gap-6 text-xs font-mono text-zinc-500 uppercase tracking-widest">
+          <a href="https://hardbanrecordslab.online/" className="hover:text-cyan-400 transition-colors">Strona główna</a>
+          <span className="hidden sm:inline">|</span>
           <Link to="/terms" className="hover:text-cyan-400 transition-colors">Regulamin</Link>
           <span className="hidden sm:inline">|</span>
           <Link to="/privacy" className="hover:text-cyan-400 transition-colors">Polityka Prywatności</Link>
