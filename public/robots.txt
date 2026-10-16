@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /student
+Disallow: /login
+Disallow: /register
+Disallow: /verify/
+
+Sitemap: https://nova-campus.hardbanrecordslab.online/sitemap.xml
