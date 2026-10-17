@@ -43,7 +43,10 @@ app.use(
   })
 );
 
-app.use(express.json({ limit: "5mb" })); // podniesiony limit — kursy HOSTED_HTML mogą przesyłać spory blok HTML/CSS/JS naraz
+// Webhook Stripe potrzebuje SUROWYCH bajtów do weryfikacji podpisu — globalny parser JSON nie może go wcześniej przeczytać
+// (inaczej constructEvent zawsze odrzuca zdarzenie: "payload must be provided as a string or a Buffer").
+const jsonParser = express.json({ limit: "5mb" }); // podniesiony limit — kursy HOSTED_HTML mogą przesyłać spory blok HTML/CSS/JS naraz
+app.use((req, res, next) => (req.path === "/api/webhook/stripe" ? next() : jsonParser(req, res, next)));
 
 // Okładki kursów wgrywane z panelu admina (PNG/JPG) — pliki na dysku serwera, poza repo.
 // Serwowane przed apiLimiterem, żeby katalog z wieloma okładkami nie zjadał limitu zapytań.
@@ -313,6 +316,8 @@ app.post("/api/webhook/stripe", express.raw({type: 'application/json'}), async (
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as any;
+    // metody opóźnione: zdarzenie przychodzi przed zapłatą — nie odblokowujemy kursu bez pieniędzy
+    if (session.payment_status && session.payment_status !== 'paid') return response.json({ received: true, status: 'not paid yet' });
     const userId = session.metadata.user_id;
     const courseId = session.metadata.course_id;
     
