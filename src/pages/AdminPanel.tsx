@@ -1134,7 +1134,7 @@ export const AdminPanel: React.FC = () => {
   const handleCreateCourseSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !newDescription.trim() || !newThumbnail.trim()) {
-      addToast("Uzupełnij tytuł, opis i okładkę przed zatwierdzeniem.", "warning");
+      addToast("Uzupełnij przed zapisem: " + [!newTitle.trim() && "tytuł", !newDescription.trim() && "opis", !newThumbnail.trim() && "okładkę (wgraj plik PNG/JPG)"].filter(Boolean).join(", ") + ".", "warning");
       return;
     }
 
@@ -1159,9 +1159,12 @@ export const AdminPanel: React.FC = () => {
           integration_type: newIntegrationType,
         }),
       });
-      if (!response.ok) throw new Error("API nie zapisało kursu");
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body?.message || `Serwer odpowiedział ${response.status}`);
+      }
 
-      addToast("Nowy program szkoleniowy został zapisany.", "success");
+      addToast("Nowy program szkoleniowy został zapisany jako szkic. Dodaj moduły / plik HTML i opublikuj.", "success");
       // Reset form
       setNewTitle("");
       setNewDescription("");

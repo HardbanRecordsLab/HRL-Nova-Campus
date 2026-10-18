@@ -86,8 +86,8 @@ export const Navigation: React.FC = () => {
               Weryfikacja Dyplomów
             </NavLink>
 
-            {/* Student Panel links */}
-            {user && (
+            {/* Student panel: for students only — the administrator works in the admin panel */}
+            {user && user.role !== "admin" && (
               <NavLink
                 id="nav-link-student"
                 to="/student"

@@ -6,5 +6,5 @@ import { useApp } from "../context/AppContext";
 // bounced to the public landing page at /. Kept only for old bookmarks/links.
 export const Home: React.FC = () => {
   const { user } = useApp();
-  return <Navigate to={user ? "/student" : "/"} replace />;
+  return <Navigate to={user ? (user.role === "admin" ? "/admin" : "/student") : "/"} replace />;
 };

@@ -1336,7 +1336,7 @@ app.post("/api/admin/courses", authenticateToken, requireAdmin, async (req, res)
   } = req.body;
   
   if (!title || !description || !thumbnail) {
-    return res.status(405).json({ message: "Tytuł, opis i okładka są wymagane!" });
+    return res.status(400).json({ message: "Tytuł, opis i okładka są wymagane (brakuje: " + [!title && "tytułu", !description && "opisu", !thumbnail && "okładki"].filter(Boolean).join(", ") + ")." });
   }
 
   try {
@@ -1344,8 +1344,17 @@ app.post("/api/admin/courses", authenticateToken, requireAdmin, async (req, res)
     const slug = `${String(title).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-${Date.now()}`;
     const validIntegrationTypes = ["JWT", "OAUTH2", "IFRAME", "REDIRECT_COOKIE", "CUSTOM_API", "HOSTED_HTML"];
     const integrationType = validIntegrationTypes.includes(req.body.integration_type) ? req.body.integration_type : "JWT";
-    if (integrationType === "HOSTED_HTML" && (!req.body.html_content || typeof req.body.html_content !== "string" || !req.body.html_content.trim())) {
-      return res.status(400).json({ message: "Kurs typu HOSTED_HTML wymaga treści HTML (html_content)." });
+    const hasHtml = typeof req.body.html_content === "string" && req.body.html_content.trim().length > 0;
+    // A hosted-HTML course may be created empty as a DRAFT (the file is uploaded afterwards in the editor);
+    // publishing one without HTML is refused, because visitors would open a blank page.
+    if (integrationType === "HOSTED_HTML" && !hasHtml && req.body.status === "PUBLISHED") {
+      return res.status(400).json({ message: "Kurs typu HOSTED_HTML nie może zostać opublikowany bez treści HTML — zapisz go jako szkic i wgraj plik w edytorze kursu." });
+    }
+    const priceRows: Array<{ type: "ONE_TIME" | "SUBSCRIPTION"; amount: number; currency: string; billingInterval: string | null }> = [];
+    if (pricing_model === "one_time" && Number(one_time_price) > 0) {
+      priceRows.push({ type: "ONE_TIME", amount: Math.round(Number(one_time_price)), currency: "PLN", billingInterval: null });
+    } else if (pricing_model === "subscription" && Number(subscription_price) > 0) {
+      priceRows.push({ type: "SUBSCRIPTION", amount: Math.round(Number(subscription_price)), currency: "PLN", billingInterval: ["day", "week", "month", "year"].includes(subscription_interval) ? subscription_interval : "month" });
     }
 
     const newCourse = await prisma.course.create({
@@ -1354,12 +1363,13 @@ app.post("/api/admin/courses", authenticateToken, requireAdmin, async (req, res)
         instructorUserId,
         externalUrl: req.body.external_url || "https://example.invalid",
         integrationType,
-        htmlContent: integrationType === "HOSTED_HTML" ? req.body.html_content : null,
+        htmlContent: integrationType === "HOSTED_HTML" && hasHtml ? req.body.html_content : null,
         imageUrl: thumbnail,
         level: difficulty || null,
         status: req.body.status === "PUBLISHED" ? "PUBLISHED" : "DRAFT",
         publishedAt: req.body.status === "PUBLISHED" ? new Date() : null,
         translations: { create: { locale: "pl", title, description } },
+        ...(priceRows.length ? { prices: { create: priceRows } } : {}),
         ...(tenant_domain && tenant_domain !== "all_domains" ? { domains: { create: { hostname: normalizeHostname(tenant_domain) ?? tenant_domain } } } : {}),
       },
       include: courseListInclude,

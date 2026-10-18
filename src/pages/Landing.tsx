@@ -281,12 +281,12 @@ export const Landing: React.FC = () => {
                 </Link>
               ) : (
                 <Link
-                  to="/student"
+                  to={user?.role === "admin" ? "/admin" : "/student"}
                   id="hero-dashboard-btn"
                   className="px-6 py-4 bg-zinc-900/90 hover:bg-zinc-800 text-cyan-300 hover:text-cyan-200 border border-cyan-500/30 rounded-2xl text-sm font-semibold transition-all flex items-center gap-2"
                 >
                   <GraduationCap className="w-5 h-5 text-cyan-400" />
-                  Przejdź do Mojego Panelu
+                  {user?.role === "admin" ? "Przejdź do Administracji" : "Przejdź do Mojego Panelu"}
                 </Link>
               )}
             </div>

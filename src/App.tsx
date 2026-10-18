@@ -43,7 +43,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
   }
 
   if (!allowedRoles.includes(user.role)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={user.role === "admin" ? "/admin" : "/"} replace />;
   }
 
   return <Outlet />;
@@ -73,7 +73,7 @@ function AppLayout() {
             <Route path="/privacy" element={<Privacy />} />
 
             {/* Student Dashboard panel */}
-            <Route element={<ProtectedRoute allowedRoles={["student", "admin"]} />}>
+            <Route element={<ProtectedRoute allowedRoles={["student"]} />}>
               <Route path="/student" element={<StudentDashboard />} />
             </Route>
 
