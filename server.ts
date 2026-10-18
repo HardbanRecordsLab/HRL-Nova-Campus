@@ -552,11 +552,13 @@ app.get("/api/courses/:id", async (req, res) => {
   const courseId = req.params.id;
   const authHeader = req.headers["authorization"];
   let userId: string | null = null;
+  let isAdminViewer = false; // operator: every course is open, no purchase needed
 
   if (authHeader && authHeader.split(" ")[1]) {
     try {
       const decoded = jwt.verify(authHeader.split(" ")[1], JWT_SECRET) as any;
       userId = decoded.id;
+      isAdminViewer = String(decoded.role || "").toLowerCase() === "admin";
     } catch (_) {}
   }
 
@@ -576,7 +578,7 @@ app.get("/api/courses/:id", async (req, res) => {
     let userEnrolled = false;
     if (userId) {
       const enrollment = await prisma.enrollment.findUnique({ where: { userId_courseId: { userId, courseId } } });
-      userEnrolled = enrollment?.status === "ACTIVE";
+      userEnrolled = enrollment?.status === "ACTIVE" || isAdminViewer;
     }
 
     // Get Modules
