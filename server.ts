@@ -1334,6 +1334,20 @@ app.post(
   }
 );
 
+/** Adres kursu zewnętrznego: dopisuje https:// gdy brak schematu, odrzuca resztę, co nie jest poprawnym URL-em http(s). */
+function normalizeCourseUrl(raw: unknown): { ok: true; url: string | undefined } | { ok: false } {
+  const text = typeof raw === "string" ? raw.trim() : "";
+  if (!text) return { ok: true, url: undefined };
+  const withScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(text) ? text : `https://${text}`;
+  try {
+    const u = new URL(withScheme);
+    if ((u.protocol !== "https:" && u.protocol !== "http:") || !u.hostname.includes(".")) return { ok: false };
+    return { ok: true, url: u.toString() };
+  } catch {
+    return { ok: false };
+  }
+}
+
 app.post("/api/admin/courses", authenticateToken, requireAdmin, async (req, res) => {
   const { 
     title, 
@@ -1351,6 +1365,10 @@ app.post("/api/admin/courses", authenticateToken, requireAdmin, async (req, res)
   
   if (!title || !description || !thumbnail) {
     return res.status(400).json({ message: "Tytuł, opis i okładka są wymagane (brakuje: " + [!title && "tytułu", !description && "opisu", !thumbnail && "okładki"].filter(Boolean).join(", ") + ")." });
+  }
+  const postUrl = normalizeCourseUrl(req.body.external_url);
+  if (!postUrl.ok) {
+    return res.status(400).json({ message: "Adres kursu musi być poprawnym adresem URL, np. https://twoj-kurs.pl/start." });
   }
 
   try {
@@ -1375,7 +1393,7 @@ app.post("/api/admin/courses", authenticateToken, requireAdmin, async (req, res)
       data: {
         slug,
         instructorUserId,
-        externalUrl: req.body.external_url || "https://example.invalid",
+        externalUrl: postUrl.url || "https://example.invalid",
         integrationType,
         htmlContent: integrationType === "HOSTED_HTML" && hasHtml ? req.body.html_content : null,
         imageUrl: thumbnail,
@@ -1496,6 +1514,10 @@ app.put("/api/admin/courses/:id", authenticateToken, requireAdmin, async (req, r
   if (!title || !description || !thumbnail) {
     return res.status(405).json({ message: "Tytuł, opis i okładka są wymagane!" });
   }
+  const putUrl = normalizeCourseUrl(req.body.external_url);
+  if (!putUrl.ok) {
+    return res.status(400).json({ message: "Adres kursu musi być poprawnym adresem URL, np. https://twoj-kurs.pl/start." });
+  }
 
   try {
     const validIntegrationTypes = ["JWT", "OAUTH2", "IFRAME", "REDIRECT_COOKIE", "CUSTOM_API", "HOSTED_HTML"];
@@ -1520,7 +1542,7 @@ app.put("/api/admin/courses/:id", authenticateToken, requireAdmin, async (req, r
       data: {
         imageUrl: thumbnail,
         level: difficulty || null,
-        ...(req.body.external_url ? { externalUrl: req.body.external_url } : {}),
+        ...(putUrl.url ? { externalUrl: putUrl.url } : {}),
         ...integrationTypeUpdate,
         ...htmlContentUpdate,
         ...statusUpdate,
@@ -1956,7 +1978,12 @@ app.post("/api/access/launch", authenticateToken, async (req, res) => {
     return res.json({ hosted: true, htmlContent: course.htmlContent });
   }
 
-  const url = new URL(course.externalUrl);
+  let url: URL;
+  try {
+    url = new URL(course.externalUrl);
+  } catch {
+    return res.status(500).json({ message: "Adres tego kursu jest nieprawidłowy — administrator musi poprawić go w panelu kursu." });
+  }
   const domain = url.host;
 
   if (course.integrationType === "IFRAME" || course.integrationType === "REDIRECT_COOKIE") {
