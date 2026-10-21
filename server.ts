@@ -45,8 +45,22 @@ app.use(
 
 // Webhook Stripe potrzebuje SUROWYCH bajtów do weryfikacji podpisu — globalny parser JSON nie może go wcześniej przeczytać
 // (inaczej constructEvent zawsze odrzuca zdarzenie: "payload must be provided as a string or a Buffer").
-const jsonParser = express.json({ limit: "5mb" }); // podniesiony limit — kursy HOSTED_HTML mogą przesyłać spory blok HTML/CSS/JS naraz
-app.use((req, res, next) => (req.path === "/api/webhook/stripe" ? next() : jsonParser(req, res, next)));
+const jsonParser = express.json({ limit: "5mb" });
+// Gotowy kurs HTML bywa duży (obrazy i audio zaszyte w pliku jako base64), więc zapis kursu ma wyższy limit niż reszta API.
+const COURSE_BODY_MAX_MB = 40;
+const courseJsonParser = express.json({ limit: `${COURSE_BODY_MAX_MB}mb` });
+const isCourseWrite = (req: Request) => (req.method === "POST" || req.method === "PUT") && /^\/api\/admin\/courses(\/[^/]+)?\/?$/.test(req.path);
+app.use((req, res, next) => {
+  if (req.path === "/api/webhook/stripe") return next();
+  const parser = isCourseWrite(req) ? courseJsonParser : jsonParser;
+  parser(req, res, (err?: any) => {
+    if (err && (err.type === "entity.too.large" || err.status === 413)) {
+      const limitMb = isCourseWrite(req) ? COURSE_BODY_MAX_MB : 5;
+      return res.status(413).json({ message: `Przesyłana treść jest za duża (limit ${limitMb} MB). Zmniejsz plik HTML — np. skompresuj obrazy albo wynieś duże multimedia na zewnętrzny hosting.` });
+    }
+    next(err);
+  });
+});
 
 // Okładki kursów wgrywane z panelu admina (PNG/JPG) — pliki na dysku serwera, poza repo.
 // Serwowane przed apiLimiterem, żeby katalog z wieloma okładkami nie zjadał limitu zapytań.

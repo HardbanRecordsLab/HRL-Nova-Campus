@@ -590,6 +590,17 @@ export const AdminPanel: React.FC = () => {
     }
   };
 
+  // Odpowiedź serwera lub proxy bywa nie-JSON (np. 413 z HTML-em) — zamiast "Unexpected token <" pokazujemy zrozumiały komunikat.
+  const readJsonSafe = async (res: Response): Promise<any> => {
+    const raw = await res.text();
+    try {
+      return JSON.parse(raw);
+    } catch {
+      if (res.status === 413) return { message: "Plik jest za duży do wysłania. Zmniejsz plik HTML (limit ok. 40 MB) — np. skompresuj obrazy." };
+      return { message: `Serwer zwrócił nieoczekiwaną odpowiedź (HTTP ${res.status}). Spróbuj ponownie za chwilę.` };
+    }
+  };
+
   const handleUpdateCourseGateway = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCourseIdVal) return;
@@ -626,7 +637,7 @@ export const AdminPanel: React.FC = () => {
           })
         });
 
-        const data = await res.json();
+        const data = await readJsonSafe(res);
         if (res.ok) {
           addToast(courseStatus === "PUBLISHED" ? "Kurs utworzony i opublikowany w katalogu." : "Kurs zapisany jako szkic — nie jest widoczny w publicznym katalogu.", "success");
           fetchCourses();
@@ -669,7 +680,7 @@ export const AdminPanel: React.FC = () => {
         })
       });
 
-      const data = await res.json();
+      const data = await readJsonSafe(res);
       if (res.ok) {
         addToast(courseStatus === "PUBLISHED" ? "Zapisano — kurs jest widoczny w publicznym katalogu." : "Zapisano jako szkic — kurs ukryty w publicznym katalogu.", "success");
         // Force refresh of the courses list to reflect updated name or domain
@@ -1851,6 +1862,11 @@ export const AdminPanel: React.FC = () => {
                             onChange={(e) => {
                               const file = e.target.files?.[0];
                               if (!file) return;
+                              if (file.size > 35 * 1024 * 1024) {
+                                addToast(`Plik ma ${(file.size / 1048576).toFixed(1)} MB — maksymalnie ok. 35 MB. Skompresuj obrazy w pliku HTML.`, "error");
+                                e.target.value = "";
+                                return;
+                              }
                               const reader = new FileReader();
                               reader.onload = (event) => setCourseHtmlContent(String(event.target?.result || ""));
                               reader.readAsText(file);
@@ -1858,7 +1874,7 @@ export const AdminPanel: React.FC = () => {
                             className="w-full bg-zinc-950 border border-zinc-800 focus:border-emerald-500 rounded-xl py-2.5 px-4 text-xs text-zinc-200 focus:outline-none file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:text-white file:text-xs file:cursor-pointer cursor-pointer"
                           />
                           <p className="text-[10px] text-zinc-500">
-                            Wgraj samodzielny plik .html (może zawierać własny CSS/JS w środku, np. interaktywna lekcja). Renderowany studentom w piaskownicy (sandboxed iframe) dopiero po weryfikacji aktywnego zapisu na kurs.
+                            Wgraj samodzielny plik .html (może zawierać własny CSS/JS w środku, np. interaktywna lekcja; do ok. 35 MB). Renderowany studentom w piaskownicy (sandboxed iframe) dopiero po weryfikacji aktywnego zapisu na kurs.
                           </p>
                           <textarea
                             value={courseHtmlContent}
