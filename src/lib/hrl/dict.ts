@@ -3475,5 +3475,41 @@ export const PAIRS: Array<[string, string]> = [
 [
 "Kursy (courses)",
 "Courses"
+],
+[
+"Dyplomy:",
+"Diplomas:"
+],
+[
+"Transakcje:",
+"Transactions:"
+],
+[
+"OPUBLIKOWANY",
+"PUBLISHED"
+],
+[
+"domena:",
+"domain:"
+],
+[
+"Gotowy kurs HTML — wgrywasz plik, hostujemy go sami (HOSTED_HTML)",
+"Ready-made HTML course — you upload the file, we host it ourselves (HOSTED_HTML)"
+],
+[
+"Przekierowanie z podpisanym tokenem (REDIRECT_COOKIE)",
+"Redirect with a signed token (REDIRECT_COOKIE)"
+],
+[
+"Przekierowanie z tokenem JWT w URL (JWT)",
+"Redirect with a JWT token in the URL (JWT)"
+],
+[
+"https://przyklad-dostawcy-kursu.pl/moj-kurs",
+"https://example-course-provider.com/my-course"
+],
+[
+"Bramka Finansowa (Zabezpieczenie)",
+"Financial Gateway (Protection)"
 ]
 ];
