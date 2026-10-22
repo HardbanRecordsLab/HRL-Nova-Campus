@@ -3439,5 +3439,41 @@ export const PAIRS: Array<[string, string]> = [
 [
 "Uzyskane Dyplomy (",
 "Diplomas Earned ("
+],
+[
+"Administracja",
+"Administration"
+],
+[
+"Kursy:",
+"Courses:"
+],
+[
+"Reklamy",
+"Ads"
+],
+[
+"Finanse",
+"Finance"
+],
+[
+"+ Dodaj Nowy Kurs",
+"+ Add New Course"
+],
+[
+"Darmowy (Direct Enrollment / Brak paywallu)",
+"Free (Direct Enrollment / No paywall)"
+],
+[
+"Imię i Nazwisko",
+"Full name"
+],
+[
+"Data",
+"Date"
+],
+[
+"Kursy (courses)",
+"Courses"
 ]
 ];
