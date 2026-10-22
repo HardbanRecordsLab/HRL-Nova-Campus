@@ -1,22 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
-import { Disc, ShieldAlert, LogOut, LayoutDashboard, UserCheck, GraduationCap, Award, Globe } from "lucide-react";
+import { Disc, ShieldAlert, LogOut, LayoutDashboard, UserCheck, GraduationCap, Award } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import HrlLangSwitch from "../lib/hrl/HrlLangSwitch";
 
 export const Navigation: React.FC = () => {
   const { user, logout, isSocketConnected } = useApp();
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const handleLogoutClick = () => {
     logout();
     navigate("/");
-  };
-
-  const toggleLanguage = () => {
-    const nextLng = i18n.language === 'pl' ? 'en' : 'pl';
-    i18n.changeLanguage(nextLng);
   };
 
   return (
@@ -121,14 +117,7 @@ export const Navigation: React.FC = () => {
 
           {/* Profile list or login action */}
           <div className="flex items-center gap-3">
-            <button
-               onClick={toggleLanguage}
-               className="p-2.5 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-cyan-400 rounded-xl transition-all cursor-pointer flex items-center gap-2 font-mono text-[10px] font-bold"
-               title="Zmień język"
-            >
-               <Globe className="w-4 h-4" />
-               {i18n.language === 'pl' ? 'ENG' : 'PL'}
-            </button>
+            <HrlLangSwitch />
             {user ? (
               <div className="flex items-center gap-3 pl-4 border-l border-zinc-800">
                 <div className="hidden sm:flex flex-col text-right">
