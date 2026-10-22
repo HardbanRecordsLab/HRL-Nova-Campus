@@ -3427,5 +3427,17 @@ export const PAIRS: Array<[string, string]> = [
 [
 "Administrator: Kamil Skomra (HardbanRecords Lab), kontakt: legal@hardbanrecordslab.online.",
 "Controller: Kamil Skomra (HardbanRecords Lab), contact: legal@hardbanrecordslab.online."
+],
+[
+"Witaj ponownie,",
+"Welcome back,"
+],
+[
+"Moje Kursy & Sygnalizatory (",
+"My Courses & Markers ("
+],
+[
+"Uzyskane Dyplomy (",
+"Diplomas Earned ("
 ]
 ];
