@@ -3355,5 +3355,77 @@ export const PAIRS: Array<[string, string]> = [
 [
 "Powiadomienia",
 "Notifications"
+],
+[
+"Zaloguj",
+"Sign in"
+],
+[
+"Rejestracja",
+"Sign up"
+],
+[
+"★ CERTYFIKOWANA EDUKACJA ★",
+"★ CERTIFIED EDUCATION ★"
+],
+[
+"Znaleziono:",
+"Found:"
+],
+[
+"Wszystkie",
+"All"
+],
+[
+"Programowanie",
+"Programming"
+],
+[
+"Projektowanie",
+"Design"
+],
+[
+"Zaawansowany",
+"Advanced"
+],
+[
+"DARMOWY",
+"FREE"
+],
+[
+"Regulamin",
+"Terms of Service"
+],
+[
+"Weryfikuj",
+"Verify"
+],
+[
+"np. mariusz@hardban.com",
+"e.g. john@example.com"
+],
+[
+"np. mariuszhans",
+"e.g. johnsmith"
+],
+[
+"np. mariusz@gmail.com",
+"e.g. john@example.com"
+],
+[
+"np. HRL-ACAD-J7F6D-171732-F22B",
+"e.g. HRL-ACAD-J7F6D-171732-F22B"
+],
+[
+"Absolwenci HRL Nova Campus, którzy dobrowolnie zgodzili się na publikację swojego ukończenia w tym rejestrze. Każdy wpis odpowiada zweryfikowanemu certyfikatowi.",
+"HRL Nova Campus graduates who voluntarily agreed to publish their completion in this register. Each entry corresponds to a verified certificate."
+],
+[
+"HRL Nova Campus jest częścią HardbanRecords Lab. Obowiązują wspólne dokumenty całej platformy. Najważniejsze zasady dotyczące tej aplikacji:",
+"HRL Nova Campus is part of HardbanRecords Lab. The shared documents of the whole platform apply. The key rules for this app:"
+],
+[
+"Administrator: Kamil Skomra (HardbanRecords Lab), kontakt: legal@hardbanrecordslab.online.",
+"Controller: Kamil Skomra (HardbanRecords Lab), contact: legal@hardbanrecordslab.online."
 ]
 ];
