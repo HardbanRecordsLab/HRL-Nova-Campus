@@ -308,6 +308,8 @@ app.post("/api/courses/:id/checkout", authenticateToken, async (req: Request, re
         quantity: 1,
       }],
       customer_email: user.email,
+      // Checkout page language follows the site toggle (hrl_lang cookie shared across *.hardbanrecordslab.online)
+      locale: /(?:^|;\s*)hrl_lang=pl/.test(req.headers.cookie || "") ? "pl" : "en",
       success_url: `${process.env.APP_URL}/course/${course.slug}?checkout=success`,
       cancel_url: `${process.env.APP_URL}/course/${course.slug}?checkout=cancelled`,
       metadata: { user_id: String(user.id), course_id: courseId },
