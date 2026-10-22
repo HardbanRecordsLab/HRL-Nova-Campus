@@ -584,8 +584,8 @@ export const CourseDetail: React.FC = () => {
                 <span className="text-[10px] text-zinc-500 font-mono uppercase block">Płatność bezpieczna przez Stripe</span>
                 <div className="text-xl font-bold text-white tracking-tight">
                   {course.pricing_model === "one_time"
-                    ? `${course.one_time_price || 49}.00 PLN`
-                    : `${course.subscription_price || 9}.00 PLN`
+                    ? `${course.one_time_price || 14}.00 USD`
+                    : `${course.subscription_price || 3}.00 USD`
                   }
                   <span className="text-xs text-zinc-500 font-normal font-mono">
                     {course.pricing_model === "one_time" ? " / dożywotnio" : ` / ${course.subscription_interval === "year" ? "rocznie" : "miesiąc"}`}
@@ -1010,8 +1010,8 @@ export const CourseDetail: React.FC = () => {
                     <span className="text-[10px] font-mono text-zinc-500 block">PŁATNOŚĆ BEZPIECZNA PRZEZ STRIPE</span>
                     <div className="text-2xl font-bold text-white tracking-tight mt-1">
                       {course.pricing_model === "one_time"
-                        ? `${course.one_time_price || 49}.00 PLN`
-                        : `${course.subscription_price || 9}.00 PLN`
+                        ? `${course.one_time_price || 14}.00 USD`
+                        : `${course.subscription_price || 3}.00 USD`
                       }
                       <span className="text-xs text-zinc-500 font-normal font-mono ml-1">
                         {course.pricing_model === "one_time" ? " / dożywotnio" : ` / ${course.subscription_interval === "year" ? "rocznie" : "miesiąc"}`}

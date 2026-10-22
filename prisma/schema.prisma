@@ -210,7 +210,7 @@ model Price {
   id              String    @id @default(cuid())
   courseId        String
   type            PriceType
-  currency        String    @default("PLN")
+  currency        String    @default("USD")
   amount          Int       @default(0)
   billingInterval String?
   stripePriceId   String?
@@ -223,7 +223,7 @@ model Order {
   id                      String      @id @default(cuid())
   userId                  String
   status                  OrderStatus @default(PENDING)
-  currency                String      @default("PLN")
+  currency                String      @default("USD")
   subtotal                Int         @default(0)
   discountTotal           Int         @default(0)
   total                   Int         @default(0)
@@ -436,7 +436,7 @@ model Transaction {
   userId          String
   courseId        String?
   amount          Float
-  currency        String   @default("PLN")
+  currency        String   @default("USD")
   status          String
   transactionType String
   createdAt       DateTime @default(now())

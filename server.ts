@@ -300,7 +300,7 @@ app.post("/api/courses/:id/checkout", authenticateToken, async (req: Request, re
       mode: isSubscription ? "subscription" : "payment",
       line_items: [{
         price_data: {
-          currency: (price.currency || "PLN").toLowerCase(),
+          currency: (price.currency || "USD").toLowerCase(),
           product_data: { name: title },
           unit_amount: Math.round(price.amount * 100),
           ...(isSubscription ? { recurring: { interval: (price.billingInterval || "month") as "day" | "week" | "month" | "year" } } : {}),
@@ -356,7 +356,7 @@ app.post("/api/webhook/stripe", express.raw({type: 'application/json'}), async (
             userId: String(userId),
             courseId: String(courseId),
             amount: (session.amount_total ?? 0) / 100,
-            currency: (session.currency ?? "pln").toUpperCase(),
+            currency: (session.currency ?? "usd").toUpperCase(),
             status: "succeeded",
             transactionType: session.mode === "subscription" ? "subscription" : "charge",
           },
@@ -1384,9 +1384,9 @@ app.post("/api/admin/courses", authenticateToken, requireAdmin, async (req, res)
     }
     const priceRows: Array<{ type: "ONE_TIME" | "SUBSCRIPTION"; amount: number; currency: string; billingInterval: string | null }> = [];
     if (pricing_model === "one_time" && Number(one_time_price) > 0) {
-      priceRows.push({ type: "ONE_TIME", amount: Math.round(Number(one_time_price)), currency: "PLN", billingInterval: null });
+      priceRows.push({ type: "ONE_TIME", amount: Math.round(Number(one_time_price)), currency: "USD", billingInterval: null });
     } else if (pricing_model === "subscription" && Number(subscription_price) > 0) {
-      priceRows.push({ type: "SUBSCRIPTION", amount: Math.round(Number(subscription_price)), currency: "PLN", billingInterval: ["day", "week", "month", "year"].includes(subscription_interval) ? subscription_interval : "month" });
+      priceRows.push({ type: "SUBSCRIPTION", amount: Math.round(Number(subscription_price)), currency: "USD", billingInterval: ["day", "week", "month", "year"].includes(subscription_interval) ? subscription_interval : "month" });
     }
 
     const newCourse = await prisma.course.create({

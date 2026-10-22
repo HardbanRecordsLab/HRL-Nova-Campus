@@ -1921,7 +1921,7 @@ export const AdminPanel: React.FC = () => {
 
                       {newPricingModel === "one_time" && (
                         <div className="space-y-2">
-                          <label className="block text-xs font-mono text-zinc-400 uppercase tracking-widest">Cena dostępu jednorazowego (PLN)</label>
+                          <label className="block text-xs font-mono text-zinc-400 uppercase tracking-widest">Cena dostępu jednorazowego (USD)</label>
                           <input
                             type="number"
                             value={newOneTimePrice}
@@ -1935,7 +1935,7 @@ export const AdminPanel: React.FC = () => {
                       {newPricingModel === "subscription" && (
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <label className="block text-xs font-mono text-zinc-400 uppercase tracking-widest font-mono">Kwota abonamentu (PLN)</label>
+                            <label className="block text-xs font-mono text-zinc-400 uppercase tracking-widest font-mono">Kwota abonamentu (USD)</label>
                             <input
                               type="number"
                               value={newSubscriptionPrice}
@@ -2560,7 +2560,7 @@ export const AdminPanel: React.FC = () => {
                                 CTR KPI: <span className="text-emerald-400 font-bold">{ctr}%</span>
                               </div>
                               <div>
-                                PRZYCHÓD: <span className="text-cyan-400 font-bold">{(ad.revenue_generated || 0.0).toFixed(2)} PLN</span>
+                                PRZYCHÓD: <span className="text-cyan-400 font-bold">{(ad.revenue_generated || 0.0).toFixed(2)} USD</span>
                               </div>
                             </div>
                           </div>
@@ -2590,7 +2590,7 @@ export const AdminPanel: React.FC = () => {
               <div className="bg-zinc-90 w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
                 <div className="text-xs font-mono uppercase text-zinc-500 tracking-wider">Miesięczny Przepływ (Stripe Connect)</div>
                 <div className="text-2xl font-semibold text-white tracking-tight pt-1">
-                  {transactionsList.reduce((acc, t) => t.status === "succeeded" ? acc + Number(t.amount) : acc, 0).toFixed(2)} PLN
+                  {transactionsList.reduce((acc, t) => t.status === "succeeded" ? acc + Number(t.amount) : acc, 0).toFixed(2)} USD
                 </div>
               </div>
 
@@ -2642,7 +2642,7 @@ export const AdminPanel: React.FC = () => {
                             <div className="text-[10px] text-zinc-500">{tx.email}</div>
                           </td>
                           <td className="py-3 px-4 font-mono text-zinc-400">{tx.course_title || "Dostęp Globalny / Subskrypcja"}</td>
-                          <td className="py-3 px-4 font-bold text-white">{Number(tx.amount).toFixed(2)} PLN</td>
+                          <td className="py-3 px-4 font-bold text-white">{Number(tx.amount).toFixed(2)} USD</td>
                           <td className="py-3 px-4">
                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono uppercase font-semibold ${
                               tx.status === "succeeded" ? "bg-emerald-950 text-emerald-400 border border-emerald-800/30" : "bg-red-950 text-red-400 border border-red-800/30"

@@ -562,10 +562,10 @@ export const Landing: React.FC = () => {
                       {/* Float Price Tag */}
                       <div className="absolute top-4 right-4 inline-flex items-center gap-1 px-3 py-1 bg-zinc-950/90 border border-zinc-800 rounded-xl text-[11px] font-mono font-extrabold backdrop-blur">
                         {course.pricing_model === "one_time" ? (
-                          <span className="text-teal-400">{course.one_time_price || 49} PLN</span>
+                          <span className="text-teal-400">{course.one_time_price || 14} USD</span>
                         ) : course.pricing_model === "subscription" ? (
                           <span className="text-cyan-400">
-                            {course.subscription_price || 9} PLN/{course.subscription_interval === "year" ? "rok" : "m-c"}
+                            {course.subscription_price || 3} USD/{course.subscription_interval === "year" ? "rok" : "m-c"}
                           </span>
                         ) : (
                           <span className="text-emerald-400">DARMOWY</span>
