@@ -494,7 +494,7 @@ export const CourseDetail: React.FC = () => {
     );
   }
 
-  if (data && data.course && (data.course as any).is_open_course) {
+  if (data && data.course && ((data.course as any).is_open_course || (data.course as any).is_interactive_course)) {
     // Bezpłatny kurs zewnętrzny: otwierany jak kursy partnerskie (ramka lub nowa karta) + panel postępu, test końcowy i certyfikat.
     return (
       <OpenCourseView

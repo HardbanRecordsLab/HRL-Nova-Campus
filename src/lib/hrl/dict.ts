@@ -3679,5 +3679,33 @@ export const PAIRS: Array<[string, string]> = [
 [
 "Kurs prowadzi: {}. Certyfikat wystawia HRL Nova Campus po zaliczeniu testu końcowego; nie jest certyfikatem instytucji prowadzącej kurs.",
 "Course provider: {}. The certificate is issued by HRL Nova Campus after passing the final test; it is not a certificate of the institution that runs the course."
+],
+[
+"Kurs interaktywny HRL Nova Campus. Postęp zapisuje się na Twoim koncie.",
+"HRL Nova Campus interactive course. Your progress is saved to your account."
+],
+[
+"Lekcje kursu",
+"Course lessons"
+],
+[
+"Lekcję zaliczasz w kursie, odpowiadając na quiz na jej końcu. Gdy ukończysz wszystkie lekcje, odblokuje się test końcowy.",
+"You complete a lesson in the course by answering the quiz at its end. When you have completed all lessons, the final test unlocks."
+],
+[
+"Test składa się z pytań jednokrotnego wyboru, a próg zaliczenia to 70%. Certyfikat wystawia HRL Nova Campus po zaliczeniu testu końcowego.",
+"The test consists of single-choice questions and the pass mark is 70%. The certificate is issued by HRL Nova Campus after you pass the final test."
+],
+[
+"Najpierw ukończ wszystkie lekcje kursu.",
+"First complete all the lessons of the course."
+],
+[
+"Ładowanie kursu...",
+"Loading the course..."
+],
+[
+"Nie udało się załadować kursu.",
+"Could not load the course."
 ]
 ];

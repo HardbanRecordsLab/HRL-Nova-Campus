@@ -3,7 +3,7 @@ import http from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import path from "path";
 import fs from "fs";
-import { randomUUID } from "crypto";
+import { randomUUID, timingSafeEqual } from "crypto";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
@@ -138,6 +138,13 @@ const notOpenCourse = { course: { tags: { none: { tag: { slug: OPEN_COURSE_TAG }
 // a test końcowy (lekcja z pytaniami) po zaliczeniu wystawia certyfikat HRL Nova Campus.
 async function isOpenCourseId(courseId: string): Promise<boolean> {
   return (await prisma.courseTag.count({ where: { courseId, tag: { slug: OPEN_COURSE_TAG } } })) > 0;
+}
+
+// Kurs interaktywny wygenerowany w AI Publish (HOSTED_HTML): jego lekcje to etapy zaliczane w samym kursie (quiz na końcu lekcji),
+// a test końcowy i certyfikat działają tak samo jak w kursach zewnętrznych. Kurs jest własny, więc zużywa limit zapisów.
+const INTERACTIVE_COURSE_TAG = "Kurs interaktywny AI";
+async function isStageCourseId(courseId: string): Promise<boolean> {
+  return (await prisma.courseTag.count({ where: { courseId, tag: { slug: { in: [OPEN_COURSE_TAG, INTERACTIVE_COURSE_TAG] } } } })) > 0;
 }
 
 // Przelicza postęp zapisu (Enrollment.progressPercent) z odhaczonych lekcji; do chwili wystawienia certyfikatu nie przekracza 99%.
@@ -524,6 +531,7 @@ function toLegacyCourse(course: any) {
     integration_type: course.integrationType,
     html_content: course.htmlContent ?? null,
     is_open_course: Boolean(course.tags?.some((tag: any) => tag.tag.slug === OPEN_COURSE_TAG)),
+    is_interactive_course: Boolean(course.tags?.some((tag: any) => tag.tag.slug === INTERACTIVE_COURSE_TAG)),
     provider: course.tags?.some((tag: any) => tag.tag.slug === OPEN_COURSE_TAG) ? translation?.shortDescription || "Kurs zewnętrzny" : null,
     status: course.status,
     created_at: course.createdAt,
@@ -837,7 +845,7 @@ app.post("/api/lessons/:id/progress", authenticateToken, async (req, res) => {
 
     logActivity(user.id, "lesson_progress_update", req, 200, null, { lessonId, percent: progressPercent, completed: isCompleted, courseId: lesson.module.courseId });
 
-    if (await isOpenCourseId(lesson.module.courseId)) await syncEnrollmentProgress(String(user.id), lesson.module.courseId);
+    if (await isStageCourseId(lesson.module.courseId)) await syncEnrollmentProgress(String(user.id), lesson.module.courseId);
 
     res.json({ success: true, message: "Postęp zapisany pomyślnie.", certificate_code: null });
   } catch (err: any) {
@@ -891,7 +899,7 @@ app.post("/api/quiz/:lessonId/submit", authenticateToken, async (req, res) => {
 
     // Test końcowy kursu zewnętrznego: tylko dla zapisanego ucznia, który odhaczył wszystkie etapy kursu.
     const gateLesson = await prisma.lesson.findUnique({ where: { id: lessonId }, select: { module: { select: { courseId: true } } } });
-    if (gateLesson && (await isOpenCourseId(gateLesson.module.courseId))) {
+    if (gateLesson && (await isStageCourseId(gateLesson.module.courseId))) {
       const enrolled = await prisma.enrollment.findUnique({ where: { userId_courseId: { userId: String(user.id), courseId: gateLesson.module.courseId } }, select: { status: true } });
       if (enrolled?.status !== "ACTIVE") return res.status(403).json({ message: "Zapisz się na kurs, aby podejść do testu końcowego." });
       if (!(await openCourseStagesDone(String(user.id), gateLesson.module.courseId))) {
@@ -1243,6 +1251,120 @@ app.get("/api/student/limits", authenticateToken, async (req, res) => {
     });
   } catch (err: any) {
     res.status(500).json({ message: "Błąd podczas pobierania limitów: " + err.message });
+  }
+});
+
+// --- AI PUBLISH -> NOVA: gotowy kurs interaktywny (usługa do usługi) ---
+// AI Publish generuje kurs jako jeden plik HTML (HOSTED_HTML) wraz z listą lekcji i pytaniami testu końcowego. Ten endpoint zakłada
+// albo odświeża taki kurs; uwierzytelnia go wspólny klucz usługi (NOVA_SERVICE_KEY), a nie konto administratora. Domyślnie powstaje szkic.
+const SERVICE_KEY = process.env.NOVA_SERVICE_KEY || "";
+const requireServiceKey = (req: Request, res: Response, next: NextFunction) => {
+  if (SERVICE_KEY.length < 32) return res.status(503).json({ message: "Import kursów przez usługę nie jest skonfigurowany." });
+  const given = Buffer.from(String(req.headers["x-service-key"] || ""));
+  const wanted = Buffer.from(SERVICE_KEY);
+  if (given.length !== wanted.length || !timingSafeEqual(given, wanted)) return res.status(401).json({ message: "Nieprawidłowy klucz usługi." });
+  next();
+};
+
+const interactiveCourseSchema = z.object({
+  source_key: z.string().regex(/^[a-z0-9][a-z0-9-]{5,80}$/, "klucz źródłowy: małe litery, cyfry i myślniki"),
+  title: z.string().min(3).max(160),
+  description: z.string().min(10).max(2000),
+  language: z.string().min(2).max(8).default("pl"),
+  level: z.enum(["beginner", "intermediate", "advanced"]).default("beginner"),
+  thumbnail: z.string().max(400_000).refine((s) => /^(data:image\/(svg\+xml|png|jpeg);base64,|https:\/\/)/.test(s), "okładka: data URI obrazu albo https"),
+  html: z.string().min(2000).max(4_500_000),
+  stages: z.array(z.string().min(1).max(200)).min(1).max(40),
+  test: z
+    .array(z.object({ question: z.string().min(3).max(500), options: z.array(z.string().min(1).max(300)).length(4), correct: z.number().int().min(0).max(3) }))
+    .min(5)
+    .max(40),
+  minutes: z.number().int().min(1).max(6000).optional(),
+  status: z.enum(["DRAFT", "PUBLISHED"]).default("DRAFT"),
+});
+const LEVEL_LABELS: Record<string, Record<string, string>> = {
+  pl: { beginner: "Początkujący", intermediate: "Średniozaawansowany", advanced: "Zaawansowany" },
+  en: { beginner: "Beginner", intermediate: "Intermediate", advanced: "Advanced" },
+};
+
+// Utrzymuje lekcje modułu zgodnie z listą tytułów według pozycji, więc identyfikatory (i zapisany postęp uczniów) przeżywają ponowny import.
+async function syncModuleLessons(moduleId: string, titles: string[]) {
+  const existing = await prisma.lesson.findMany({ where: { moduleId }, orderBy: { sortOrder: "asc" } });
+  const out = [];
+  for (let i = 0; i < titles.length; i++) {
+    const data = { title: titles[i], accessLevel: "premium", durationMinutes: 10, sortOrder: i };
+    out.push(existing[i] ? await prisma.lesson.update({ where: { id: existing[i].id }, data }) : await prisma.lesson.create({ data: { moduleId, ...data } }));
+  }
+  for (const stale of existing.slice(titles.length)) await prisma.lesson.delete({ where: { id: stale.id } });
+  return out;
+}
+
+async function ensureCourseModule(courseId: string, title: string, sortOrder: number) {
+  const found = await prisma.module.findFirst({ where: { courseId, title } });
+  return found ? prisma.module.update({ where: { id: found.id }, data: { sortOrder } }) : prisma.module.create({ data: { courseId, title, sortOrder } });
+}
+
+app.post("/api/service/interactive-courses", requireServiceKey, async (req, res) => {
+  const parsed = interactiveCourseSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ message: "Nieprawidłowe dane kursu: " + parsed.error.issues.slice(0, 4).map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") });
+  }
+  const c = parsed.data;
+  try {
+    const admin = await prisma.user.findFirst({ where: { role: "ADMIN" }, orderBy: { createdAt: "asc" }, select: { id: true } });
+    if (!admin) return res.status(500).json({ message: "Brak konta administratora, które mogłoby być autorem kursu." });
+    const level = (LEVEL_LABELS[c.language.slice(0, 2)] ?? LEVEL_LABELS.pl)[c.level];
+    const common = {
+      externalUrl: "https://example.invalid",
+      integrationType: "HOSTED_HTML" as const,
+      htmlContent: c.html,
+      imageUrl: c.thumbnail,
+      level,
+      estimatedHours: c.minutes ? Math.max(1, Math.round(c.minutes / 60)) : null,
+      lessonCountEstimate: c.stages.length,
+    };
+    const existing = await prisma.course.findUnique({ where: { slug: c.source_key }, select: { id: true, status: true } });
+    let courseId: string;
+    if (existing) {
+      courseId = existing.id;
+      await prisma.course.update({ where: { id: courseId }, data: { ...common, ...(c.status === "PUBLISHED" && existing.status !== "PUBLISHED" ? { status: "PUBLISHED", publishedAt: new Date() } : {}) } });
+      await prisma.courseTranslation.update({ where: { courseId_locale: { courseId, locale: "pl" } }, data: { title: c.title, description: c.description } });
+    } else {
+      const created = await prisma.course.create({
+        data: {
+          slug: c.source_key,
+          instructorUserId: admin.id,
+          ...common,
+          status: c.status,
+          publishedAt: c.status === "PUBLISHED" ? new Date() : null,
+          translations: { create: { locale: "pl", title: c.title, description: c.description } },
+        },
+        select: { id: true },
+      });
+      courseId = created.id;
+    }
+    const tag = await prisma.tag.upsert({ where: { slug: INTERACTIVE_COURSE_TAG }, create: { slug: INTERACTIVE_COURSE_TAG }, update: {} });
+    await prisma.courseTag.upsert({ where: { courseId_tagId: { courseId, tagId: tag.id } }, create: { courseId, tagId: tag.id }, update: {} });
+
+    const lessonsModule = await ensureCourseModule(courseId, "Lekcje kursu", 0);
+    await syncModuleLessons(lessonsModule.id, c.stages);
+    const testModule = await ensureCourseModule(courseId, "Test końcowy", 1);
+    const [testLesson] = await syncModuleLessons(testModule.id, ["Test końcowy"]);
+    // Pytania dopasowujemy po treści: bez zmian zachowują identyfikatory, zmienione są aktualizowane, usunięte kasowane.
+    const have = await prisma.quizQuestion.findMany({ where: { lessonId: testLesson.id } });
+    const wanted = new Map(c.test.map((q) => [q.question, q]));
+    for (const old of have) if (!wanted.has(old.questionText)) await prisma.quizQuestion.delete({ where: { id: old.id } });
+    for (const q of c.test) {
+      const data = { questionText: q.question, optionA: q.options[0], optionB: q.options[1], optionC: q.options[2], optionD: q.options[3], correctOptions: "ABCD"[q.correct], pointsValue: 1 };
+      const match = have.find((h) => h.questionText === q.question);
+      if (match) await prisma.quizQuestion.update({ where: { id: match.id }, data });
+      else await prisma.quizQuestion.create({ data: { lessonId: testLesson.id, ...data } });
+    }
+    courseCache.clear();
+    console.log(`[interactive-course] ${existing ? "updated" : "created"} ${courseId} (${c.source_key}), ${c.stages.length} lessons, ${c.test.length} test questions`);
+    res.status(existing ? 200 : 201).json({ course_id: courseId, created: !existing, status: existing ? existing.status : c.status, lessons: c.stages.length, test_questions: c.test.length });
+  } catch (err: any) {
+    res.status(500).json({ message: "Import kursu nie powiódł się: " + err.message });
   }
 });
 

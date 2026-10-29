@@ -7,6 +7,8 @@ import { RodoConsentModal } from "./RodoConsentModal";
 // Kurs z katalogu bezpłatnych kursów zewnętrznych: strona kursu otwiera się w Nova Campus (w ramce, gdy strona źródłowa na to
 // pozwala, w przeciwnym razie w nowej karcie), a obok działa panel postępu: etapy zapisywane na koncie ucznia,
 // test końcowy i certyfikat HRL Nova Campus po jego zaliczeniu.
+// Ten sam widok obsługuje też kursy interaktywne z AI Publish (HOSTED_HTML): kurs działa w ramce bez dostępu do danych Novy
+// i rozmawia z panelem przez postMessage (gotowość, zaliczona lekcja, prośba o test końcowy); postęp zapisuje Nova na koncie ucznia.
 
 interface StageLesson {
   id: string;
@@ -62,7 +64,12 @@ export const OpenCourseView: React.FC<Props> = ({ courseId, course, structure, e
   const [pendingConsent, setPendingConsent] = useState<string | null>(null);
 
   const embedded = course.integration_type === "IFRAME";
+  const hosted = course.integration_type === "HOSTED_HTML";
   const externalUrl: string = course.external_url;
+  const [hostedHtml, setHostedHtml] = useState<string | null>(null);
+  const [hostedError, setHostedError] = useState<string | null>(null);
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  const latest = useRef<any>({});
 
   useEffect(() => {
     const measure = () => {
@@ -99,6 +106,27 @@ export const OpenCourseView: React.FC<Props> = ({ courseId, course, structure, e
     })();
   }, [enrolled, token, courseId]);
 
+  // Kurs HOSTED_HTML pobieramy dopiero po zapisie ucznia (serwer nie wydaje treści bez aktywnego zapisu).
+  useEffect(() => {
+    if (!hosted || !enrolled || !token) return;
+    let cancelled = false;
+    setHostedError(null);
+    (async () => {
+      try {
+        const res = await fetch("/api/access/launch", { method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify({ courseId }) });
+        const data = await res.json().catch(() => ({}));
+        if (cancelled) return;
+        if (res.ok && data.hosted && data.htmlContent) setHostedHtml(data.htmlContent);
+        else setHostedError(data.message || "Nie udało się załadować kursu.");
+      } catch (err: any) {
+        if (!cancelled) setHostedError(err.message || "Nie udało się załadować kursu.");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [hosted, enrolled, token, courseId, reloadKey]);
+
   const lessons = structure.flatMap((m) => m.lessons);
   const stages = lessons.filter((l) => !l.has_quiz);
   const test = lessons.find((l) => l.has_quiz) ?? null;
@@ -109,12 +137,11 @@ export const OpenCourseView: React.FC<Props> = ({ courseId, course, structure, e
   const total = stages.length + (test ? 1 : 0);
   const percent = certificateCode ? 100 : total > 0 ? Math.min(99, Math.round(((stagesDone + (testPassed ? 1 : 0)) / total) * 100)) : 0;
 
-  const toggleStage = async (lesson: StageLesson) => {
+  const setStage = async (lesson: StageLesson, next: boolean) => {
     if (!enrolled) {
       addToast("Poczekaj chwilę, zapisuję Cię na kurs...", "info");
       return;
     }
-    const next = !isDone(lesson);
     setOverride((o) => ({ ...o, [lesson.id]: next }));
     try {
       const res = await fetch(`/api/lessons/${lesson.id}/progress`, {
@@ -129,6 +156,7 @@ export const OpenCourseView: React.FC<Props> = ({ courseId, course, structure, e
       addToast(err.message, "error");
     }
   };
+  const toggleStage = (lesson: StageLesson) => setStage(lesson, !isDone(lesson));
 
   const openQuiz = async () => {
     if (!test) return;
@@ -143,6 +171,28 @@ export const OpenCourseView: React.FC<Props> = ({ courseId, course, structure, e
       addToast(err.message, "error");
     }
   };
+
+  latest.current = { stages, isDone, setStage, openQuiz, allStagesDone, addToast };
+  useEffect(() => {
+    if (!hosted) return;
+    const onMessage = (ev: MessageEvent) => {
+      const m = ev.data;
+      if (ev.source !== frameRef.current?.contentWindow || !m || m.source !== "hrl-course") return;
+      const L = latest.current;
+      if (m.type === "hrl-course-ready") {
+        const completed = L.stages.map((s: StageLesson, i: number) => (L.isDone(s) ? i : -1)).filter((i: number) => i >= 0);
+        frameRef.current?.contentWindow?.postMessage({ type: "hrl-course-init", host: "nova", completed }, "*");
+      } else if (m.type === "hrl-course-progress" && Number.isInteger(m.index) && typeof m.completed === "boolean") {
+        const s: StageLesson | undefined = L.stages[m.index];
+        if (s && L.isDone(s) !== m.completed) L.setStage(s, m.completed);
+      } else if (m.type === "hrl-course-open-test") {
+        if (L.allStagesDone) L.openQuiz();
+        else L.addToast("Najpierw ukończ wszystkie lekcje kursu.", "info");
+      }
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [hosted]);
 
   const submitQuiz = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -187,15 +237,19 @@ export const OpenCourseView: React.FC<Props> = ({ courseId, course, structure, e
             <div className="h-full bg-gradient-to-r from-cyan-500 to-teal-400 transition-all" style={{ width: `${percent}%` }} />
           </div>
           <p className="text-[11px] text-zinc-500 leading-relaxed">
-            {`Kurs prowadzi: ${course.provider || "instytucja źródłowa"}. Postęp zapisuje się na Twoim koncie.`}
+            {hosted ? "Kurs interaktywny HRL Nova Campus. Postęp zapisuje się na Twoim koncie." : `Kurs prowadzi: ${course.provider || "instytucja źródłowa"}. Postęp zapisuje się na Twoim koncie.`}
           </p>
         </div>
 
         {enrollError && <div className="p-3 rounded-xl bg-red-950/30 border border-red-900/40 text-xs text-red-300">{enrollError}</div>}
 
         <div className="space-y-2">
-          <h4 className="text-xs font-mono uppercase tracking-wider text-zinc-400">Etapy kursu</h4>
-          <p className="text-[11px] text-zinc-500 leading-relaxed">Odhaczaj etapy w miarę nauki. Gdy zaznaczysz wszystkie, odblokuje się test końcowy.</p>
+          <h4 className="text-xs font-mono uppercase tracking-wider text-zinc-400">{hosted ? "Lekcje kursu" : "Etapy kursu"}</h4>
+          <p className="text-[11px] text-zinc-500 leading-relaxed">
+            {hosted
+              ? "Lekcję zaliczasz w kursie, odpowiadając na quiz na jej końcu. Gdy ukończysz wszystkie lekcje, odblokuje się test końcowy."
+              : "Odhaczaj etapy w miarę nauki. Gdy zaznaczysz wszystkie, odblokuje się test końcowy."}
+          </p>
           <ul className="space-y-1.5">
             {stages.map((s) => {
               const done = isDone(s);
@@ -203,8 +257,9 @@ export const OpenCourseView: React.FC<Props> = ({ courseId, course, structure, e
                 <li key={s.id}>
                   <button
                     type="button"
-                    onClick={() => toggleStage(s)}
-                    className={`w-full flex items-start gap-2.5 text-left p-2.5 rounded-xl border text-xs leading-snug cursor-pointer transition-colors ${done ? "bg-emerald-950/20 border-emerald-800/40 text-emerald-200" : "bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-zinc-700"}`}
+                    onClick={() => !hosted && toggleStage(s)}
+                    disabled={hosted}
+                    className={`w-full flex items-start gap-2.5 text-left p-2.5 rounded-xl border text-xs leading-snug ${hosted ? "cursor-default" : "cursor-pointer"} transition-colors ${done ? "bg-emerald-950/20 border-emerald-800/40 text-emerald-200" : "bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-zinc-700"}`}
                   >
                     {done ? <CheckCircle className="w-4 h-4 mt-px shrink-0 text-emerald-400" /> : <Circle className="w-4 h-4 mt-px shrink-0 text-zinc-600" />}
                     <span>{s.title}</span>
@@ -244,7 +299,9 @@ export const OpenCourseView: React.FC<Props> = ({ courseId, course, structure, e
               </div>
             )}
             <p className="text-[11px] text-zinc-500 leading-relaxed">
-              Test składa się z pytań jednokrotnego wyboru, a próg zaliczenia to 70%. Certyfikat wystawia HRL Nova Campus; nie jest certyfikatem instytucji prowadzącej kurs.
+              {hosted
+                ? "Test składa się z pytań jednokrotnego wyboru, a próg zaliczenia to 70%. Certyfikat wystawia HRL Nova Campus po zaliczeniu testu końcowego."
+                : "Test składa się z pytań jednokrotnego wyboru, a próg zaliczenia to 70%. Certyfikat wystawia HRL Nova Campus; nie jest certyfikatem instytucji prowadzącej kurs."}
             </p>
           </div>
         )}
@@ -267,11 +324,13 @@ export const OpenCourseView: React.FC<Props> = ({ courseId, course, structure, e
             <span className="hidden sm:inline">Postęp</span>
             <span className="text-cyan-400">{percent}%</span>
           </button>
-          <a href={externalUrl} target="_blank" rel="noopener noreferrer" className={barButton} title="Otwórz kurs w nowej karcie">
-            <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden md:inline">Nowa karta</span>
-          </a>
-          {embedded && (
+          {!hosted && (
+            <a href={externalUrl} target="_blank" rel="noopener noreferrer" className={barButton} title="Otwórz kurs w nowej karcie">
+              <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="hidden md:inline">Nowa karta</span>
+            </a>
+          )}
+          {(embedded || hosted) && (
             <button type="button" onClick={() => setReloadKey((k) => k + 1)} className={barButton} title="Odśwież kurs">
               <RefreshCw className="w-3.5 h-3.5 text-cyan-400" />
               <span className="hidden md:inline">Odśwież</span>
@@ -286,7 +345,26 @@ export const OpenCourseView: React.FC<Props> = ({ courseId, course, structure, e
 
       <div className="relative flex flex-1 min-h-0">
         <div className="flex-1 min-w-0 min-h-0 flex">
-          {embedded ? (
+          {hosted ? (
+            hostedHtml ? (
+              <iframe
+                key={reloadKey}
+                ref={frameRef}
+                srcDoc={hostedHtml}
+                title={course.title}
+                className="block w-full h-full border-0 bg-white"
+                sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms"
+              />
+            ) : (
+              <div className="m-auto max-w-md px-6 py-10 text-center space-y-3">
+                {hostedError ? (
+                  <div className="p-3 rounded-xl bg-red-950/30 border border-red-900/40 text-xs text-red-300">{hostedError}</div>
+                ) : (
+                  <p className="text-sm text-zinc-400">Ładowanie kursu...</p>
+                )}
+              </div>
+            )
+          ) : embedded ? (
             <iframe
               key={reloadKey}
               src={externalUrl}
