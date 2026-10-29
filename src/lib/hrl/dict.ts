@@ -3513,6 +3513,10 @@ export const PAIRS: Array<[string, string]> = [
 "Financial Gateway (Protection)"
 ],
 [
+"Katalog",
+"Catalogue"
+],
+[
 "Postęp i certyfikat",
 "Progress and certificate"
 ],
