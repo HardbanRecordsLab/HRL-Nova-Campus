@@ -129,6 +129,11 @@ async function getPrismaSystemLimit(key: string, defaultValue: number): Promise<
   }
 }
 
+// Katalog bezpłatnych kursów zewnętrznych (otwarte materiały innych instytucji, opisane i podlinkowane w Nova Campus) ma ten tag.
+// Takie kursy nie zużywają limitu zapisów ucznia: limit dotyczy kursów własnych i płatnych, a nie linków do cudzych, otwartych zasobów.
+const OPEN_COURSE_TAG = "Bezpłatny kurs zewnętrzny";
+const notOpenCourse = { course: { tags: { none: { tag: { slug: OPEN_COURSE_TAG } } } } };
+
 // Helper to secure log activities
 const wsClients = new Set<WebSocket>();
 
@@ -668,9 +673,10 @@ app.post("/api/courses/:id/enroll", authenticateToken, async (req, res) => {
     }
 
     // Check enrollment limit for student role
-    if (user.role === "student") {
-      const maxFreeEnrollments = 5;
-      const currentCount = await prisma.enrollment.count({ where: { userId: String(user.id), status: "ACTIVE" } });
+    const isOpenCourse = (await prisma.courseTag.count({ where: { courseId, tag: { slug: OPEN_COURSE_TAG } } })) > 0;
+    if (user.role === "student" && !isOpenCourse) {
+      const maxFreeEnrollments = await getPrismaSystemLimit("max_free_enrollments", 5); // ten sam parametr, który admin ustawia w panelu limitów
+      const currentCount = await prisma.enrollment.count({ where: { userId: String(user.id), status: "ACTIVE", ...notOpenCourse } });
 
       if (currentCount >= maxFreeEnrollments) {
         logActivity(user.id, "enrollment_limit_exceeded", req, 403, `Osiągnięto limit zapisów (${currentCount}/${maxFreeEnrollments})`, { courseId });
@@ -1172,7 +1178,7 @@ app.get("/api/student/limits", authenticateToken, async (req, res) => {
       getPrismaSystemLimit("max_free_enrollments", 5),
       getPrismaSystemLimit("max_daily_quiz_attempts", 3),
       getPrismaSystemLimit("max_courses_per_instructor", 10),
-      prisma.enrollment.count({ where: { userId: String(user.id), status: "ACTIVE" } }),
+      prisma.enrollment.count({ where: { userId: String(user.id), status: "ACTIVE", ...notOpenCourse } }),
     ]);
 
     res.json({
