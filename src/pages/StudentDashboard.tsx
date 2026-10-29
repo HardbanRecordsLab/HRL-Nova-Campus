@@ -50,6 +50,7 @@ interface Certificate {
   course_thumbnail: string;
   qr_payload_url: string | null;
   is_public: boolean;
+  provider?: string | null;
 }
 
 interface QuizAttempt {
@@ -1061,11 +1062,18 @@ export const StudentDashboard: React.FC = () => {
                   {user?.username}
                 </p>
                 <p className="text-xs text-zinc-505 text-zinc-500 leading-normal max-w-md mx-auto font-mono">
-                  ukończył z wynikiem pozytywnym pełny cykl edukacyjny, zaliczył wymagane laboratoria kodowania oraz testy rygorystyczne w specjalizacji:
+                  {selectedCertificate.provider
+                    ? "zaliczył(a) test końcowy ścieżki kursu zewnętrznego w HRL Nova Campus:"
+                    : "ukończył z wynikiem pozytywnym pełny cykl edukacyjny, zaliczył wymagane laboratoria kodowania oraz testy rygorystyczne w specjalizacji:"}
                 </p>
                 <p className="text-2xl font-bold font-display text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-cyan-200 py-1.5 leading-snug print:text-zinc-900 print:bg-none">
                   {selectedCertificate.course_title}
                 </p>
+                {selectedCertificate.provider && (
+                  <p className="text-[10px] text-zinc-500 leading-normal max-w-md mx-auto font-mono">
+                    {`Kurs prowadzi: ${selectedCertificate.provider}. Certyfikat wystawia HRL Nova Campus po zaliczeniu testu końcowego; nie jest certyfikatem instytucji prowadzącej kurs.`}
+                  </p>
+                )}
               </div>
 
               {/* Verify & Footer signs */}

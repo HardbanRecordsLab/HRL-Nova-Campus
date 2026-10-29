@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { StudentEnterpriseTools } from "../components/StudentEnterpriseTools";
 import { RodoConsentModal } from "../components/RodoConsentModal";
+import { OpenCourseView } from "../components/OpenCourseView";
 import {
   BookOpen,
   Lock,
@@ -423,9 +424,10 @@ export const CourseDetail: React.FC = () => {
       return;
     }
 
+    // Identyfikatory pytań to ciągi znaków (cuid), a nie liczby — rzutowanie na Number dawało NaN i test zawsze kończył się wynikiem 0%.
     const payload = Object.keys(selectedAnswers).map((qId) => ({
-      questionId: Number(qId),
-      answer: selectedAnswers[Number(qId)]
+      questionId: qId,
+      answer: selectedAnswers[qId as any]
     }));
 
     try {
@@ -489,6 +491,22 @@ export const CourseDetail: React.FC = () => {
           </Link>
         </div>
       </div>
+    );
+  }
+
+  if (data && data.course && (data.course as any).is_open_course) {
+    // Bezpłatny kurs zewnętrzny: otwierany jak kursy partnerskie (ramka lub nowa karta) + panel postępu, test końcowy i certyfikat.
+    return (
+      <OpenCourseView
+        courseId={String(id)}
+        course={data.course}
+        structure={data.structure as any}
+        enrolled={data.enrolled}
+        certificateCode={data.certificate_code}
+        reload={fetchCourseDetails}
+        onCopyLink={handleCopyLink}
+        copiedLink={copiedLink}
+      />
     );
   }
 

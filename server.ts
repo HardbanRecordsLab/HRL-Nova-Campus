@@ -134,6 +134,30 @@ async function getPrismaSystemLimit(key: string, defaultValue: number): Promise<
 const OPEN_COURSE_TAG = "Bezpłatny kurs zewnętrzny";
 const notOpenCourse = { course: { tags: { none: { tag: { slug: OPEN_COURSE_TAG } } } } };
 
+// Kurs zewnętrzny nie ma własnych lekcji wideo: jego moduł „etapów” to punkty kontrolne odhaczane przez ucznia (zapisują postęp),
+// a test końcowy (lekcja z pytaniami) po zaliczeniu wystawia certyfikat HRL Nova Campus.
+async function isOpenCourseId(courseId: string): Promise<boolean> {
+  return (await prisma.courseTag.count({ where: { courseId, tag: { slug: OPEN_COURSE_TAG } } })) > 0;
+}
+
+// Przelicza postęp zapisu (Enrollment.progressPercent) z odhaczonych lekcji; do chwili wystawienia certyfikatu nie przekracza 99%.
+async function syncEnrollmentProgress(userId: string, courseId: string) {
+  const lessons = await prisma.lesson.findMany({ where: { module: { courseId } }, select: { id: true } });
+  if (lessons.length === 0) return;
+  const done = await prisma.lessonProgress.count({ where: { userId, completed: true, lessonId: { in: lessons.map((l) => l.id) } } });
+  const progressPercent = Math.min(99, Math.floor((done / lessons.length) * 100));
+  await prisma.enrollment.updateMany({ where: { userId, courseId, completedAt: null }, data: { progressPercent } });
+  await prisma.enrollment.updateMany({ where: { userId, courseId, startedAt: null }, data: { startedAt: new Date() } });
+}
+
+// Do testu końcowego kursu zewnętrznego wolno podejść dopiero po odhaczeniu wszystkich etapów (lekcji bez pytań).
+async function openCourseStagesDone(userId: string, courseId: string): Promise<boolean> {
+  const stages = await prisma.lesson.findMany({ where: { module: { courseId }, quizQuestions: { none: {} } }, select: { id: true } });
+  if (stages.length === 0) return true;
+  const done = await prisma.lessonProgress.count({ where: { userId, completed: true, lessonId: { in: stages.map((l) => l.id) } } });
+  return done >= stages.length;
+}
+
 // Helper to secure log activities
 const wsClients = new Set<WebSocket>();
 
@@ -499,6 +523,8 @@ function toLegacyCourse(course: any) {
     external_url: course.externalUrl,
     integration_type: course.integrationType,
     html_content: course.htmlContent ?? null,
+    is_open_course: Boolean(course.tags?.some((tag: any) => tag.tag.slug === OPEN_COURSE_TAG)),
+    provider: course.tags?.some((tag: any) => tag.tag.slug === OPEN_COURSE_TAG) ? translation?.shortDescription || "Kurs zewnętrzny" : null,
     status: course.status,
     created_at: course.createdAt,
     updated_at: course.updatedAt,
@@ -591,7 +617,7 @@ app.get("/api/courses/:id", async (req, res) => {
       where: { id: courseId },
       include: {
         ...courseListInclude,
-        modules: { orderBy: { sortOrder: "asc" }, include: { lessons: { orderBy: { sortOrder: "asc" } } } },
+        modules: { orderBy: { sortOrder: "asc" }, include: { lessons: { orderBy: { sortOrder: "asc" }, include: { _count: { select: { quizQuestions: true } } } } } },
       },
     });
     if (!course) {
@@ -625,6 +651,7 @@ app.get("/api/courses/:id", async (req, res) => {
           duration_minutes: les.durationMinutes,
           video_url: hasAccess ? les.videoUrl : "",
           progress: { percent: lessonProgress?.percent ?? 0, completed: lessonProgress?.completed ? 1 : 0 },
+          has_quiz: les._count.quizQuestions > 0,
           has_access: hasAccess
         };
       });
@@ -810,6 +837,8 @@ app.post("/api/lessons/:id/progress", authenticateToken, async (req, res) => {
 
     logActivity(user.id, "lesson_progress_update", req, 200, null, { lessonId, percent: progressPercent, completed: isCompleted, courseId: lesson.module.courseId });
 
+    if (await isOpenCourseId(lesson.module.courseId)) await syncEnrollmentProgress(String(user.id), lesson.module.courseId);
+
     res.json({ success: true, message: "Postęp zapisany pomyślnie.", certificate_code: null });
   } catch (err: any) {
     res.status(500).json({ message: "Zapis postępu nie powiódł się: " + err.message });
@@ -858,6 +887,16 @@ app.post("/api/quiz/:lessonId/submit", authenticateToken, async (req, res) => {
     const correctQuestions = await prisma.quizQuestion.findMany({ where: { lessonId }, select: { id: true, correctOptions: true, pointsValue: true } });
     if (correctQuestions.length === 0) {
       return res.status(400).json({ message: "Brak pytań testowych dla tej lekcji" });
+    }
+
+    // Test końcowy kursu zewnętrznego: tylko dla zapisanego ucznia, który odhaczył wszystkie etapy kursu.
+    const gateLesson = await prisma.lesson.findUnique({ where: { id: lessonId }, select: { module: { select: { courseId: true } } } });
+    if (gateLesson && (await isOpenCourseId(gateLesson.module.courseId))) {
+      const enrolled = await prisma.enrollment.findUnique({ where: { userId_courseId: { userId: String(user.id), courseId: gateLesson.module.courseId } }, select: { status: true } });
+      if (enrolled?.status !== "ACTIVE") return res.status(403).json({ message: "Zapisz się na kurs, aby podejść do testu końcowego." });
+      if (!(await openCourseStagesDone(String(user.id), gateLesson.module.courseId))) {
+        return res.status(403).json({ message: "Najpierw odhacz wszystkie etapy kursu, potem podejdź do testu końcowego." });
+      }
     }
 
     let earnedPoints = 0;
@@ -954,7 +993,7 @@ async function checkAndGenerateCertificate(userId: string, courseId: string) {
 
   try {
     const certificate = await prisma.certificate.create({ data: { userId, courseId, certificateCode, qrPayloadUrl } });
-    await prisma.enrollment.updateMany({ where: { userId, courseId, completedAt: null }, data: { completedAt: new Date(), completionSource: "quiz" } });
+    await prisma.enrollment.updateMany({ where: { userId, courseId, completedAt: null }, data: { completedAt: new Date(), completionSource: "quiz", progressPercent: 100 } });
     logActivity(userId, "certificate.issued", null, 200, null, { courseId, certificateCode });
     return certificate;
   } catch (err: any) {
@@ -971,7 +1010,7 @@ app.get("/api/verify-certificate/:code", async (req, res) => {
   const code = req.params.code;
 
   try {
-    const cert = await prisma.certificate.findUnique({ where: { certificateCode: code }, include: { user: { select: { username: true, name: true } }, course: { include: { translations: { where: { locale: "pl" }, take: 1, select: { title: true } } } } } });
+    const cert = await prisma.certificate.findUnique({ where: { certificateCode: code }, include: { user: { select: { username: true, name: true } }, course: { include: { translations: { where: { locale: "pl" }, take: 1, select: { title: true, shortDescription: true } }, tags: { select: { tag: { select: { slug: true } } } } } } } });
 
     if (!cert) {
       return res.status(444).json({ valid: false, message: "Certyfikat o podanym numerze seryjnym nie widnieje w rejestrach HRL Academy" });
@@ -983,6 +1022,7 @@ app.get("/api/verify-certificate/:code", async (req, res) => {
       // RODO: student identity is only disclosed once they've consented to the public registry.
       student: cert.isPublic ? (cert.user.username ?? cert.user.name ?? "") : null,
       course: cert.course.translations[0]?.title ?? cert.course.slug,
+      provider: cert.course.tags.some((t) => t.tag.slug === OPEN_COURSE_TAG) ? cert.course.translations[0]?.shortDescription || "Kurs zewnętrzny" : null,
       issued_at: cert.issuedAt,
       qr_payload_url: cert.qrPayloadUrl,
       is_public: cert.isPublic
@@ -1079,7 +1119,7 @@ app.get("/api/student/dashboard", authenticateToken, async (req, res) => {
         include: { course: { include: { translations: { where: { locale: "pl" }, take: 1 }, modules: { include: { lessons: { select: { id: true, progress: { where: { userId, completed: true }, select: { id: true } } } } } } } } },
         orderBy: { createdAt: "desc" },
       }),
-      prisma.certificate.findMany({ where: { userId }, include: { course: { include: { translations: { where: { locale: "pl" }, take: 1 } } } }, orderBy: { issuedAt: "desc" } }),
+      prisma.certificate.findMany({ where: { userId }, include: { course: { include: { translations: { where: { locale: "pl" }, take: 1 }, tags: { select: { tag: { select: { slug: true } } } } } } }, orderBy: { issuedAt: "desc" } }),
       prisma.quizAttempt.findMany({ where: { userId }, include: { lesson: { include: { module: { include: { course: { include: { translations: { where: { locale: "pl" }, take: 1 } } } } } } } }, orderBy: { createdAt: "desc" } }),
       prisma.lessonProgress.count({ where: { userId, completed: true } }),
       prisma.certificate.count({ where: { userId } }),
@@ -1112,6 +1152,8 @@ app.get("/api/student/dashboard", authenticateToken, async (req, res) => {
       course_thumbnail: certificate.course.imageUrl ?? "",
       qr_payload_url: certificate.qrPayloadUrl,
       is_public: certificate.isPublic,
+      // Kurs zewnętrzny prowadzi instytucja źródłowa; certyfikat wystawia HRL Nova Campus po teście końcowym.
+      provider: certificate.course.tags.some((t) => t.tag.slug === OPEN_COURSE_TAG) ? certificate.course.translations[0]?.shortDescription || "Kurs zewnętrzny" : null,
     }));
 
     const quizAttempts = attempts.map((attempt) => ({

@@ -11,6 +11,7 @@ interface VerifiedCert {
   issued_at: string;
   qr_payload_url: string | null;
   is_public: boolean;
+  provider?: string | null;
 }
 
 export const CertificateVerify: React.FC = () => {
@@ -149,11 +150,18 @@ export const CertificateVerify: React.FC = () => {
                 </p>
               )}
               <p className="text-zinc-400 text-sm italic font-serif leading-relaxed">
-                pomyślnie zaliczył wszystkie moduły, lekcje techniczne oraz wymagane testy wiedzy i uzyskał dyplom ukończenia kursu programowego klasy Enterprise
+                {certificate.provider
+                  ? "pomyślnie zaliczył(a) test końcowy ścieżki kursu zewnętrznego w HRL Nova Campus"
+                  : "pomyślnie zaliczył wszystkie moduły, lekcje techniczne oraz wymagane testy wiedzy i uzyskał dyplom ukończenia kursu programowego klasy Enterprise"}
               </p>
               <h4 className="text-gradient font-display text-xl md:text-2xl font-bold tracking-tight">
                 {certificate.course}
               </h4>
+              {certificate.provider && (
+                <p className="text-[11px] text-zinc-500 font-mono leading-relaxed max-w-lg mx-auto">
+                  {`Kurs prowadzi: ${certificate.provider}. Certyfikat wystawia HRL Nova Campus po zaliczeniu testu końcowego; nie jest certyfikatem instytucji prowadzącej kurs.`}
+                </p>
+              )}
             </div>
 
             {/* Serial code, issue date and verify shares */}

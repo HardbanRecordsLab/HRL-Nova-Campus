@@ -3511,5 +3511,169 @@ export const PAIRS: Array<[string, string]> = [
 [
 "Bramka Finansowa (Zabezpieczenie)",
 "Financial Gateway (Protection)"
+],
+[
+"Postęp i certyfikat",
+"Progress and certificate"
+],
+[
+"Otwórz kurs w nowej karcie",
+"Open the course in a new tab"
+],
+[
+"Nowa karta",
+"New tab"
+],
+[
+"Zamknij",
+"Close"
+],
+[
+"Twój postęp",
+"Your progress"
+],
+[
+"instytucja źródłowa",
+"the source institution"
+],
+[
+"Kurs prowadzi: {}. Postęp zapisuje się na Twoim koncie.",
+"Course provider: {}. Your progress is saved to your account."
+],
+[
+"Etapy kursu",
+"Course stages"
+],
+[
+"Odhaczaj etapy w miarę nauki. Gdy zaznaczysz wszystkie, odblokuje się test końcowy.",
+"Tick off the stages as you learn. When you have ticked them all, the final test unlocks."
+],
+[
+"Start: otwórz kurs i przejrzyj jego program",
+"Start: open the course and look through its programme"
+],
+[
+"Opanowane: {}",
+"Mastered: {}"
+],
+[
+"Przerobiony cały materiał kursu",
+"Completed the whole course material"
+],
+[
+"Test końcowy i certyfikat",
+"Final test and certificate"
+],
+[
+"Test końcowy",
+"Final test"
+],
+[
+"Certyfikat wystawiony",
+"Certificate issued"
+],
+[
+"Moje certyfikaty",
+"My certificates"
+],
+[
+"Weryfikacja",
+"Verification"
+],
+[
+"Rozpocznij test końcowy",
+"Start the final test"
+],
+[
+"Test odblokuje się po odhaczeniu wszystkich etapów ({} z {}).",
+"The test unlocks once all stages are ticked ({} of {})."
+],
+[
+"Test składa się z pytań jednokrotnego wyboru, a próg zaliczenia to 70%. Certyfikat wystawia HRL Nova Campus; nie jest certyfikatem instytucji prowadzącej kurs.",
+"The test consists of single-choice questions and the pass mark is 70%. The certificate is issued by HRL Nova Campus; it is not a certificate of the institution that runs the course."
+],
+[
+"Strona tego kursu ({}) nie pozwala na wyświetlanie wewnątrz innych serwisów, dlatego otwiera się w nowej karcie. Wróć tutaj, aby odhaczać etapy, zapisać postęp i zdobyć certyfikat.",
+"The page of this course ({}) does not allow display inside other sites, so it opens in a new tab. Come back here to tick off the stages, save your progress and earn the certificate."
+],
+[
+"Otwórz kurs",
+"Open the course"
+],
+[
+"Test zaliczony",
+"Test passed"
+],
+[
+"Test niezaliczony",
+"Test not passed"
+],
+[
+"Wynik: {}% ({} z {} punktów). Próg zaliczenia to 70%.",
+"Score: {}% ({} of {} points). The pass mark is 70%."
+],
+[
+"Spróbuj ponownie",
+"Try again"
+],
+[
+"Wyślij odpowiedzi",
+"Submit answers"
+],
+[
+"Wysyłanie...",
+"Sending..."
+],
+[
+"Poczekaj chwilę, zapisuję Cię na kurs...",
+"One moment, I am enrolling you in the course..."
+],
+[
+"Nie udało się zapisać postępu.",
+"Could not save your progress."
+],
+[
+"Nie udało się pobrać pytań testu.",
+"Could not load the test questions."
+],
+[
+"Odpowiedz na wszystkie pytania przed wysłaniem.",
+"Answer all the questions before submitting."
+],
+[
+"Test zaliczony: {}%. Certyfikat jest gotowy.",
+"Test passed: {}%. Your certificate is ready."
+],
+[
+"Test niezaliczony: {}% (wymagane 70%).",
+"Test not passed: {}% (70% required)."
+],
+[
+"Nie udało się wysłać testu.",
+"Could not submit the test."
+],
+[
+"Nie udało się zapisać Cię na kurs.",
+"Could not enrol you in the course."
+],
+[
+"Najpierw odhacz wszystkie etapy kursu, potem podejdź do testu końcowego.",
+"First tick off all the course stages, then take the final test."
+],
+[
+"Zapisz się na kurs, aby podejść do testu końcowego.",
+"Enrol in the course to take the final test."
+],
+[
+"zaliczył(a) test końcowy ścieżki kursu zewnętrznego w HRL Nova Campus:",
+"passed the final test of the external course path at HRL Nova Campus:"
+],
+[
+"pomyślnie zaliczył(a) test końcowy ścieżki kursu zewnętrznego w HRL Nova Campus",
+"successfully passed the final test of the external course path at HRL Nova Campus"
+],
+[
+"Kurs prowadzi: {}. Certyfikat wystawia HRL Nova Campus po zaliczeniu testu końcowego; nie jest certyfikatem instytucji prowadzącej kurs.",
+"Course provider: {}. The certificate is issued by HRL Nova Campus after passing the final test; it is not a certificate of the institution that runs the course."
 ]
 ];
