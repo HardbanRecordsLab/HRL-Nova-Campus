@@ -489,7 +489,8 @@ function toLegacyCourse(course: any) {
     thumbnail: course.imageUrl ?? "",
     category: course.tags?.map((tag: any) => tag.tag.slug).join(", ") || "Ogólny",
     difficulty: course.level ?? "Dowolny",
-    instructor_name: course.instructorName ?? "HRL Team",
+    // Kursy z katalogu otwartych kursów zewnętrznych prowadzi instytucja źródłowa (zapisana w krótkim opisie), nie HRL.
+    instructor_name: course.instructorName ?? (course.tags?.some((tag: any) => tag.tag.slug === OPEN_COURSE_TAG) ? translation?.shortDescription || "Kurs zewnętrzny" : "HRL Team"),
     pricing_model: activePrices[0]?.type?.toLowerCase() ?? "free",
     one_time_price: oneTime?.amount ?? 0,
     subscription_price: subscription?.amount ?? 0,
