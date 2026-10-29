@@ -80,6 +80,7 @@ export const Landing: React.FC = () => {
   const [selectedInstructor, setSelectedInstructor] = useState("");
   const [domains, setDomains] = useState<string[]>([]);
   const [selectedDomain, setSelectedDomain] = useState<string>("all_domains");
+  const [categoryChips, setCategoryChips] = useState<string[]>([]);
 
   // FAQ accordion state
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -107,42 +108,23 @@ export const Landing: React.FC = () => {
     }
   };
 
+  // Jedno zapytanie o panel ucznia zamiast osobnego zapytania o każdy kurs z katalogu (przy kilkudziesięciu kursach
+  // dawało to kilkadziesiąt żądań na każde wejście i szybko zużywało limit API).
   const fetchUserEnrollmentsAndProgress = async () => {
     if (!user || !token || courses.length === 0) return;
 
     try {
+      const res = await fetch("/api/student/dashboard", { headers: { "Authorization": `Bearer ${token}` } });
+      if (!res.ok) return;
+      const dashboard = await res.json();
       const updatedEnrollments: Record<number, boolean> = {};
       const updatedProgress: Record<number, number> = {};
 
-      for (let i = 0; i < courses.length; i++) {
-        const c = courses[i];
-        const res = await fetch(`/api/courses/${c.id}`, {
-          headers: { "Authorization": `Bearer ${token}` }
-        });
-        const details = await res.json();
-
-        if (res.ok) {
-          updatedEnrollments[c.id] = details.enrolled;
-
-          let totalLessons = 0;
-          let completedLessons = 0;
-
-          if (details.structure && Array.isArray(details.structure)) {
-            details.structure.forEach((mod: any) => {
-              if (mod.lessons && Array.isArray(mod.lessons)) {
-                mod.lessons.forEach((les: any) => {
-                  totalLessons++;
-                  if (les.progress && les.progress.completed) {
-                    completedLessons++;
-                  }
-                });
-              }
-            });
-          }
-
-          const completionPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
-          updatedProgress[c.id] = completionPercent;
-        }
+      for (const c of dashboard.enrolledCourses ?? []) {
+        updatedEnrollments[c.id] = true;
+        const total = Number(c.lessons_count) || 0;
+        const done = Number(c.completed_lessons_count) || 0;
+        updatedProgress[c.id] = total > 0 ? Math.round((done / total) * 100) : 0;
       }
 
       setUserEnrollments(updatedEnrollments);
@@ -165,6 +147,19 @@ export const Landing: React.FC = () => {
 
   useEffect(() => {
     fetchDomains();
+    // Pełny, niefiltrowany katalog tylko po to, żeby ustalić listę kategorii do chipów.
+    fetch("/api/courses")
+      .then((res) => (res.ok ? res.json() : []))
+      .then((all: Array<{ category?: string }>) => {
+        const counts = new Map<string, number>();
+        for (const c of all) {
+          for (const tag of (c.category ?? "").split(", ")) {
+            if (tag && tag !== "Ogólny") counts.set(tag, (counts.get(tag) ?? 0) + 1);
+          }
+        }
+        setCategoryChips([...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "pl")).map(([tag]) => tag));
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -201,15 +196,8 @@ export const Landing: React.FC = () => {
     }
   };
 
-  const categoriesList = [
-    "Wszystkie",
-    "Programowanie",
-    "Projektowanie",
-    "Analiza Danych",
-    "Biznes i Zarządzanie",
-    "Rozwój Osobisty",
-    "Duchowość 2.0"
-  ];
+  // Chipy kategorii pochodzą z tagów opublikowanych kursów (najliczniejsze pierwsze); gdy katalog jest pusty lub się nie załaduje, zostaje stała lista.
+  const categoriesList = ["Wszystkie", ...(categoryChips.length ? categoryChips : ["Programowanie", "Projektowanie", "Analiza Danych", "Biznes i Zarządzanie", "Rozwój Osobisty"])];
 
   const faqs = [
     {

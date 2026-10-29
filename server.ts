@@ -531,6 +531,8 @@ app.get("/api/courses", async (req, res) => {
     const courses = await prisma.course.findMany({
       where: {
         status: "PUBLISHED",
+        // Kategoria to tag kursu (np. „Programowanie”, „Bezpłatny kurs zewnętrzny”); dopasowanie dokładne.
+        ...(typeof category === "string" && category.trim() ? { tags: { some: { tag: { slug: category.trim() } } } } : {}),
         ...(normalizedSearch ? { translations: { some: { locale: "pl", OR: [{ title: { contains: normalizedSearch, mode: "insensitive" } }, { description: { contains: normalizedSearch, mode: "insensitive" } }] } } } : {}),
         ...(typeof difficulty === "string" ? { level: difficulty } : {}),
         ...(typeof instructor === "string" ? { instructorUserId: instructor } : {}),

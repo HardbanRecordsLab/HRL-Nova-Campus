@@ -665,8 +665,9 @@ export const AdminPanel: React.FC = () => {
           title: courseTitle,
           description: courseDescription,
           thumbnail: courseThumbnail,
-          category: "Muzyka i Dźwięk",
-          difficulty: "Zaawansowany",
+          category: "Kategoria Główna",
+          // Zachowaj poziom zapisany w kursie; wcześniej każda edycja w panelu na sztywno ustawiała „Zaawansowany”.
+          difficulty: coursesList.find((c) => String(c.id) === selectedCourseIdVal)?.difficulty || "Początkujący",
           instructor_name: courseInstructor,
           pricing_model: newPricingModel,
           one_time_price: Number(newOneTimePrice) || 0,
