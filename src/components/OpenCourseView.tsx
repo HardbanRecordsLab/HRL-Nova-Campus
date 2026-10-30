@@ -9,6 +9,8 @@ import { RodoConsentModal } from "./RodoConsentModal";
 // test końcowy i certyfikat HRL Nova Campus po jego zaliczeniu.
 // Ten sam widok obsługuje też kursy interaktywne z AI Publish (HOSTED_HTML): kurs działa w ramce bez dostępu do danych Novy
 // i rozmawia z panelem przez postMessage (gotowość, zaliczona lekcja, prośba o test końcowy); postęp zapisuje Nova na koncie ucznia.
+// Notatki, odhaczone kroki sesji, oceny 0-10 i odpowiedzi z quizów dni kurs też oddaje Novie (hrl-course-state): Nova trzyma je na koncie ucznia
+// na serwerze (to wersja nadrzędna, widoczna na każdym urządzeniu) i w pamięci przeglądarki (szybki start i praca bez sieci).
 
 interface StageLesson {
   id: string;
@@ -44,11 +46,30 @@ interface QuizResult {
   total_count: number;
 }
 
+// Zmiana notatek to łatka { grupa: { klucz: wartość | null } } (null kasuje klucz), a "view" to miejsce w kursie.
+type WorkPatch = Record<string, any>;
+
+function mergePatch(into: WorkPatch, patch: WorkPatch, keepNulls = false) {
+  for (const [group, entries] of Object.entries(patch)) {
+    if (group === "view") {
+      if (entries === null && !keepNulls) delete into.view;
+      else into.view = entries;
+      continue;
+    }
+    if (!entries || typeof entries !== "object") continue;
+    into[group] = into[group] || {};
+    for (const [key, value] of Object.entries(entries as Record<string, unknown>)) {
+      if (value === null && !keepNulls) delete into[group][key];
+      else into[group][key] = value;
+    }
+  }
+}
+
 const barButton =
   "px-3 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 rounded-lg text-[11px] font-mono uppercase tracking-wide transition-all flex items-center gap-1.5 cursor-pointer";
 
 export const OpenCourseView: React.FC<Props> = ({ courseId, course, structure, enrolled, certificateCode, reload, onCopyLink, copiedLink }) => {
-  const { token, addToast } = useApp();
+  const { token, addToast, user } = useApp();
   const [top, setTop] = useState(64);
   const [reloadKey, setReloadKey] = useState(0);
   const [panelOpen, setPanelOpen] = useState(true);
@@ -70,6 +91,64 @@ export const OpenCourseView: React.FC<Props> = ({ courseId, course, structure, e
   const [hostedError, setHostedError] = useState<string | null>(null);
   const frameRef = useRef<HTMLIFrameElement>(null);
   const latest = useRef<any>({});
+
+  // Praca ucznia w kursie: work = wszystko, co wiadomo (serwer + lokalne zmiany), pending = zmiany, których serwer jeszcze nie potwierdził.
+  const workKey = `hrl-work:${user?.id ?? "anon"}:${courseId}`;
+  const workRef = useRef<WorkPatch>({});
+  const pendingRef = useRef<WorkPatch>({});
+  const flushTimer = useRef<number | undefined>(undefined);
+  const workWarned = useRef(false);
+
+  const readLocalWork = (): { work: WorkPatch; pending: WorkPatch } => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(workKey) || "null");
+      return { work: saved?.work || {}, pending: saved?.pending || {} };
+    } catch {
+      return { work: {}, pending: {} };
+    }
+  };
+  const writeLocalWork = () => {
+    try {
+      localStorage.setItem(workKey, JSON.stringify({ work: workRef.current, pending: pendingRef.current }));
+    } catch {
+      /* przeglądarka bez pamięci: zostaje kopia na serwerze */
+    }
+  };
+  const flushWork = async (keepalive = false) => {
+    const patch = pendingRef.current;
+    if (!token || !Object.keys(patch).length) return;
+    pendingRef.current = {}; // zmiany zrobione w trakcie wysyłki trafią do nowej paczki
+    try {
+      const res = await fetch(`/api/courses/${courseId}/work`, {
+        method: "PUT",
+        keepalive,
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ patch }),
+      });
+      if (res.status >= 400 && res.status < 500 && res.status !== 401 && res.status !== 403 && res.status !== 408 && res.status !== 429) {
+        throw Object.assign(new Error(((await res.json().catch(() => ({}))) as any).message || "Serwer odrzucił notatki."), { drop: true });
+      }
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      workWarned.current = false;
+    } catch (err: any) {
+      if (!err?.drop) {
+        // nie dotarło: zmiany zostają w paczce (nowsze mają pierwszeństwo) i pójdą przy następnej okazji
+        const merged: WorkPatch = {};
+        mergePatch(merged, patch, true);
+        mergePatch(merged, pendingRef.current, true);
+        pendingRef.current = merged;
+      }
+      if (!workWarned.current) {
+        workWarned.current = true;
+        addToast(err?.drop ? err.message : "Notatki są zapisane na tym urządzeniu i trafią na konto, gdy wróci połączenie.", err?.drop ? "error" : "info");
+      }
+    }
+    writeLocalWork();
+  };
+  const scheduleFlush = (delay = 1200) => {
+    window.clearTimeout(flushTimer.current);
+    flushTimer.current = window.setTimeout(() => flushWork(), delay);
+  };
 
   useEffect(() => {
     const measure = () => {
@@ -172,7 +251,7 @@ export const OpenCourseView: React.FC<Props> = ({ courseId, course, structure, e
     }
   };
 
-  latest.current = { stages, isDone, setStage, openQuiz, allStagesDone, addToast };
+  latest.current = { stages, isDone, setStage, openQuiz, allStagesDone, addToast, flushWork };
   useEffect(() => {
     if (!hosted) return;
     const onMessage = (ev: MessageEvent) => {
@@ -180,8 +259,33 @@ export const OpenCourseView: React.FC<Props> = ({ courseId, course, structure, e
       if (ev.source !== frameRef.current?.contentWindow || !m || m.source !== "hrl-course") return;
       const L = latest.current;
       if (m.type === "hrl-course-ready") {
-        const completed = L.stages.map((s: StageLesson, i: number) => (L.isDone(s) ? i : -1)).filter((i: number) => i >= 0);
-        frameRef.current?.contentWindow?.postMessage({ type: "hrl-course-init", host: "nova", completed }, "*");
+        // Najpierw notatki z serwera (do 3 s), bez sieci te z tego urządzenia; kurs dostaje je razem z odhaczonymi etapami.
+        (async () => {
+          const local = readLocalWork();
+          let server: WorkPatch | null = null;
+          try {
+            const res = await Promise.race<Response | null>([
+              fetch(`/api/courses/${courseId}/work`, { headers: { Authorization: `Bearer ${token}` } }),
+              new Promise<null>((resolve) => window.setTimeout(() => resolve(null), 3000)),
+            ]);
+            if (res && res.ok) server = ((await res.json()) as any).work || {};
+          } catch {
+            /* offline: zostaje kopia z tego urządzenia */
+          }
+          workRef.current = server ?? local.work;
+          pendingRef.current = local.pending;
+          mergePatch(workRef.current, pendingRef.current); // zmiany z tego urządzenia, których serwer jeszcze nie widział
+          writeLocalWork();
+          const now = latest.current;
+          const completed = now.stages.map((s: StageLesson, i: number) => (now.isDone(s) ? i : -1)).filter((i: number) => i >= 0);
+          frameRef.current?.contentWindow?.postMessage({ type: "hrl-course-init", host: "nova", completed, work: workRef.current }, "*");
+          if (Object.keys(pendingRef.current).length) scheduleFlush(300);
+        })();
+      } else if (m.type === "hrl-course-state" && m.patch && typeof m.patch === "object" && !Array.isArray(m.patch)) {
+        mergePatch(workRef.current, m.patch);
+        mergePatch(pendingRef.current, m.patch, true);
+        writeLocalWork();
+        scheduleFlush();
       } else if (m.type === "hrl-course-progress" && Number.isInteger(m.index) && typeof m.completed === "boolean") {
         const s: StageLesson | undefined = L.stages[m.index];
         if (s && L.isDone(s) !== m.completed) L.setStage(s, m.completed);
@@ -190,8 +294,22 @@ export const OpenCourseView: React.FC<Props> = ({ courseId, course, structure, e
         else L.addToast("Najpierw ukończ wszystkie lekcje kursu.", "info");
       }
     };
+    const flushNow = () => latest.current.flushWork?.(true);
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") flushNow();
+    };
     window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
+    window.addEventListener("pagehide", flushNow);
+    window.addEventListener("online", flushNow);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("message", onMessage);
+      window.removeEventListener("pagehide", flushNow);
+      window.removeEventListener("online", flushNow);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.clearTimeout(flushTimer.current);
+      flushNow(); // wyjście z kursu: co jest w paczce, idzie na serwer
+    };
   }, [hosted]);
 
   const submitQuiz = async (e: React.FormEvent) => {

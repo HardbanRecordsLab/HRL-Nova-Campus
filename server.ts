@@ -853,6 +853,97 @@ app.post("/api/lessons/:id/progress", authenticateToken, async (req, res) => {
   }
 });
 
+// ---- Work a learner keeps inside an interactive (HOSTED_HTML) course ----------------------------------------------------------
+// The course page runs in a sandboxed frame without storage, so every change goes through postMessage to the Nova page, which sends it
+// here as a patch: { note: { key: text }, steps: { key: 1 }, meas: { dayId: { before, after } }, ans: { dayId: [..] }, view: "lesson:2" }.
+// A value of null deletes a key. The server merges the patch into what is stored, so a stale tab only overwrites the keys it edited.
+const WORK_RULES: Record<string, { max: number; ok: (v: unknown) => boolean }> = {
+  note: { max: 8000, ok: (v) => typeof v === "string" },
+  steps: { max: 10, ok: (v) => typeof v === "number" },
+  meas: { max: 300, ok: (v) => typeof v === "object" && v !== null && !Array.isArray(v) && Object.values(v as object).every((x) => x === null || typeof x === "string" || typeof x === "number") },
+  ans: { max: 300, ok: (v) => Array.isArray(v) && v.length <= 24 && v.every((x) => x === null || typeof x === "number" || typeof x === "string") },
+};
+const WORK_KEY = /^[A-Za-z0-9:_.-]{1,80}$/;
+const WORK_VIEW = /^[A-Za-z0-9:_.-]{1,40}$/;
+const WORK_MAX_BYTES = 400_000;
+
+function applyWorkPatch(current: Record<string, any>, patch: unknown): { data: Record<string, any> } | { error: string } {
+  if (!patch || typeof patch !== "object" || Array.isArray(patch)) return { error: "Nieprawidłowe dane notatek." };
+  const data: Record<string, any> = { note: { ...(current.note || {}) }, steps: { ...(current.steps || {}) }, meas: { ...(current.meas || {}) }, ans: { ...(current.ans || {}) } };
+  if (typeof current.view === "string") data.view = current.view;
+  for (const [group, entries] of Object.entries(patch as Record<string, unknown>)) {
+    if (group === "view") {
+      if (entries === null) delete data.view;
+      else if (typeof entries === "string" && WORK_VIEW.test(entries)) data.view = entries;
+      else return { error: "Nieprawidłowe miejsce w kursie." };
+      continue;
+    }
+    const rule = WORK_RULES[group];
+    if (!rule || !entries || typeof entries !== "object" || Array.isArray(entries)) return { error: `Nieznana grupa notatek: ${group}` };
+    for (const [key, value] of Object.entries(entries as Record<string, unknown>)) {
+      if (!WORK_KEY.test(key)) return { error: "Nieprawidłowy klucz notatki." };
+      if (value === null) {
+        delete data[group][key];
+        continue;
+      }
+      if (!rule.ok(value) || JSON.stringify(value).length > rule.max) return { error: "Wpis w notatkach ma zły format albo jest za długi." };
+      data[group][key] = value;
+    }
+  }
+  if (Buffer.byteLength(JSON.stringify(data)) > WORK_MAX_BYTES) return { error: "Notatki tego kursu osiągnęły limit rozmiaru." };
+  return { data };
+}
+
+// Only a learner with an active enrolment keeps work, and only in a course that is a hosted interactive course.
+async function mayKeepWork(userId: string, courseId: string): Promise<boolean> {
+  const [enrollment, course] = await Promise.all([
+    prisma.enrollment.findUnique({ where: { userId_courseId: { userId, courseId } }, select: { status: true } }),
+    prisma.course.findUnique({ where: { id: courseId }, select: { integrationType: true } }),
+  ]);
+  return enrollment?.status === "ACTIVE" && course?.integrationType === "HOSTED_HTML";
+}
+
+app.get("/api/courses/:id/work", authenticateToken, async (req, res) => {
+  const userId = String((req as any).user.id);
+  const courseId = String(req.params.id);
+  try {
+    if (!(await mayKeepWork(userId, courseId))) return res.status(403).json({ message: "Brak dostępu do notatek tego kursu." });
+    const row = await prisma.courseWork.findUnique({ where: { userId_courseId: { userId, courseId } }, select: { data: true, updatedAt: true } });
+    res.json({ work: row?.data ?? {}, updated_at: row?.updatedAt ?? null });
+  } catch (err: any) {
+    res.status(500).json({ message: "Nie udało się pobrać notatek: " + err.message });
+  }
+});
+
+app.put("/api/courses/:id/work", authenticateToken, async (req, res) => {
+  const userId = String((req as any).user.id);
+  const courseId = String(req.params.id);
+  try {
+    if (!(await mayKeepWork(userId, courseId))) return res.status(403).json({ message: "Brak dostępu do notatek tego kursu." });
+    let failure: string | null = null;
+    const saved = await prisma.$transaction(async (tx) => {
+      // one writer at a time per learner and course: two tabs saving together must not drop each other's keys
+      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${userId + ":" + courseId}))`;
+      const row = await tx.courseWork.findUnique({ where: { userId_courseId: { userId, courseId } }, select: { data: true } });
+      const result = applyWorkPatch((row?.data as Record<string, any>) || {}, req.body?.patch);
+      if ("error" in result) {
+        failure = result.error;
+        return null;
+      }
+      return tx.courseWork.upsert({
+        where: { userId_courseId: { userId, courseId } },
+        create: { userId, courseId, data: result.data },
+        update: { data: result.data },
+        select: { updatedAt: true },
+      });
+    });
+    if (failure || !saved) return res.status(400).json({ message: failure || "Nie udało się zapisać notatek." });
+    res.json({ success: true, updated_at: saved.updatedAt });
+  } catch (err: any) {
+    res.status(500).json({ message: "Nie udało się zapisać notatek: " + err.message });
+  }
+});
+
 // Fetch active quizzes for a lesson
 app.get("/api/lessons/:id/quiz", authenticateToken, async (req, res) => {
   const lessonId = req.params.id;

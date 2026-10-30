@@ -85,6 +85,7 @@ model User {
   studentProfile  StudentProfile?
   adminProfile    AdminProfile?
   enrollments     Enrollment[]
+  courseWork      CourseWork[]
   orders          Order[]
   messagesSent    Message[]
   activityLogs    ActivityLog[]
@@ -162,6 +163,7 @@ model Course {
   translations    CourseTranslation[]
   prices          Price[]
   enrollments     Enrollment[]
+  courseWork      CourseWork[]
   orderItems      OrderItem[]
   tags            CourseTag[]
   domains         CourseDomain[]
@@ -364,6 +366,23 @@ model Lesson {
   quizAttempts  QuizAttempt[]
 
   @@index([moduleId, sortOrder])
+}
+
+// What a learner keeps inside an interactive (HOSTED_HTML) course: notes, ticked session steps, 0-10 ratings and quiz answers,
+// one row per learner and course. The course page runs in a sandboxed frame without storage of its own, so it hands every change to
+// Nova over postMessage and Nova keeps it here; the learner's browser holds a second copy for speed and for working offline.
+model CourseWork {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  data      Json     @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
 }
 
 model LessonProgress {
