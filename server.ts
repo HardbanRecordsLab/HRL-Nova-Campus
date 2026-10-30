@@ -923,7 +923,7 @@ app.put("/api/courses/:id/work", authenticateToken, async (req, res) => {
     let failure: string | null = null;
     const saved = await prisma.$transaction(async (tx) => {
       // one writer at a time per learner and course: two tabs saving together must not drop each other's keys
-      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${userId + ":" + courseId}))`;
+      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${userId + ":" + courseId}))::text AS locked`; // ::text, because the driver cannot read a void column
       const row = await tx.courseWork.findUnique({ where: { userId_courseId: { userId, courseId } }, select: { data: true } });
       const result = applyWorkPatch((row?.data as Record<string, any>) || {}, req.body?.patch);
       if ("error" in result) {
