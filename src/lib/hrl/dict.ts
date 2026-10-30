@@ -3707,5 +3707,13 @@ export const PAIRS: Array<[string, string]> = [
 [
 "Nie udało się załadować kursu.",
 "Could not load the course."
+],
+[
+"Notatki są zapisane na tym urządzeniu i trafią na konto, gdy wróci połączenie.",
+"Your notes are saved on this device and will reach your account when the connection is back."
+],
+[
+"Serwer odrzucił notatki.",
+"The server rejected your notes."
 ]
 ];
